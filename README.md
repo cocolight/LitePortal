@@ -24,8 +24,9 @@ npm run build  # 生产构建
 ### 后端
 
 ```bash
-go mod tidy         # 安装依赖
-go run server_new.go # 启动服务器
+cd backend
+npm install        # 安装依赖
+npm start          # 启动服务器
 ```
 
 访问 http://localhost:8080
@@ -39,7 +40,7 @@ go run server_new.go # 启动服务器
 ## 技术栈
 
 - 前端：Vite + TypeScript
-- 后端：Go + SQLite
+- 后端：Node.js + Express + SQLite
 
 ## 许可证
 
