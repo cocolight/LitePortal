@@ -1,3 +1,4 @@
+
 :root {
   --bg: #f5f7fa;
   --card: #ffffff;
@@ -13,13 +14,7 @@
   --radius: 12px;
   --gradient-1: #4a6cf7;
   --gradient-2: #8b5cf6;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-  line-height: 1.6;
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
 }
-
 [data-theme='dark'] {
   --bg: #0a0e1a;
   --card: #151928;
@@ -32,27 +27,24 @@
   --aurora-2: #8b5cf6;
   --aurora-3: #ec4899;
 }
-
 * {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
 }
-
 body {
   background: var(--bg);
   color: var(--text);
   padding: 2rem;
-  min-height: 100vh;
+  line-height: 1.6;
 }
-
 header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 2rem;
 }
-
 h1 {
   font-size: 1.875rem;
   font-weight: 700;
@@ -62,7 +54,6 @@ h1 {
   color: transparent;
   letter-spacing: -0.025em;
 }
-
 /* 极光效果 */
 [data-theme='dark'] body::before {
   content: '';
@@ -75,37 +66,30 @@ h1 {
   z-index: -1;
   pointer-events: none;
 }
-
 [data-theme='dark'] .card {
   border: 1px solid rgba(255, 255, 255, 0.05);
   background: linear-gradient(145deg, rgba(21, 25, 40, 0.8) 0%, rgba(15, 19, 34, 0.8) 100%);
   backdrop-filter: blur(10px);
 }
-
 [data-theme='dark'] .card:hover {
   border-color: var(--aurora-1);
   box-shadow: 0 0 15px rgba(59, 130, 246, 0.2), 0 0 30px rgba(139, 92, 246, 0.1);
 }
-
 [data-theme='dark'] .search-container {
   background: linear-gradient(145deg, rgba(21, 25, 40, 0.8) 0%, rgba(15, 19, 34, 0.8) 100%);
   backdrop-filter: blur(10px);
   border: 1px solid rgba(255, 255, 255, 0.05);
 }
-
 [data-theme='dark'] .engine-btn.active {
   color: var(--aurora-2);
   border-bottom: 2px solid var(--aurora-2);
 }
-
 [data-theme='dark'] .search-btn {
   background: linear-gradient(135deg, var(--aurora-1) 0%, var(--aurora-2) 100%);
 }
-
 [data-theme='dark'] .search-btn:hover {
   background: linear-gradient(135deg, var(--aurora-2) 0%, var(--aurora-3) 100%);
 }
-
 button {
   cursor: pointer;
   border: none;
@@ -120,18 +104,15 @@ button {
   align-items: center;
   justify-content: center;
 }
-
 button:hover {
   background: var(--accent-hover);
   transform: translateY(-1px);
   box-shadow: var(--shadow);
 }
-
 button:active {
   transform: translateY(0);
   box-shadow: var(--shadow-sm);
 }
-
 /* 主题切换按钮样式 */
 #themeToggle {
   background: transparent;
@@ -143,22 +124,18 @@ button:active {
   box-shadow: none;
   font-size: 20px;
 }
-
 #themeToggle:hover {
   background: rgba(59, 130, 246, 0.1);
   transform: rotate(15deg);
 }
-
 #themeToggle:active {
   transform: rotate(5deg);
 }
-
 .grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
   gap: 1.5rem;
 }
-
 .card {
   background: var(--card);
   border-radius: var(--radius);
@@ -176,38 +153,31 @@ button:active {
   align-items: center;
   justify-content: center;
 }
-
 .card:hover {
   transform: translateY(-4px);
   box-shadow: var(--shadow-lg);
   border-color: var(--gradient-1);
 }
-
 .card:active {
   transform: translateY(-2px);
 }
-
 .card img {
   width: 48px;
   height: 48px;
   margin-bottom: 0.75rem;
   transition: var(--transition);
 }
-
 .card:hover img {
   transform: scale(1.1);
 }
-
 .card div {
   font-weight: 500;
   font-size: 0.875rem;
   transition: var(--transition);
 }
-
 .search-box {
   margin-bottom: 2rem;
 }
-
 .search-container {
   max-width: 600px;
   margin: 0 auto;
@@ -218,16 +188,13 @@ button:active {
   overflow: hidden;
   transition: var(--transition);
 }
-
 .search-container:hover {
   box-shadow: var(--shadow-lg);
 }
-
 .search-engines {
   display: flex;
   border-bottom: 1px solid var(--border);
 }
-
 .engine-btn {
   flex: 1;
   padding: 0.75rem;
@@ -241,23 +208,19 @@ button:active {
   border-radius: 0;
   box-shadow: none;
 }
-
 .engine-btn:hover {
   color: var(--text);
   background: rgba(59, 130, 246, 0.05);
 }
-
 .engine-btn.active {
   color: var(--gradient-1);
   border-bottom: 2px solid var(--gradient-1);
 }
-
 .search-input-container {
   display: flex;
   align-items: center;
   padding: 0.5rem;
 }
-
 .search-input-container input {
   flex: 1;
   padding: 0.75rem 1rem;
@@ -267,11 +230,9 @@ button:active {
   font-size: 1rem;
   outline: none;
 }
-
 .search-input-container input::placeholder {
   color: var(--text-secondary);
 }
-
 .search-btn {
   background: linear-gradient(135deg, var(--gradient-1) 0%, var(--gradient-2) 100%);
   color: white;
@@ -286,12 +247,10 @@ button:active {
   transition: var(--transition);
   padding: 0;
 }
-
 .search-btn:hover {
   background: linear-gradient(135deg, var(--gradient-2) 0%, var(--gradient-1) 100%);
   transform: scale(1.05);
 }
-
 /* 右键菜单 */
 .ctx-menu {
   background: var(--card);
@@ -302,27 +261,22 @@ button:active {
   z-index: 1000;
   min-width: 160px;
 }
-
 .ctx-menu div {
   padding: 0.625rem 1rem;
   transition: var(--transition);
   cursor: pointer;
   font-size: 0.875rem;
 }
-
 .ctx-menu div:hover {
   background: var(--accent);
   color: #fff;
 }
-
 .ctx-menu div:first-child {
   border-radius: var(--radius) var(--radius) 0 0;
 }
-
 .ctx-menu div:last-child {
   border-radius: 0 0 var(--radius) var(--radius);
 }
-
 /* 弹窗遮罩 */
 .modal-overlay {
   position: fixed;
@@ -335,7 +289,6 @@ button:active {
   z-index: 9999;
   animation: fadeIn 0.2s ease-out;
 }
-
 .modal {
   background: var(--card);
   padding: 1.75rem;
@@ -348,13 +301,11 @@ button:active {
   border: 1px solid var(--border);
   animation: slideUp 0.3s ease-out;
 }
-
 .modal h3 {
   font-size: 1.25rem;
   font-weight: 600;
   margin-bottom: 0.5rem;
 }
-
 .modal label {
   display: flex;
   flex-direction: row;
@@ -364,14 +315,12 @@ button:active {
   color: var(--text);
   gap: 0.5rem;
 }
-
 .modal label strong {
   min-width: 80px;
   text-align: justify;
   text-align-last: justify;
   margin-right: 0.5rem;
 }
-
 .modal input {
   flex: 1;
   padding: 0.625rem;
@@ -382,31 +331,26 @@ button:active {
   transition: var(--transition);
   text-align: left;
 }
-
 .modal input:focus {
   outline: none;
   border-color: var(--accent);
   box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
-
 /* 图标预览区域样式 */
 .icon-preview-section {
   margin-bottom: 1rem;
 }
-
 .preview-title {
   font-weight: 600;
   margin-bottom: 0.75rem;
   color: var(--text);
   font-size: 0.875rem;
 }
-
 .icon-preview-container {
   display: flex;
   justify-content: space-between;
   gap: 0.75rem;
 }
-
 .preview-item {
   flex: 1;
   display: flex;
@@ -414,13 +358,11 @@ button:active {
   align-items: center;
   gap: 0.5rem;
 }
-
 .preview-label {
   font-size: 0.75rem;
   color: var(--text-secondary);
   text-align: center;
 }
-
 .preview-icon {
   width: 60px;
   height: 60px;
@@ -432,21 +374,17 @@ button:active {
   border: 1px solid var(--border);
   overflow: hidden;
 }
-
 .preview-icon.selected {
   box-shadow: 0 0 0 2px var(--accent);
 }
-
 .online-icon-wrapper {
   position: relative;
   cursor: pointer;
 }
-
 .text-icon-wrapper {
   position: relative;
   cursor: pointer;
 }
-
 .fetch-hint {
   position: absolute;
   top: 0;
@@ -466,13 +404,11 @@ button:active {
   pointer-events: none;
   z-index: 1;
 }
-
 .preview-icon img {
   width: 36px;
   height: 36px;
   object-fit: contain;
 }
-
 .text-icon {
   font-size: 1.5rem;
   font-weight: 700;
@@ -482,45 +418,38 @@ button:active {
   background-clip: text;
   color: transparent;
 }
-
 .modal-btns {
   display: flex;
   gap: 0.75rem;
   justify-content: flex-end;
   margin-top: 0.5rem;
 }
-
 .modal-btns button {
   padding: 0.5rem 1rem;
   font-size: 0.875rem;
   font-weight: 500;
   transition: var(--transition);
 }
-
 .modal-btns button:first-child {
   background: var(--accent);
   color: #fff;
 }
-
 .modal-btns button:first-child:hover {
   background: var(--accent-hover);
   transform: translateY(-1px);
   box-shadow: var(--shadow);
 }
-
 .modal-btns button:last-child {
   background: #fff;
   color: #ef4444;
   border: 1px solid #ef4444;
 }
-
 .modal-btns button:last-child:hover {
   background: #ef4444;
   color: #fff;
   transform: translateY(-1px);
   box-shadow: var(--shadow);
 }
-
 .modal-btns button:active {
   transform: translateY(0);
   box-shadow: var(--shadow-sm);
@@ -531,13 +460,12 @@ button:active {
   from { opacity: 0; }
   to { opacity: 1; }
 }
-
 @keyframes slideUp {
-  from {
+  from { 
     opacity: 0;
     transform: translateY(20px);
   }
-  to {
+  to { 
     opacity: 1;
     transform: translateY(0);
   }
@@ -556,63 +484,19 @@ button:active {
   body {
     padding: 1rem;
   }
-  
   .grid {
     grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
     gap: 1rem;
   }
-  
   .card {
     padding: 1rem;
   }
-  
   .card img {
     width: 40px;
     height: 40px;
   }
-  
   .modal {
     width: 90%;
     max-width: 360px;
   }
-}
-
-/* 通知样式 */
-#notification-container {
-  position: fixed;
-  top: 20px;
-  right: 20px;
-  z-index: 10000;
-}
-
-.notification {
-  padding: 12px 20px;
-  border-radius: 8px;
-  color: white;
-  font-weight: 500;
-  box-shadow: var(--shadow-lg);
-  margin-bottom: 10px;
-  transform: translateX(120%);
-  transition: transform 0.3s ease;
-  max-width: 300px;
-}
-
-.notification.visible {
-  transform: translateX(0);
-}
-
-.notification.info {
-  background: var(--gradient-1);
-}
-
-.notification.success {
-  background: #10b981;
-}
-
-.notification.error {
-  background: #ef4444;
-}
-
-.notification.warning {
-  background: #f59e0b;
 }

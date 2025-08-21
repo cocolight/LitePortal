@@ -6,6 +6,8 @@ export interface Link {
   id?: string
   name: string
   icon: string
+  textIcon?: string
+  uploadIcon?: string
   int: string
   ext: string
   desc?: string
@@ -52,9 +54,9 @@ export function showContextMenu(
     // 确保点击的是菜单项而不是菜单本身
     const target = ev.target as HTMLElement
     const menuItem = target.closest('.ctx-menu-item') as HTMLElement
-    
+
     if (!menuItem) return
-    
+
     const action = menuItem.dataset.action
     if (action === 'edit') {
       openEditModal(currentLink, onRefresh)
@@ -62,12 +64,12 @@ export function showContextMenu(
       document.removeEventListener('click', handler)
       return
     }
-    
+
     if (action === 'delete') {
       // 先移除菜单和事件监听器，避免重复触发
       removeMenu()
       document.removeEventListener('click', handler)
-      
+
       // 创建自定义确认对话框
       showDeleteConfirmDialog(currentLink.name, () => {
         /* 调后端删除 */
@@ -88,20 +90,20 @@ export function showContextMenu(
       })
     }
   }
-  
+
   // 移除菜单的函数，避免重复代码
   const removeMenu = () => {
     if (document.body.contains(menu)) {
       document.body.removeChild(menu)
     }
   }
-  
+
   document.addEventListener('click', handler)
   // 添加一个备用的事件监听器，确保菜单能被移除
   setTimeout(() => {
     document.addEventListener('click', removeMenu, { once: true })
   }, 0)
-  
+
   // 添加右键菜单样式（如果尚未添加）
   if (!document.getElementById('context-menu-styles')) {
     const style = document.createElement('style')
@@ -111,7 +113,7 @@ export function showContextMenu(
         from { opacity: 0; transform: scale(0.95); }
         to { opacity: 1; transform: scale(1); }
       }
-      
+
       .ctx-menu-item {
         display: flex;
         align-items: center;
@@ -121,20 +123,20 @@ export function showContextMenu(
         cursor: pointer;
         transition: background-color 0.2s ease;
       }
-      
+
       .ctx-menu-item:hover {
         background-color: var(--hover, #f5f5f5);
       }
-      
+
       .ctx-menu-item:first-child {
         border-bottom: 1px solid var(--border, #e0e0e0);
       }
-      
+
       .ctx-menu-icon {
         margin-right: 12px;
         font-size: 16px;
       }
-      
+
       .ctx-menu-text {
         font-weight: 500;
       }

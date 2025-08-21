@@ -39,10 +39,10 @@ function initTestData(db) {
             db.serialize(() => {
                 db.run('BEGIN TRANSACTION');
                 
-                const stmt = db.prepare('INSERT INTO links (user_id, link_id, name, icon, int_url, ext_url, description) VALUES (?, ?, ?, ?, ?, ?, ?)');
+                const stmt = db.prepare('INSERT INTO links (user_id, link_id, name, icon, text_icon, upload_icon, int_url, ext_url, description) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)');
                 
                 testLinks.forEach(link => {
-                    stmt.run([guestUserId, link.id, link.name, link.icon, link.int, link.ext, link.desc], (err) => {
+                    stmt.run([guestUserId, link.id, link.name, link.icon, '', '', link.int, link.ext, link.desc], (err) => {
                         if (err) console.error('插入测试链接失败:', err.message);
                     });
                 });

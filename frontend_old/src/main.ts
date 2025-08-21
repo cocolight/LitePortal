@@ -8,6 +8,8 @@ interface Link {
   icon: string
   int: string
   ext: string
+  desc?: string
+  uploadIcon?: string
 }
 
 let cfg: { links: Link[] } = { links: [] }
@@ -35,17 +37,52 @@ function buildSearchBox() {
   const searchBox = document.createElement('section');
   searchBox.className = 'search-box';
   searchBox.innerHTML = `
-    <select id="engineSelect">
-      ${engines.map(e => `<option value="${e.url}">${e.name}</option>`).join('')}
-    </select>
-    <input id="searchInput" type="text" placeholder="输入关键词回车搜索…" />
+    <div class="search-container">
+      <div class="search-engines">
+        ${engines.map((e, index) => `
+          <button class="engine-btn ${index === 0 ? 'active' : ''}" data-url="${e.url}">
+            ${e.name}
+          </button>
+        `).join('')}
+      </div>
+      <div class="search-input-container">
+        <input id="searchInput" type="text" placeholder="搜索..." />
+        <button class="search-btn">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="8"></circle>
+            <path d="m21 21-4.35-4.35"></path>
+          </svg>
+        </button>
+      </div>
+    </div>
   `;
   document.body.insertBefore(searchBox, document.getElementById('grid'));
 
   // 事件绑定
-  const select = searchBox.querySelector('#engineSelect') as HTMLSelectElement;
-  const input  = searchBox.querySelector('#searchInput')  as HTMLInputElement;
-  select.addEventListener('change', () => currentEngine = engines.find(e => e.url === select.value)!);
+  const engineBtns = searchBox.querySelectorAll('.engine-btn');
+  const input = searchBox.querySelector('#searchInput') as HTMLInputElement;
+  const searchBtn = searchBox.querySelector('.search-btn') as HTMLButtonElement;
+  
+  engineBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      // 移除所有按钮的active类
+      engineBtns.forEach(b => b.classList.remove('active'));
+      // 为当前按钮添加active类
+      btn.classList.add('active');
+      // 更新当前搜索引擎
+      currentEngine = engines.find(e => e.url === btn.getAttribute('data-url'))!;
+    });
+  });
+  
+  // 搜索按钮点击事件
+  searchBtn.addEventListener('click', () => {
+    if (input.value.trim()) {
+      window.open(currentEngine.url + encodeURIComponent(input.value.trim()), '_blank');
+      input.value = '';
+    }
+  });
+  
+  // 输入框回车事件
   input.addEventListener('keydown', (e) => {
     if (e.key === 'Enter' && input.value.trim()) {
       window.open(currentEngine.url + encodeURIComponent(input.value.trim()), '_blank');
@@ -66,7 +103,9 @@ function render() {
   cfg.links.forEach(l => {
     const card = document.createElement('a')
     card.className = 'card'
-    card.innerHTML = `<img src="${l.icon}" onerror="this.src='https://api.iconify.design/mdi:web.svg'"/><div>${l.name}</div>`
+    // 优先显示上传的图标，其次是在线图标
+    const iconSrc = l.uploadIcon || l.icon
+    card.innerHTML = `<img src="${iconSrc}" onerror="this.src='https://api.iconify.design/mdi:web.svg'"/><div>${l.name}</div>`
     card.addEventListener('contextmenu', e => showContextMenu(e, l, load))
     card.addEventListener('click', async e => {
       e.preventDefault()
@@ -95,8 +134,18 @@ themeBtn.onclick = () => {
   const dark = document.documentElement.getAttribute('data-theme') === 'dark'
   document.documentElement.setAttribute('data-theme', dark ? '' : 'dark')
   localStorage.setItem('theme', dark ? '' : 'dark')
+  
+  // 更新按钮图标
+  themeBtn.innerHTML = dark ? '🌙' : '☀️'
 }
 (() => {
   const t = localStorage.getItem('theme')
-  if (t) document.documentElement.setAttribute('data-theme', t)
+  if (t) {
+    document.documentElement.setAttribute('data-theme', t)
+    // 设置初始图标
+    themeBtn.innerHTML = t === 'dark' ? '🌙' : '☀️'
+  } else {
+    // 默认显示太阳图标
+    themeBtn.innerHTML = '☀️'
+  }
 })()

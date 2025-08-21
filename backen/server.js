@@ -39,6 +39,8 @@ function initDatabase() {
         link_id TEXT,
         name TEXT,
         icon TEXT,
+        text_icon TEXT,
+        upload_icon TEXT,
         int_url TEXT,
         ext_url TEXT,
         description TEXT,
@@ -48,15 +50,47 @@ function initDatabase() {
     )`, (err) => {
         if (err) console.error('创建链接表失败:', err.message)
         else {
-            // 表创建成功后，根据环境变量决定是否初始化测试数据
-            const isDevelopment = process.env.NODE_ENV !== 'production';
-            if (isDevelopment) {
-                console.log('开发环境，准备初始化测试数据...');
-                const { initTestData } = require('./testDataInit');
-                initTestData(db);
-            } else {
-                console.log('生产环境，跳过测试数据初始化');
-            }
+            // 检查是否需要添加新字段（用于现有数据库的升级）
+            db.all("PRAGMA table_info(links)", (err, rows) => {
+                if (err) {
+                    console.error('获取表结构失败:', err.message);
+                    return;
+                }
+
+                // 检查rows是否存在
+                if (!rows || !Array.isArray(rows)) {
+                    console.error('获取表结构返回无效数据');
+                    return;
+                }
+
+                const columns = rows.map(row => row.name);
+
+                // 添加 text_icon 字段（如果不存在）
+                if (!columns.includes('text_icon')) {
+                    db.run("ALTER TABLE links ADD COLUMN text_icon TEXT", (err) => {
+                        if (err) console.error('添加 text_icon 字段失败:', err.message);
+                        else console.log('成功添加 text_icon 字段');
+                    });
+                }
+
+                // 添加 upload_icon 字段（如果不存在）
+                if (!columns.includes('upload_icon')) {
+                    db.run("ALTER TABLE links ADD COLUMN upload_icon TEXT", (err) => {
+                        if (err) console.error('添加 upload_icon 字段失败:', err.message);
+                        else console.log('成功添加 upload_icon 字段');
+                    });
+                }
+
+                // 表创建成功后，根据环境变量决定是否初始化测试数据
+                const isDevelopment = process.env.NODE_ENV !== 'production';
+                if (isDevelopment) {
+                    console.log('开发环境，准备初始化测试数据...');
+                    const { initTestData } = require('./testDataInit');
+                    initTestData(db);
+                } else {
+                    console.log('生产环境，跳过测试数据初始化');
+                }
+            });
         }
     })
 }
@@ -68,11 +102,11 @@ function getOrCreateUser(username, callback) {
             callback(err, null)
             return
         }
-        
+
         if (row) {
             callback(null, row.id)
         } else {
-            db.run('INSERT INTO users (username) VALUES (?)', [username], function(err) {
+            db.run('INSERT INTO users (username) VALUES (?)', [username], function (err) {
                 if (err) {
                     callback(err, null)
                 } else {
@@ -91,24 +125,24 @@ function defaultCfg() {
 // GET /api/config
 app.get('/api/config', (req, res) => {
     const username = req.get('X-User') || 'guest'
-    
+
     getOrCreateUser(username, (err, userId) => {
         if (err) {
             console.error('获取用户ID失败:', err.message)
             return res.json(defaultCfg())
         }
-        
-        db.all('SELECT link_id as id, name, icon, int_url as int, ext_url as ext, description as desc FROM links WHERE user_id = ?', [userId], (err, rows) => {
+
+        db.all('SELECT link_id as id, name, icon, text_icon as textIcon, upload_icon as uploadIcon, int_url as int, ext_url as ext, description as desc FROM links WHERE user_id = ?', [userId], (err, rows) => {
             if (err) {
                 console.error('查询链接失败:', err.message)
                 return res.json(defaultCfg())
             }
-            
+
             // 始终返回 { links: [...] } 格式，即使没有数据
             if (rows.length === 0) {
                 return res.json({ links: [] })
             }
-            
+
             res.json({ links: rows })
         })
     })
@@ -117,13 +151,13 @@ app.get('/api/config', (req, res) => {
 // POST /api/config  新增 / 编辑 / 删除 统一入口
 app.post('/api/config', (req, res) => {
     const username = req.get('X-User') || 'guest'
-    
+
     getOrCreateUser(username, (err, userId) => {
         if (err) {
             console.error('获取用户ID失败:', err.message)
             return res.status(500).json({ error: '服务器内部错误' })
         }
-        
+
         // 如果是删除请求
         if (req.body.action === 'delete') {
             db.run('DELETE FROM links WHERE user_id = ? AND link_id = ?', [userId, req.body.id], (err) => {
@@ -135,23 +169,23 @@ app.post('/api/config', (req, res) => {
             })
             return
         }
-        
+
         // 新增 / 编辑
         const payload = req.body
         if (!payload.id) payload.id = Date.now().toString() // 生成新 id
-        
+
         // 检查链接是否存在
         db.get('SELECT id FROM links WHERE user_id = ? AND link_id = ?', [userId, payload.id], (err, row) => {
             if (err) {
                 console.error('查询链接失败:', err.message)
                 return res.status(500).json({ error: '服务器内部错误' })
             }
-            
+
             if (row) {
                 // 更新现有链接
                 db.run(
-                    'UPDATE links SET name = ?, icon = ?, int_url = ?, ext_url = ?, description = ?, updated_at = CURRENT_TIMESTAMP WHERE user_id = ? AND link_id = ?',
-                    [payload.name, payload.icon, payload.int, payload.ext, payload.desc, userId, payload.id],
+                    'UPDATE links SET name = ?, icon = ?, text_icon = ?, upload_icon = ?, int_url = ?, ext_url = ?, description = ?, updated_at = CURRENT_TIMESTAMP WHERE user_id = ? AND link_id = ?',
+                    [payload.name, payload.icon, payload.textIcon || '', payload.uploadIcon || '', payload.int, payload.ext, payload.desc, userId, payload.id],
                     (err) => {
                         if (err) {
                             console.error('更新链接失败:', err.message)
@@ -163,8 +197,8 @@ app.post('/api/config', (req, res) => {
             } else {
                 // 添加新链接
                 db.run(
-                    'INSERT INTO links (user_id, link_id, name, icon, int_url, ext_url, description) VALUES (?, ?, ?, ?, ?, ?, ?)',
-                    [userId, payload.id, payload.name, payload.icon, payload.int, payload.ext, payload.desc],
+                    'INSERT INTO links (user_id, link_id, name, icon, text_icon, upload_icon, int_url, ext_url, description) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+                    [userId, payload.id, payload.name, payload.icon, payload.textIcon || '', payload.uploadIcon || '', payload.int, payload.ext, payload.desc],
                     (err) => {
                         if (err) {
                             console.error('添加链接失败:', err.message)
