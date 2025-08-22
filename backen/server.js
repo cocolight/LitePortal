@@ -38,9 +38,10 @@ function initDatabase() {
         user_id INTEGER,
         link_id TEXT,
         name TEXT,
-        icon TEXT,
+        online_icon TEXT,
         text_icon TEXT,
         upload_icon TEXT,
+        icon_type TEXT DEFAULT 'online_icon',
         int_url TEXT,
         ext_url TEXT,
         description TEXT,
@@ -78,6 +79,22 @@ function initDatabase() {
                     db.run("ALTER TABLE links ADD COLUMN upload_icon TEXT", (err) => {
                         if (err) console.error('添加 upload_icon 字段失败:', err.message);
                         else console.log('成功添加 upload_icon 字段');
+                    });
+                }
+
+                // 添加 icon_type 字段（如果不存在）
+                if (!columns.includes('icon_type')) {
+                    db.run("ALTER TABLE links ADD COLUMN icon_type TEXT DEFAULT 'online_icon'", (err) => {
+                        if (err) console.error('添加 icon_type 字段失败:', err.message);
+                        else console.log('成功添加 icon_type 字段');
+                    });
+                }
+                
+                // 检查是否需要将icon字段重命名为online_icon
+                if (columns.includes('icon') && !columns.includes('online_icon')) {
+                    db.run("ALTER TABLE links RENAME COLUMN icon TO online_icon", (err) => {
+                        if (err) console.error('重命名icon字段为online_icon失败:', err.message);
+                        else console.log('成功重命名icon字段为online_icon');
                     });
                 }
 
@@ -132,7 +149,7 @@ app.get('/api/config', (req, res) => {
             return res.json(defaultCfg())
         }
 
-        db.all('SELECT link_id as id, name, icon, text_icon as textIcon, upload_icon as uploadIcon, int_url as int, ext_url as ext, description as desc FROM links WHERE user_id = ?', [userId], (err, rows) => {
+        db.all('SELECT link_id as id, name, online_icon as icon, text_icon as textIcon, upload_icon as uploadIcon, icon_type as iconType, int_url as int, ext_url as ext, description as desc FROM links WHERE user_id = ?', [userId], (err, rows) => {
             if (err) {
                 console.error('查询链接失败:', err.message)
                 return res.json(defaultCfg())
@@ -184,8 +201,8 @@ app.post('/api/config', (req, res) => {
             if (row) {
                 // 更新现有链接
                 db.run(
-                    'UPDATE links SET name = ?, icon = ?, text_icon = ?, upload_icon = ?, int_url = ?, ext_url = ?, description = ?, updated_at = CURRENT_TIMESTAMP WHERE user_id = ? AND link_id = ?',
-                    [payload.name, payload.icon, payload.textIcon || '', payload.uploadIcon || '', payload.int, payload.ext, payload.desc, userId, payload.id],
+                    'UPDATE links SET name = ?, online_icon = ?, text_icon = ?, upload_icon = ?, icon_type = ?, int_url = ?, ext_url = ?, description = ?, updated_at = CURRENT_TIMESTAMP WHERE user_id = ? AND link_id = ?',
+                    [payload.name, payload.icon, payload.textIcon || '', payload.uploadIcon || '', payload.iconType || 'online_icon', payload.int, payload.ext, payload.desc, userId, payload.id],
                     (err) => {
                         if (err) {
                             console.error('更新链接失败:', err.message)
@@ -197,8 +214,8 @@ app.post('/api/config', (req, res) => {
             } else {
                 // 添加新链接
                 db.run(
-                    'INSERT INTO links (user_id, link_id, name, icon, text_icon, upload_icon, int_url, ext_url, description) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
-                    [userId, payload.id, payload.name, payload.icon, payload.textIcon || '', payload.uploadIcon || '', payload.int, payload.ext, payload.desc],
+                    'INSERT INTO links (user_id, link_id, name, online_icon, text_icon, upload_icon, icon_type, int_url, ext_url, description) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+                    [userId, payload.id, payload.name, payload.icon, payload.textIcon || '', payload.uploadIcon || '', payload.iconType || 'online_icon', payload.int, payload.ext, payload.desc],
                     (err) => {
                         if (err) {
                             console.error('添加链接失败:', err.message)

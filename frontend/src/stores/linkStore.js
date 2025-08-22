@@ -5,9 +5,10 @@ import axios from 'axios'
 // {
 //   id?: string,
 //   name: string,
-//   icon: string,
-//   textIcon?: string,
-//   uploadIcon?: string,
+//   icon: string,        // 对应数据库中的online_icon字段
+//   textIcon?: string,   // 对应数据库中的text_icon字段
+//   uploadIcon?: string, // 对应数据库中的upload_icon字段
+//   iconType?: string,   // 图标类型，可选值：'online_icon'（默认）、'text_icon'、'upload_icon'
 //   int: string,
 //   ext: string,
 //   desc?: string
@@ -103,11 +104,12 @@ export const useLinkStore = defineStore('links', {
           id
         })
         
-        if (response.data.success) {
+        // 后端返回 204 状态码表示删除成功
+        if (response.status === 204) {
           await this.fetchLinks()
           return true
         } else {
-          this.error = response.data.message || '删除链接失败'
+          this.error = response.data?.message || response.data?.error || '删除链接失败'
           return false
         }
       } catch (error) {

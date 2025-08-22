@@ -2,11 +2,12 @@
   <a
     class="card"
     :class="{ 'add-card': isAddCard }"
+    :data-id="link.id"
     @click="handleClick"
     @contextmenu.prevent="handleContextMenu"
   >
-    <img 
-      :src="displayIcon" 
+    <img
+      :src="displayIcon"
       :alt="isAddCard ? '添加' : link.name"
       onerror="this.src='https://api.iconify.design/mdi:web.svg'"
     />
@@ -33,29 +34,27 @@ const emit = defineEmits(['add', 'contextmenu'])
 
 const { openLink } = useLinks()
 
-// 判断是否应该显示文字图标
-const isTextIcon = computed(() => {
-  if (props.isAddCard) return false
-  // 当没有上传图标和在线图标，但有文字图标时，显示文字图标
-  return !props.link.uploadIcon && !props.link.icon && !!props.link.textIcon
-})
 
 const displayIcon = computed(() => {
   if (props.isAddCard) {
     return 'https://api.iconify.design/mdi:plus.svg'
   }
-  
-  // 根据优先级显示图标：上传图标 > 文字图标 > 在线图标 > 默认图标
-  // 这样确保保存后显示的是用户选择的图标类型
-  if (props.link.uploadIcon) {
-    return props.link.uploadIcon
-  } else if (props.link.textIcon) {
-    // 文字图标需要特殊处理，因为我们不能直接返回文字作为img的src
-    return 'data:text/plain;charset=utf-8,' + encodeURIComponent(props.link.textIcon)
-  } else if (props.link.icon) {
-    return props.link.icon
+
+  // 严格根据iconType字段显示对应的图标
+  const iconType = props.link.iconType || 'online_icon'
+  console.log('iconType:', iconType)
+
+  if (iconType === 'upload_icon') {
+    return props.link.uploadIcon || 'https://api.iconify.design/mdi:upload.svg'
+  } else if (iconType === 'text_icon') {
+    // 文字图标使用data URL格式显示
+    const text = props.link.textIcon || props.link.name || 'A'
+    return 'data:text/plain;charset=utf-8,' + encodeURIComponent(text.charAt(0).toUpperCase())
+  } else if (iconType === 'online_icon') {
+    return props.link.icon || 'https://api.iconify.design/mdi:web.svg'
   } else {
-    return 'https://api.iconify.design/mdi:web.svg'
+    // 默认情况，返回在线图标
+    return props.link.icon || 'https://api.iconify.design/mdi:web.svg'
   }
 })
 
@@ -73,19 +72,10 @@ const handleContextMenu = (event) => {
   }
 }
 
-// 处理文字图标的显示
+// 文字图标现在通过displayIcon计算属性处理，不再需要DOM操作
 onMounted(() => {
   nextTick(() => {
-    if (isTextIcon.value) {
-      const cardElement = document.querySelector('.card:nth-child(' + (props.link.id || '1') + ') img')
-      if (cardElement) {
-        const parent = cardElement.parentNode
-        const textIconElement = document.createElement('div')
-        textIconElement.className = 'text-icon-display'
-        textIconElement.textContent = props.link.textIcon
-        parent.replaceChild(textIconElement, cardElement)
-      }
-    }
+    // 可以在这里添加其他需要在组件挂载后执行的逻辑
   })
 })
 </script>
@@ -100,18 +90,5 @@ onMounted(() => {
   border: 1px dashed var(--accent);
 }
 
-.text-icon-display {
-  width: 36px;
-  height: 36px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: var(--accent);
-  background: linear-gradient(135deg, var(--gradient-1) 0%, var(--gradient-2) 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-}
+
 </style>

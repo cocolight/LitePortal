@@ -1,6 +1,6 @@
 <template>
   <teleport to="body">
-    <div v-if="visible" class="confirm-dialog-overlay" @click.self="handleCancel">
+    <div v-if="visible" class="confirm-dialog-overlay visible" @click.self="handleCancel">
       <div class="confirm-dialog">
         <h3>确认删除</h3>
         <p>确定要删除 "{{ itemName }}" 吗？此操作不可撤销。</p>

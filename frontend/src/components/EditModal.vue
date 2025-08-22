@@ -7,8 +7,8 @@
         <!-- 图标预览区域 -->
         <div class="icon-preview-section">
           <div class="icon-preview-container">
-            <div class="preview-item online-icon-wrapper" @click="selectIconType('online')">
-              <div class="preview-icon online-icon" :class="{ selected: currentIconType === 'online' }">
+            <div class="preview-item online-icon-wrapper" @click="selectIconType('online_icon')">
+              <div class="preview-icon online-icon" :class="{ selected: currentIconType === 'online_icon' }">
                 <img
                   :src="iconPreviewUrl"
                   alt="在线图标"
@@ -19,17 +19,17 @@
               <div class="fetch-hint">获取图标</div>
             </div>
 
-            <div class="preview-item text-icon-wrapper" @click="selectIconType('text')">
-              <div class="preview-icon text-icon" :class="{ selected: currentIconType === 'text' }">
+            <div class="preview-item text-icon-wrapper" @click="selectIconType('text_icon')">
+              <div class="preview-icon text-icon" :class="{ selected: currentIconType === 'text_icon' }">
                 {{ textIconPreview }}
               </div>
               <div class="preview-label">文字图标</div>
             </div>
 
-            <div class="preview-item" @click="selectIconType('upload')">
-              <div class="preview-icon upload-icon" :class="{ selected: currentIconType === 'upload' }">
+            <div class="preview-item" @click="selectIconType('upload_icon')">
+              <div class="preview-icon upload-icon" :class="{ selected: currentIconType === 'upload_icon' }">
                 <img
-                  :src="link.uploadIcon || 'https://api.iconify.design/mdi:upload.svg'"
+                  :src="currentIconType === 'upload_icon' ? (iconValue || formData.uploadIcon || link.uploadIcon || 'https://api.iconify.design/mdi:upload.svg') : (formData.uploadIcon || link.uploadIcon || 'https://api.iconify.design/mdi:upload.svg')"
                   alt="上传图标"
                   onerror="this.src='https://api.iconify.design/mdi:upload.svg'"
                 />
@@ -95,6 +95,7 @@ const props = defineProps({
       icon: '',
       textIcon: '',
       uploadIcon: '',
+      iconType: 'online_icon',
       int: '',
       ext: '',
       desc: ''
@@ -110,42 +111,43 @@ const linkStore = useLinkStore()
 const formData = ref({ ...props.link })
 
 // 图标类型
-const currentIconType = ref('online') // 'online', 'text', 'upload'
+const currentIconType = ref('online_icon') // 'online_icon', 'text_icon', 'upload_icon'
 const iconValue = ref('')
 
 // 计算属性
 const isEdit = computed(() => !!props.link.id)
 const iconLabel = computed(() => {
   switch (currentIconType.value) {
-    case 'online': return '图标URL'
-    case 'text': return '图标文字'
-    case 'upload': return '上传图标URL'
+    case 'online_icon': return '图标URL'
+    case 'text_icon': return '图标文字'
+    case 'upload_icon': return '上传图标URL'
     default: return '图标URL'
   }
 })
 
 const iconPlaceholder = computed(() => {
   switch (currentIconType.value) {
-    case 'online': return '输入图标URL'
-    case 'text': return '输入1-2个字符'
-    case 'upload': return '输入上传图标URL'
+    case 'online_icon': return '输入图标URL'
+    case 'text_icon': return '输入1-2个字符'
+    case 'upload_icon': return '输入上传图标URL'
     default: return '输入图标URL'
   }
 })
 
 const iconPreviewUrl = computed(() => {
-  if (currentIconType.value === 'online') {
-    return iconValue.value || props.link.icon || 'https://api.iconify.design/mdi:web.svg'
+  if (currentIconType.value === 'online_icon') {
+    return iconValue.value || formData.value.icon || props.link.icon || 'https://api.iconify.design/mdi:web.svg'
   }
-  return props.link.icon || 'https://api.iconify.design/mdi:web.svg'
+  return formData.value.icon || props.link.icon || 'https://api.iconify.design/mdi:web.svg'
 })
 
 const textIconPreview = computed(() => {
-  if (currentIconType.value === 'text') {
-    const text = iconValue.value || props.link.textIcon || formData.value.name
+  if (currentIconType.value === 'text_icon') {
+    const text = iconValue.value || formData.value.textIcon || props.link.textIcon || formData.value.name
     return text ? text.charAt(0).toUpperCase() : 'A'
   }
-  return props.link.textIcon ? props.link.textIcon.charAt(0).toUpperCase() :
+  return formData.value.textIcon || props.link.textIcon ? 
+         (formData.value.textIcon || props.link.textIcon).charAt(0).toUpperCase() :
          formData.value.name ? formData.value.name.charAt(0).toUpperCase() : 'A'
 })
 
@@ -154,14 +156,23 @@ watch(() => props.link, (newLink) => {
   formData.value = { ...newLink }
 
   // 确定初始图标类型
-  if (newLink.textIcon) {
-    currentIconType.value = 'text'
+  if (newLink.iconType) {
+    currentIconType.value = newLink.iconType
+    if (newLink.iconType === 'text_icon') {
+      iconValue.value = newLink.textIcon || ''
+    } else if (newLink.iconType === 'upload_icon') {
+      iconValue.value = newLink.uploadIcon || ''
+    } else {
+      iconValue.value = newLink.icon || ''
+    }
+  } else if (newLink.textIcon) {
+    currentIconType.value = 'text_icon'
     iconValue.value = newLink.textIcon
   } else if (newLink.uploadIcon) {
-    currentIconType.value = 'upload'
+    currentIconType.value = 'upload_icon'
     iconValue.value = newLink.uploadIcon
   } else {
-    currentIconType.value = 'online'
+    currentIconType.value = 'online_icon'
     iconValue.value = newLink.icon || ''
   }
 }, { immediate: true })
@@ -173,7 +184,7 @@ const autoFetchIcon = async (url) => {
 
   try {
     const faviconUrl = await fetchFavicon(url)
-    if (currentIconType.value === 'online') {
+    if (currentIconType.value === 'online_icon') {
       iconValue.value = faviconUrl
     }
   } catch (error) {
@@ -199,16 +210,26 @@ watch(() => formData.value.ext, (newUrl) => {
 const selectIconType = (type) => {
   currentIconType.value = type
 
+  // 保存当前编辑的值，确保切换类型时不会丢失已输入的内容
+  if (type !== 'online_icon' && iconValue.value && currentIconType.value === 'online_icon') {
+    formData.value.icon = iconValue.value
+  } else if (type !== 'text_icon' && iconValue.value && currentIconType.value === 'text_icon') {
+    formData.value.textIcon = iconValue.value
+  } else if (type !== 'upload_icon' && iconValue.value && currentIconType.value === 'upload_icon') {
+    formData.value.uploadIcon = iconValue.value
+  }
+
+  // 根据选择的类型加载对应的值
   switch (type) {
-    case 'online':
-      iconValue.value = props.link.icon || ''
+    case 'online_icon':
+      iconValue.value = formData.value.icon || props.link.icon || ''
       break
-    case 'text':
-      iconValue.value = props.link.textIcon ||
+    case 'text_icon':
+      iconValue.value = formData.value.textIcon || props.link.textIcon ||
                       (formData.value.name ? formData.value.name.substring(0, 2) : '')
       break
-    case 'upload':
-      iconValue.value = props.link.uploadIcon || ''
+    case 'upload_icon':
+      iconValue.value = formData.value.uploadIcon || props.link.uploadIcon || ''
       break
   }
 }
@@ -263,22 +284,21 @@ async function fetchFavicon(url) {
 
 // 保存
 const handleSave = async () => {
-  // 根据当前图标类型设置相应的字段
-  let finalIconValue = formData.value.icon
-  let finalTextIconValue = formData.value.textIcon || ''
-  let finalUploadIconValue = formData.value.uploadIcon || ''
+  // 确保所有图标类型的值都被保存
+  let finalIconValue = formData.value.icon || props.link.icon || ''
+  let finalTextIconValue = formData.value.textIcon || props.link.textIcon || ''
+  let finalUploadIconValue = formData.value.uploadIcon || props.link.uploadIcon || ''
 
-  if (currentIconType.value === 'online') {
-    // 在线图标，保存到icon字段
+  // 根据当前选中的图标类型更新对应的值
+  if (currentIconType.value === 'online_icon') {
+    // 在线图标，更新icon字段
     finalIconValue = iconValue.value
-  } else if (currentIconType.value === 'text') {
-    // 文字图标，保存到textIcon字段
-    finalTextIconValue = iconValue.value
-    finalIconValue = props.link.icon || '' // 保留原始的在线图标URL
-  } else if (currentIconType.value === 'upload') {
-    // 上传图标，保存到uploadIcon字段
+  } else if (currentIconType.value === 'text_icon') {
+    // 文字图标，更新textIcon字段
+    finalTextIconValue = iconValue.value || (formData.value.name ? formData.value.name.substring(0, 2) : '')
+  } else if (currentIconType.value === 'upload_icon') {
+    // 上传图标，更新uploadIcon字段
     finalUploadIconValue = iconValue.value
-    finalIconValue = props.link.icon || '' // 保留原始的在线图标URL
   }
 
   const payload = {
@@ -288,6 +308,7 @@ const handleSave = async () => {
     icon: finalIconValue,
     textIcon: finalTextIconValue,
     uploadIcon: finalUploadIconValue,
+    iconType: currentIconType.value,
     int: formData.value.int,
     ext: formData.value.ext
   }

@@ -69,6 +69,7 @@ const handleAddLink = () => {
     icon: '',
     textIcon: '',
     uploadIcon: '',
+    iconType: 'online_icon', 
     int: '',
     ext: '',
     desc: ''
@@ -88,17 +89,17 @@ const handleSaveLink = () => {
       <h1>LitePortal</h1>
       <ThemeToggle />
     </header>
-    
+
     <main>
       <SearchBox />
-      <CardGrid 
+      <CardGrid
         @show-context-menu="showContextMenu"
         @add-link="handleAddLink"
       />
     </main>
-    
+
     <!-- 右键菜单 -->
-    <ContextMenu 
+    <ContextMenu
       v-model:visible="contextMenuVisible"
       :position="contextMenuPosition"
       :link="selectedLink"
@@ -106,21 +107,21 @@ const handleSaveLink = () => {
       @delete="handleDeleteLink"
       @refresh="fetchLinks"
     />
-    
+
     <!-- 编辑模态框 -->
-    <EditModal 
+    <EditModal
       v-model:visible="editModalVisible"
       :link="editingLink"
       @save="handleSaveLink"
     />
-    
+
     <!-- 确认对话框 -->
-    <ConfirmDialog 
+    <ConfirmDialog
       v-model:visible="confirmDialogVisible"
       :item-name="deletingLinkName"
       @confirm="confirmDeleteLink"
     />
-    
+
 
   </div>
 </template>
