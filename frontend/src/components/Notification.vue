@@ -11,8 +11,9 @@
   </teleport>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref, watch } from 'vue'
+import type { NotificationType } from '../types'
 
 const props = defineProps({
   message: {

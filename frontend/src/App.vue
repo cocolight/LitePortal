@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import SearchBox from './components/SearchBox.vue'
 import CardGrid from './components/CardGrid.vue'
@@ -9,6 +9,7 @@ import ConfirmDialog from './components/ConfirmDialog.vue'
 import ThemeToggle from './components/ThemeToggle.vue'
 import { useLinks } from './composables/useLinks'
 import { useTheme } from './composables/useTheme'
+import { showNotification } from './utils/notification.ts'
 
 // 初始化主题
 const { theme } = useTheme()
@@ -59,7 +60,12 @@ const handleDeleteLink = (link) => {
 // 确认删除链接
 const confirmDeleteLink = async () => {
   const { deleteLink } = useLinks()
-  await deleteLink(selectedLink.value.id)
+  const success = await deleteLink(selectedLink.value.id)
+  if (success) {
+    showNotification('删除成功', 'success')
+  } else {
+    showNotification('删除失败', 'error')
+  }
 }
 
 // 添加新链接

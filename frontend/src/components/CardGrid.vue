@@ -13,10 +13,11 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { computed, onMounted } from 'vue'
 import Card from './Card.vue'
 import { useLinkStore } from '../stores/linkStore'
+import type { Link } from '../types'
 
 const emit = defineEmits(['show-context-menu', 'add-link'])
 

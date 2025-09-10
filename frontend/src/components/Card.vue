@@ -2,35 +2,35 @@
   <a
     class="card"
     :class="{ 'add-card': isAddCard }"
-    :data-id="link.id"
+    :data-id="link?.id"
     @click="handleClick"
     @contextmenu.prevent="handleContextMenu"
   >
     <img
       :src="displayIcon"
-      :alt="isAddCard ? '添加' : link.name"
+      :alt="isAddCard ? '添加' : link?.name"
       onerror="this.src='https://api.iconify.design/mdi:web.svg'"
     />
-    <div>{{ isAddCard ? '添加' : link.name }}</div>
+    <div>{{ isAddCard ? '添加' : link?.name }}</div>
   </a>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { computed, onMounted, nextTick } from 'vue'
 import { useLinks } from '../composables/useLinks'
+import type { Link } from '../types'
 
-const props = defineProps({
-  link: {
-    type: Object,
-    default: () => ({})
-  },
-  isAddCard: {
-    type: Boolean,
-    default: false
-  }
-})
+interface Props {
+  link?: Link
+  isAddCard?: boolean
+}
 
-const emit = defineEmits(['add', 'contextmenu'])
+const props = defineProps<Props>()
+
+const emit = defineEmits<{
+  (e: 'add'): void
+  (e: 'contextmenu', event: MouseEvent, link: any): void
+}>()
 
 const { openLink } = useLinks()
 
@@ -41,33 +41,33 @@ const displayIcon = computed(() => {
   }
 
   // 严格根据iconType字段显示对应的图标
-  const iconType = props.link.iconType || 'online_icon'
+  const iconType = props.link?.iconType || 'online_icon'
   console.log('iconType:', iconType)
 
   if (iconType === 'upload_icon') {
-    return props.link.uploadIcon || 'https://api.iconify.design/mdi:upload.svg'
+    return props.link?.uploadIcon || 'https://api.iconify.design/mdi:upload.svg'
   } else if (iconType === 'text_icon') {
     // 文字图标使用data URL格式显示
-    const text = props.link.textIcon || props.link.name || 'A'
+    const text = props.link?.textIcon || props.link?.name || 'A'
     return 'data:text/plain;charset=utf-8,' + encodeURIComponent(text.charAt(0).toUpperCase())
   } else if (iconType === 'online_icon') {
-    return props.link.icon || 'https://api.iconify.design/mdi:web.svg'
+    return props.link?.icon || 'https://api.iconify.design/mdi:web.svg'
   } else {
     // 默认情况，返回在线图标
-    return props.link.icon || 'https://api.iconify.design/mdi:web.svg'
+    return props.link?.icon || 'https://api.iconify.design/mdi:web.svg'
   }
 })
 
 const handleClick = () => {
   if (props.isAddCard) {
     emit('add')
-  } else {
+  } else if(props.link && props.link.id !== undefined) {
     openLink(props.link)
   }
 }
 
-const handleContextMenu = (event) => {
-  if (!props.isAddCard) {
+const handleContextMenu = (event: MouseEvent) => {
+  if (!props.isAddCard && props.link && props.link.id !== undefined) {
     emit('contextmenu', event, props.link)
   }
 }

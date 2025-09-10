@@ -78,10 +78,11 @@
   </teleport>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref, computed, watch } from 'vue'
 import { useLinkStore } from '../stores/linkStore'
-import { showNotification } from '../utils/notification'
+import { showNotification } from '../utils/notification.ts'
+import type { Link } from '../types'
 
 const props = defineProps({
   visible: {

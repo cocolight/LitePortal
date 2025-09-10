@@ -31,8 +31,9 @@
   </section>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { useSearch } from '../composables/useSearch'
+import type { SearchEngine } from '../types'
 
 const {
   engines,

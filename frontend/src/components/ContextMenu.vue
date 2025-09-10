@@ -17,9 +17,10 @@
   </teleport>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref, watch, onMounted, onUnmounted } from 'vue'
 import { useLinkStore } from '../stores/linkStore'
+import type { Link } from '../types'
 
 const props = defineProps({
   visible: {
