@@ -11,6 +11,8 @@
 import { computed, onMounted, nextTick } from 'vue'
 import { useLinks } from '@/composables/useLinks'
 import type { CardProps } from '@/types'
+import { IconType } from '@/types'
+import { generateTextSvg } from '@/utils/iconUtils'
 
 const props = defineProps<CardProps>()
 
@@ -28,19 +30,18 @@ const displayIcon = computed(() => {
   }
 
   // 严格根据iconType字段显示对应的图标
-  const iconType = props.link?.iconType || 'online_icon'
-  // console.log('iconType:', iconType)
+  const iconType = props.link?.iconType || IconType.online_icon
+  // const iconType = computed(() => props.link?.iconType || IconType.online_icon)
 
-  if (iconType === 'upload_icon') {
+  if (iconType === IconType.upload_icon) {
     return props.link?.uploadIcon || 'https://api.iconify.design/mdi:upload.svg'
-  } else if (iconType === 'text_icon') {
+  } else if (iconType === IconType.text_icon) {
     // 文字图标使用data URL格式显示
     const text = props.link?.textIcon || props.link?.name || 'A'
-    return 'data:text/plain;charset=utf-8,' + encodeURIComponent(text.charAt(0).toUpperCase())
-  } else if (iconType === 'online_icon') {
+    return generateTextSvg(text.charAt(0),{})
+  } else if (iconType === IconType.online_icon) {
     return props.link?.icon || 'https://api.iconify.design/mdi:web.svg'
   } else {
-    // 默认情况，返回在线图标
     return props.link?.icon || 'https://api.iconify.design/mdi:web.svg'
   }
 })

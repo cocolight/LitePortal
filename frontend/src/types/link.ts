@@ -1,5 +1,11 @@
 // frontend/src/types/link.ts
-export type IconType = 'online_icon' | 'text_icon' | 'upload_icon'
+// export type IconType = 'online_icon' | 'text_icon' | 'upload_icon'
+
+export enum IconType {
+  online_icon = 'online_icon',
+  text_icon = 'text_icon',
+  upload_icon = 'upload_icon'
+}
 
 export interface LinkBase {
   name: string
@@ -21,7 +27,7 @@ export const DEFAULT_LINK: LinkBase = {
   icon: '',
   textIcon: '',
   uploadIcon: '',
-  iconType: 'online_icon',
+  iconType: IconType.online_icon,
   int: '',
   ext: '',
   desc: ''

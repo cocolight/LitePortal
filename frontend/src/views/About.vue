@@ -13,7 +13,11 @@
       <h2>技术栈</h2>
       <p>前端：Vue 3 + TypeScript + Pinia + Vue Router</p>
       <p>后端：Node.js + Express</p>
-
+      <h2>联系我</h2>
+      <ul>
+        <li>个人博客: <a href="https://alili.website" target="_blank">个人学习经验分享</a></li>
+        <li>Gitee: <a href="https://gitee.com/yumos/LitePortal" target="_blank">LitePortal</a></li>
+      </ul>
       <div class="back-button-container">
         <button class="back-button" @click="goToHome">
           <span class="button-icon">←</span>

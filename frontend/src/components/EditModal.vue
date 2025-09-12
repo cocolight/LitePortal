@@ -9,11 +9,7 @@
           <div class="icon-preview-container">
             <div class="preview-item online-icon-wrapper" @click="selectIconType('online_icon')">
               <div class="preview-icon online-icon" :class="{ selected: currentIconType === 'online_icon' }">
-                <img
-                  :src="iconPreviewUrl"
-                  alt="在线图标"
-                  onerror="this.src='https://api.iconify.design/mdi:web.svg'"
-                />
+                <img :src="iconPreviewUrl" alt="在线图标" onerror="this.src='https://api.iconify.design/mdi:web.svg'" />
               </div>
               <div class="preview-label">在线图标</div>
               <div class="fetch-hint">获取图标</div>
@@ -30,9 +26,7 @@
               <div class="preview-icon upload-icon" :class="{ selected: currentIconType === 'upload_icon' }">
                 <img
                   :src="currentIconType === 'upload_icon' ? (iconValue || formData.uploadIcon || link.uploadIcon || 'https://api.iconify.design/mdi:upload.svg') : (formData.uploadIcon || link.uploadIcon || 'https://api.iconify.design/mdi:upload.svg')"
-                  alt="上传图标"
-                  onerror="this.src='https://api.iconify.design/mdi:upload.svg'"
-                />
+                  alt="上传图标" onerror="this.src='https://api.iconify.design/mdi:upload.svg'" />
               </div>
               <div class="preview-label">上传图标</div>
             </div>
@@ -40,11 +34,7 @@
 
           <label>
             <strong>{{ iconLabel }}</strong>
-            <input
-              id="mIcon"
-              v-model="iconValue"
-              :placeholder="iconPlaceholder"
-            />
+            <input id="mIcon" v-model="iconValue" :placeholder="iconPlaceholder" />
           </label>
           <div class="divider"></div>
         </div>
@@ -80,9 +70,9 @@
 
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
-import { useLinkStore } from '../stores/linkStore'
+import { useLinkStore } from '@/stores/linkStore'
 import { showNotification } from '../utils/notification.ts'
-import type { Link } from '../types'
+import type { Link } from '@/types'
 
 const props = defineProps({
   visible: {
@@ -148,8 +138,8 @@ const textIconPreview = computed(() => {
     return text ? text.charAt(0).toUpperCase() : 'A'
   }
   return formData.value.textIcon || props.link.textIcon ?
-         (formData.value.textIcon || props.link.textIcon).charAt(0).toUpperCase() :
-         formData.value.name ? formData.value.name.charAt(0).toUpperCase() : 'A'
+    (formData.value.textIcon || props.link.textIcon).charAt(0).toUpperCase() :
+    formData.value.name ? formData.value.name.charAt(0).toUpperCase() : 'A'
 })
 
 // 监听 props.link 变化，更新表单数据
@@ -227,7 +217,7 @@ const selectIconType = (type: Link['iconType']) => {
       break
     case 'text_icon':
       iconValue.value = formData.value.textIcon || props.link.textIcon ||
-                      (formData.value.name ? formData.value.name.substring(0, 2) : '')
+        (formData.value.name ? formData.value.name.substring(0, 2) : '')
       break
     case 'upload_icon':
       iconValue.value = formData.value.uploadIcon || props.link.uploadIcon || ''
@@ -535,8 +525,13 @@ const handleCancel = () => {
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
 }
 
 @keyframes slideUp {
@@ -544,6 +539,7 @@ const handleCancel = () => {
     opacity: 0;
     transform: translateY(20px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
