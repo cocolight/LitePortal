@@ -41,13 +41,13 @@ const handleConfirm = () => {
 // 监听 visible 变化，添加 ESC 键关闭功能
 watch(() => props.visible, (newVal) => {
   if (newVal) {
-    const handleEsc = (e) => {
+    const handleEsc = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
         handleCancel()
       }
     }
     document.addEventListener('keydown', handleEsc)
-    
+
     // 组件隐藏时移除事件监听
     return () => {
       document.removeEventListener('keydown', handleEsc)

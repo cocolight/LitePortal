@@ -1,7 +1,7 @@
 <template>
   <teleport to="body">
-    <div 
-      v-if="visible" 
+    <div
+      v-if="visible"
       class="notification"
       :class="`notification-${type}`"
       :style="{ top: '20px', right: '20px' }"
@@ -23,7 +23,7 @@ const props = defineProps({
   type: {
     type: String,
     default: 'info',
-    validator: (value) => ['success', 'error', 'info'].includes(value)
+    validator: (value: NotificationType) => ['success', 'error', 'info'].includes(value)
   },
   duration: {
     type: Number,
@@ -36,7 +36,7 @@ const visible = ref(false)
 // 显示通知
 const show = () => {
   visible.value = true
-  
+
   // 自动关闭
   setTimeout(() => {
     hide()

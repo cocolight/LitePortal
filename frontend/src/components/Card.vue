@@ -1,31 +1,18 @@
 <template>
-  <a
-    class="card"
-    :class="{ 'add-card': isAddCard }"
-    :data-id="link?.id"
-    @click="handleClick"
-    @contextmenu.prevent="handleContextMenu"
-  >
-    <img
-      :src="displayIcon"
-      :alt="isAddCard ? '添加' : link?.name"
-      onerror="this.src='https://api.iconify.design/mdi:web.svg'"
-    />
+  <a class="card" :class="{ 'add-card': isAddCard }" :data-id="link?.id" @click="handleClick"
+    @contextmenu.prevent="handleContextMenu">
+    <img :src="displayIcon" :alt="isAddCard ? '添加' : link?.name"
+      onerror="this.src='https://api.iconify.design/mdi:web.svg'" />
     <div>{{ isAddCard ? '添加' : link?.name }}</div>
   </a>
 </template>
 
 <script setup lang="ts">
 import { computed, onMounted, nextTick } from 'vue'
-import { useLinks } from '../composables/useLinks'
-import type { Link } from '../types'
+import { useLinks } from '@/composables/useLinks'
+import type { CardProps } from '@/types'
 
-interface Props {
-  link?: Link
-  isAddCard?: boolean
-}
-
-const props = defineProps<Props>()
+const props = defineProps<CardProps>()
 
 const emit = defineEmits<{
   (e: 'add'): void
@@ -42,7 +29,7 @@ const displayIcon = computed(() => {
 
   // 严格根据iconType字段显示对应的图标
   const iconType = props.link?.iconType || 'online_icon'
-  console.log('iconType:', iconType)
+  // console.log('iconType:', iconType)
 
   if (iconType === 'upload_icon') {
     return props.link?.uploadIcon || 'https://api.iconify.design/mdi:upload.svg'
@@ -61,7 +48,7 @@ const displayIcon = computed(() => {
 const handleClick = () => {
   if (props.isAddCard) {
     emit('add')
-  } else if(props.link && props.link.id !== undefined) {
+  } else if (props.link && props.link.id !== undefined) {
     openLink(props.link)
   }
 }
@@ -89,6 +76,4 @@ onMounted(() => {
   background: linear-gradient(145deg, rgba(74, 108, 247, 0.1) 0%, rgba(139, 92, 246, 0.1) 100%);
   border: 1px dashed var(--accent);
 }
-
-
 </style>

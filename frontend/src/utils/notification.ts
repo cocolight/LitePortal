@@ -1,6 +1,6 @@
 // 多通知同时显示的实现
 import { createApp, ref, onMounted, nextTick } from 'vue'
-import type { NotificationType } from '../types'
+import type { NotificationType } from '@/types'
 
 // 通知接口定义
 interface NotificationInstance {

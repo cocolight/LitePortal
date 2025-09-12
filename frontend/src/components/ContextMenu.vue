@@ -1,7 +1,7 @@
 <template>
   <teleport to="body">
-    <div 
-      v-if="visible" 
+    <div
+      v-if="visible"
       class="ctx-menu"
       :style="{ left: `${position.x}px`, top: `${position.y}px` }"
     >
@@ -18,9 +18,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, onMounted, onUnmounted } from 'vue'
-import { useLinkStore } from '../stores/linkStore'
-import type { Link } from '../types'
+import { watch, onUnmounted } from 'vue'
+// import { useLinkStore } from '../stores/linkStore'
 
 const props = defineProps({
   visible: {
@@ -39,7 +38,7 @@ const props = defineProps({
 
 const emit = defineEmits(['update:visible', 'edit', 'delete', 'refresh'])
 
-const linkStore = useLinkStore()
+// const linkStore = useLinkStore()
 
 // 点击其他地方关闭菜单
 const handleClickOutside = () => {

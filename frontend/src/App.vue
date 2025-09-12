@@ -1,134 +1,41 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
-import SearchBox from './components/SearchBox.vue'
-import CardGrid from './components/CardGrid.vue'
-import ContextMenu from './components/ContextMenu.vue'
-import EditModal from './components/EditModal.vue'
-
-import ConfirmDialog from './components/ConfirmDialog.vue'
+import { computed } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
 import ThemeToggle from './components/ThemeToggle.vue'
-import { useLinks } from './composables/useLinks'
-import { useTheme } from './composables/useTheme'
-import { showNotification } from './utils/notification.ts'
 
-// 初始化主题
-const { theme } = useTheme()
+// 路由相关
+const router = useRouter()
+const route = useRoute()
 
-// 链接数据
-const { fetchLinks, loading, error } = useLinks()
+// 判断是否在首页
+const isHomePage = computed(() => route.path === '/')
 
-// 右键菜单状态
-const contextMenuVisible = ref(false)
-const contextMenuPosition = ref({ x: 0, y: 0 })
-const selectedLink = ref({})
-
-// 编辑模态框状态
-const editModalVisible = ref(false)
-const editingLink = ref({})
-
-// 确认对话框状态
-const confirmDialogVisible = ref(false)
-const deletingLinkName = ref('')
-
-
-// 组件挂载时获取链接数据
-onMounted(() => {
-  fetchLinks()
-})
-
-// 显示右键菜单
-const showContextMenu = (event, link) => {
-  event.preventDefault()
-  contextMenuPosition.value = { x: event.clientX, y: event.clientY }
-  selectedLink.value = link
-  contextMenuVisible.value = true
-}
-
-// 编辑链接
-const handleEditLink = (link) => {
-  editingLink.value = link
-  editModalVisible.value = true
-}
-
-// 删除链接
-const handleDeleteLink = (link) => {
-  deletingLinkName.value = link.name
-  selectedLink.value = link
-  confirmDialogVisible.value = true
-}
-
-// 确认删除链接
-const confirmDeleteLink = async () => {
-  const { deleteLink } = useLinks()
-  const success = await deleteLink(selectedLink.value.id)
-  if (success) {
-    showNotification('删除成功', 'success')
-  } else {
-    showNotification('删除失败', 'error')
-  }
-}
-
-// 添加新链接
-const handleAddLink = () => {
-  editingLink.value = {
-    name: '',
-    icon: '',
-    textIcon: '',
-    uploadIcon: '',
-    iconType: 'online_icon', 
-    int: '',
-    ext: '',
-    desc: ''
-  }
-  editModalVisible.value = true
-}
-
-// 保存链接后刷新数据
-const handleSaveLink = () => {
-  fetchLinks()
+// 导航到首页
+const navigateToHome = () => {
+  router.push('/')
 }
 </script>
 
 <template>
   <div class="app-container">
     <header>
-      <h1>LitePortal</h1>
+      <div class="header-left">
+        <h1 @click="navigateToHome" class="clickable-title">LitePortal</h1>
+        <nav v-if="isHomePage">
+          <router-link to="/" class="nav-link">首页</router-link>
+          <router-link to="/about" class="nav-link">关于</router-link>
+        </nav>
+      </div>
       <ThemeToggle />
     </header>
 
     <main>
-      <SearchBox />
-      <CardGrid
-        @show-context-menu="showContextMenu"
-        @add-link="handleAddLink"
-      />
+      <router-view v-slot="{ Component }">
+        <transition name="fade" mode="out-in">
+          <component :is="Component" />
+        </transition>
+      </router-view>
     </main>
-
-    <!-- 右键菜单 -->
-    <ContextMenu
-      v-model:visible="contextMenuVisible"
-      :position="contextMenuPosition"
-      :link="selectedLink"
-      @edit="handleEditLink"
-      @delete="handleDeleteLink"
-      @refresh="fetchLinks"
-    />
-
-    <!-- 编辑模态框 -->
-    <EditModal
-      v-model:visible="editModalVisible"
-      :link="editingLink"
-      @save="handleSaveLink"
-    />
-
-    <!-- 确认对话框 -->
-    <ConfirmDialog
-      v-model:visible="confirmDialogVisible"
-      :item-name="deletingLinkName"
-      @confirm="confirmDeleteLink"
-    />
-
-
   </div>
 </template>
 
@@ -145,9 +52,50 @@ header {
   margin-bottom: 2rem;
 }
 
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.clickable-title {
+  cursor: pointer;
+  margin: 0;
+}
+
+nav {
+  display: flex;
+  gap: 1rem;
+}
+
+.nav-link {
+  text-decoration: none;
+  color: #666;
+  font-weight: 500;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  transition: all 0.2s;
+}
+
+.nav-link:hover, .nav-link.router-link-active {
+  color: #4a6cf7;
+  background-color: rgba(74, 108, 247, 0.1);
+}
+
 main {
   display: flex;
   flex-direction: column;
   gap: 2rem;
+}
+
+/* 路由过渡动画 */
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.3s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
 }
 </style>

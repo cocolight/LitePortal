@@ -1,26 +1,14 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import axios from 'axios'
-import type { Link } from '../types'
+import { initialLinkStoreState } from '@/utils/initialStates'
+import type { LinkBase, Link } from '../types'
+import type { LinkStoreState, ApiError } from '../types'
 
-interface ApiError {
-  message?: string
-  error?: string
-}
 
-interface LinkStoreState {
-  links: Link[]
-  loading: boolean
-  error: string | null
-}
-
-export const useLinkStore = defineStore('links', () => {
+export const useLinkStore = defineStore('linkStore', () => {
   // =====状态 (State)
-  const state = ref<LinkStoreState>({
-    links: [],
-    loading: false,
-    error: null
-  })
+  const state = ref<LinkStoreState>(initialLinkStoreState())
 
   // =====计算属性 (Getters)
   const links = computed(() => state.value.links)
@@ -67,7 +55,7 @@ export const useLinkStore = defineStore('links', () => {
     }
   }
 
-  const addLink = async (linkData: Omit<Link, 'id'>): Promise<boolean> => {
+  const addLink = async (linkData: LinkBase): Promise<boolean> => {
     state.value.loading = true
     state.value.error = null
 

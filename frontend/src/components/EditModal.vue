@@ -112,7 +112,7 @@ const linkStore = useLinkStore()
 const formData = ref({ ...props.link })
 
 // 图标类型
-const currentIconType = ref('online_icon') // 'online_icon', 'text_icon', 'upload_icon'
+const currentIconType = ref<Link['iconType']>('online_icon') // 'online_icon', 'text_icon', 'upload_icon'
 const iconValue = ref('')
 
 // 计算属性
@@ -147,7 +147,7 @@ const textIconPreview = computed(() => {
     const text = iconValue.value || formData.value.textIcon || props.link.textIcon || formData.value.name
     return text ? text.charAt(0).toUpperCase() : 'A'
   }
-  return formData.value.textIcon || props.link.textIcon ? 
+  return formData.value.textIcon || props.link.textIcon ?
          (formData.value.textIcon || props.link.textIcon).charAt(0).toUpperCase() :
          formData.value.name ? formData.value.name.charAt(0).toUpperCase() : 'A'
 })
@@ -179,8 +179,8 @@ watch(() => props.link, (newLink) => {
 }, { immediate: true })
 
 // 监听表单数据变化，自动获取图标
-let fetchTimer
-const autoFetchIcon = async (url) => {
+let fetchTimer: ReturnType<typeof setTimeout>
+const autoFetchIcon = async (url: string) => {
   if (!url) return
 
   try {
@@ -208,8 +208,8 @@ watch(() => formData.value.ext, (newUrl) => {
 })
 
 // 选择图标类型
-const selectIconType = (type) => {
-  currentIconType.value = type
+const selectIconType = (type: Link['iconType']) => {
+  // currentIconType = type
 
   // 保存当前编辑的值，确保切换类型时不会丢失已输入的内容
   if (type !== 'online_icon' && iconValue.value && currentIconType.value === 'online_icon') {
@@ -236,7 +236,7 @@ const selectIconType = (type) => {
 }
 
 // 获取网站图标
-async function fetchFavicon(url) {
+async function fetchFavicon(url: string) {
   try {
     // 规范化URL，确保有协议
     let domain = url

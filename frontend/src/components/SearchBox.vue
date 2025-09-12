@@ -33,7 +33,7 @@
 
 <script setup lang="ts">
 import { useSearch } from '../composables/useSearch'
-import type { SearchEngine } from '../types'
+// import type { SearchEngine } from '../types'
 
 const {
   engines,

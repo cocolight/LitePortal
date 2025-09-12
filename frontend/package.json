@@ -16,8 +16,10 @@
   },
   "devDependencies": {
     "@types/node": "^24.3.1",
-    "@vitejs/plugin-vue": "^4.5.2",
+    "@vitejs/plugin-vue": "^6.0.1",
+    "@vitejs/plugin-vue-jsx": "^5.1.1",
     "typescript": "^5.3.3",
-    "vite": "^5.0.10"
+    "vite": "^7.1.5",
+    "vite-plugin-vue-devtools": "^8.0.2"
   }
 }
