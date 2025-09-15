@@ -14,6 +14,12 @@ export interface CardProps {
   isAddCard?: boolean
 }
 
+// EditModal 组件的 Props 接口
+export interface EditModalProps {
+  visible?: boolean
+  link?: Link
+}
+
 
 // ContextMenu 组件的 Props 接口
 // export interface ContextMenuProps {

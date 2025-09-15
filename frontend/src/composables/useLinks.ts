@@ -1,5 +1,5 @@
 import { autoSelect } from '@/utils/linkUtils'
-import type { Link } from '../types'
+import type { Link } from '@/types'
 
 export function useLinks() {
 

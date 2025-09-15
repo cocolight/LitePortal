@@ -32,7 +32,7 @@
 </template>
 
 <script setup lang="ts">
-import { useSearch } from '../composables/useSearch'
+import { useSearch } from '@/composables/useSearch'
 // import type { SearchEngine } from '../types'
 
 const {

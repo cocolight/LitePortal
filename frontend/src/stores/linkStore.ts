@@ -2,8 +2,8 @@ import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import axios from 'axios'
 import { initialLinkStoreState } from '@/utils/initialStates'
-import type { LinkBase, Link } from '../types'
-import type { LinkStoreState, ApiError } from '../types'
+import type { LinkBase, Link } from '@/types'
+import type { LinkStoreState, ApiError } from '@/types'
 
 
 export const useLinkStore = defineStore('linkStore', () => {

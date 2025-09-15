@@ -1,5 +1,5 @@
 import { ref, watch, onMounted } from 'vue'
-import type { Theme } from '../types'
+import type { Theme } from '@/types'
 
 export function useTheme() {
   const theme = ref<string>(localStorage.getItem('theme') || '')

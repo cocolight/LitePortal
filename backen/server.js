@@ -11,6 +11,8 @@ const DB_PATH = path.join(__dirname, 'database.sqlite')
 app.use(cors())
 app.use(express.json())
 
+app.use(express.static(path.join(__dirname, '../web')));
+
 // 初始化数据库
 const db = new sqlite3.Database(DB_PATH, (err) => {
     if (err) {
@@ -89,7 +91,7 @@ function initDatabase() {
                         else console.log('成功添加 icon_type 字段');
                     });
                 }
-                
+
                 // 检查是否需要将icon字段重命名为online_icon
                 if (columns.includes('icon') && !columns.includes('online_icon')) {
                     db.run("ALTER TABLE links RENAME COLUMN icon TO online_icon", (err) => {
@@ -228,6 +230,11 @@ app.post('/api/config', (req, res) => {
         })
     })
 })
+
+// 单页应用路由回退（放在所有 API 路由之后）
+app.get(/^\/(?!api).*/, (req, res) => {
+  res.sendFile(path.join(__dirname, '../web/index.html'));
+});
 
 // 关闭数据库连接
 process.on('SIGINT', () => {

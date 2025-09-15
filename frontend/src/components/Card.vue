@@ -38,7 +38,7 @@ const displayIcon = computed(() => {
   } else if (iconType === IconType.text_icon) {
     // 文字图标使用data URL格式显示
     const text = props.link?.textIcon || props.link?.name || 'A'
-    return generateTextSvg(text.charAt(0),{})
+    return generateTextSvg(text.charAt(0), {})
   } else if (iconType === IconType.online_icon) {
     return props.link?.icon || 'https://api.iconify.design/mdi:web.svg'
   } else {

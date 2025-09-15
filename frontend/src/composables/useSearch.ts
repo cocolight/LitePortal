@@ -1,5 +1,5 @@
 import { ref } from 'vue'
-import type { SearchEngine } from '../types'
+import type { SearchEngine } from '@/types'
 
 export function useSearch() {
   // 搜索引擎配置
