@@ -25,7 +25,7 @@
             <div class="preview-item" @click="selectIconType(IconType.upload_icon)">
               <div class="preview-icon upload-icon" :class="{ selected: currentIconType === IconType.upload_icon }">
                 <img
-                  :src="currentIconType === 'upload_icon' ? (iconValue || formData.uploadIcon || link.uploadIcon || 'https://api.iconify.design/mdi:cart.svg') : (formData.uploadIcon || link.uploadIcon || 'https://api.iconify.design/mdi:cart.svg')"
+                  :src="currentIconType === 'upload_icon' ? (iconValue || formData.uploadIcon || link.uploadIcon || DEFAULT_ICONS.upload) : (formData.uploadIcon || link.uploadIcon || DEFAULT_ICONS.upload)"
                   alt="定制图标" onerror="this.src='https://api.iconify.design/mdi:cart.svg'" />
               </div>
               <div class="preview-label">定制图标</div>
@@ -86,6 +86,11 @@ import { IconType } from '@/types'
 import type { EditModalProps } from '@/types'
 // import SearchBar from './SearchBar.vue'
 
+const DEFAULT_ICONS = {
+  online: 'https://api.iconify.design/mdi:web.svg',
+  upload: 'https://api.iconify.design/mdi:cart.svg'
+}
+
 const props = withDefaults(defineProps<EditModalProps>(),{
   visible: false,
   link: () => ({name: '', desc: '', int: '', ext: '', icon: '', iconType: IconType.online_icon, textIcon: '', uploadIcon: ''})
@@ -127,9 +132,9 @@ const iconPlaceholder = computed(() => {
 
 const iconPreviewUrl = computed(() => {
   if (currentIconType.value === IconType.online_icon) {
-    return iconValue.value || formData.value.icon || props.link.icon || 'https://api.iconify.design/mdi:web.svg'
+    return iconValue.value || formData.value.icon || props.link.icon || DEFAULT_ICONS.online
   }
-  return formData.value.icon || props.link.icon || 'https://api.iconify.design/mdi:web.svg'
+  return formData.value.icon || props.link.icon || DEFAULT_ICONS.online
 })
 
 const textIconPreview = computed(() => {
@@ -144,29 +149,65 @@ const textIconPreview = computed(() => {
 
 // 监听 props.link 变化，更新表单数据
 watch(() => props.link, (newLink) => {
-  formData.value = { ...newLink }
+  formData.value = { ...newLink };
 
-  // 确定初始图标类型
-  if (newLink.iconType) {
-    currentIconType.value = newLink.iconType
-    if (newLink.iconType === IconType.text_icon) {
-      iconValue.value = newLink.textIcon || ''
-    } else if (newLink.iconType === IconType.upload_icon) {
-      iconValue.value = newLink.uploadIcon || ''
-    } else {
-      iconValue.value = newLink.icon || ''
+  // 确定初始图标类型和值
+  const { iconType, textIcon, uploadIcon, icon } = newLink;
+
+  // 如果有明确的图标类型，直接使用
+  if (iconType) {
+    currentIconType.value = iconType;
+
+    switch (iconType) {
+      case IconType.text_icon:
+        iconValue.value = textIcon || '';
+        break;
+      case IconType.upload_icon:
+        iconValue.value = uploadIcon || '';
+        break;
+      default:
+        iconValue.value = icon || '';
     }
-  } else if (newLink.textIcon) {
-    currentIconType.value = IconType.text_icon
-    iconValue.value = newLink.textIcon
-  } else if (newLink.uploadIcon) {
-    currentIconType.value = IconType.upload_icon
-    iconValue.value = newLink.uploadIcon
-  } else {
-    currentIconType.value = IconType.online_icon
-    iconValue.value = newLink.icon || ''
+    return;
   }
-}, { immediate: true })
+
+  // 如果没有明确类型，根据存在的图标字段推断类型
+  if (textIcon) {
+    currentIconType.value = IconType.text_icon;
+    iconValue.value = textIcon;
+  } else if (uploadIcon) {
+    currentIconType.value = IconType.upload_icon;
+    iconValue.value = uploadIcon;
+  } else {
+    currentIconType.value = IconType.online_icon;
+    iconValue.value = icon || '';
+  }
+}, { immediate: true });
+
+// watch(() => props.link, (newLink) => {
+//   formData.value = { ...newLink }
+
+//   // 确定初始图标类型
+//   if (newLink.iconType) {
+//     currentIconType.value = newLink.iconType
+//     if (newLink.iconType === IconType.text_icon) {
+//       iconValue.value = newLink.textIcon || ''
+//     } else if (newLink.iconType === IconType.upload_icon) {
+//       iconValue.value = newLink.uploadIcon || ''
+//     } else {
+//       iconValue.value = newLink.icon || ''
+//     }
+//   } else if (newLink.textIcon) {
+//     currentIconType.value = IconType.text_icon
+//     iconValue.value = newLink.textIcon
+//   } else if (newLink.uploadIcon) {
+//     currentIconType.value = IconType.upload_icon
+//     iconValue.value = newLink.uploadIcon
+//   } else {
+//     currentIconType.value = IconType.online_icon
+//     iconValue.value = newLink.icon || ''
+//   }
+// }, { immediate: true })
 
 // 监听表单数据变化，自动获取图标
 let fetchTimer: ReturnType<typeof setTimeout>
@@ -175,7 +216,7 @@ const autoFetchIcon = async (url: string) => {
 
   try {
     const faviconUrl = await fetchFavicon(url)
-    if (currentIconType.value === 'online_icon') {
+    if (currentIconType.value === IconType.online_icon) {
       iconValue.value = faviconUrl
     }
   } catch (error) {
@@ -183,47 +224,53 @@ const autoFetchIcon = async (url: string) => {
   }
 }
 
-watch(() => formData.value.int, (newUrl) => {
-  clearTimeout(fetchTimer)
-  if (newUrl) {
-    fetchTimer = setTimeout(() => autoFetchIcon(newUrl), 1000)
-  }
-})
-
-watch(() => formData.value.ext, (newUrl) => {
-  clearTimeout(fetchTimer)
-  if (newUrl) {
-    fetchTimer = setTimeout(() => autoFetchIcon(newUrl), 1000)
+// 监听内外网址变化，自动获取在线图标
+watch([() => formData.value.int, () => formData.value.ext], ([newInt, newExt]) => {
+  clearTimeout(fetchTimer);
+  const url = newInt || newExt;
+  if (url) {
+    fetchTimer = setTimeout(() => autoFetchIcon(url), 1000);
   }
 })
 
 // 选择图标类型
-const selectIconType = (type: IconType) => {
-  currentIconType.value = type
-
-  // 保存当前编辑的值，确保切换类型时不会丢失已输入的内容
-  if (type !== IconType.online_icon && iconValue.value && currentIconType.value === IconType.online_icon) {
-    formData.value.icon = iconValue.value
-  } else if (type !== IconType.text_icon && iconValue.value && currentIconType.value === IconType.text_icon) {
-    formData.value.textIcon = iconValue.value
-  } else if (type !== IconType.upload_icon && iconValue.value && currentIconType.value === IconType.upload_icon) {
-    formData.value.uploadIcon = iconValue.value
+const selectIconType = (newType: IconType) => {
+  // 保存当前类型的值, 防止切换时丢失
+  switch (currentIconType.value) {
+    case IconType.online_icon:
+      if (iconValue.value) {
+        formData.value.icon = iconValue.value;
+      }
+      break;
+    case IconType.text_icon:
+      if (iconValue.value) {
+        formData.value.textIcon = iconValue.value;
+      }
+      break;
+    case IconType.upload_icon:
+      if (iconValue.value) {
+        formData.value.uploadIcon = iconValue.value;
+      }
+      break;
   }
 
-  // 根据选择的类型加载对应的值
-  switch (type) {
+  // 更新当前类型
+  currentIconType.value = newType;
+
+  // 加载新类型的值
+  switch (newType) {
     case IconType.online_icon:
-      iconValue.value = formData.value.icon || props.link.icon || ''
-      break
+      iconValue.value = formData.value.icon || props.link.icon || '';
+      break;
     case IconType.text_icon:
       iconValue.value = formData.value.textIcon || props.link.textIcon ||
-        (formData.value.name ? formData.value.name.substring(0, 2) : '')
-      break
+        (formData.value.name ? formData.value.name.substring(0, 2) : '');
+      break;
     case IconType.upload_icon:
-      iconValue.value = formData.value.uploadIcon || props.link.uploadIcon || ''
-      break
+      iconValue.value = formData.value.uploadIcon || props.link.uploadIcon || '';
+      break;
   }
-}
+};
 
 // 获取网站图标
 async function fetchFavicon(url: string) {
@@ -270,56 +317,102 @@ async function fetchFavicon(url: string) {
     return `https://www.google.com/s2/favicons?domain=${urlObj.hostname}&sz=64`
   } catch (error) {
     showNotification('获取图标失败', 'error')
-    throw new Error('无法获取网站图标')
+    return DEFAULT_ICONS.online
+    // throw new Error('无法获取网站图标')
   }
 }
 
 // 保存
 const handleSave = async () => {
-  // 确保所有图标类型的值都被保存
-  let finalIconValue = formData.value.icon || props.link.icon || ''
-  let finalTextIconValue = formData.value.textIcon || props.link.textIcon || ''
-  let finalUploadIconValue = formData.value.uploadIcon || props.link.uploadIcon || ''
+  // 准备基础数据
+  const { icon, textIcon, uploadIcon, name, desc, int, ext } = formData.value;
+  const { link } = props;
 
-  // 根据当前选中的图标类型更新对应的值
-  if (currentIconType.value === IconType.online_icon) {
-    // 在线图标，更新icon字段
-    finalIconValue = iconValue.value
-  } else if (currentIconType.value === IconType.text_icon) {
-    // 文字图标，更新textIcon字段
-    finalTextIconValue = iconValue.value || (formData.value.name ? formData.value.name.substring(0, 2) : '')
-  } else if (currentIconType.value === IconType.upload_icon) {
-    // 上传图标，更新uploadIcon字段
-    finalUploadIconValue = iconValue.value
-  }
+  // 准备图标数据，根据当前类型设置值
+  const iconData = {
+    [IconType.online_icon]: iconValue.value,
+    [IconType.text_icon]: iconValue.value || (name ? name.substring(0, 2) : ''),
+    [IconType.upload_icon]: iconValue.value
+  };
 
+  // 构建请求载荷
   const payload = {
-    id: props.link.id,
-    name: formData.value.name,
-    desc: formData.value.desc,
-    icon: finalIconValue,
-    textIcon: finalTextIconValue,
-    uploadIcon: finalUploadIconValue,
+    id: link.id,
+    name,
+    desc,
+    icon: currentIconType.value === IconType.online_icon ? iconData[IconType.online_icon] : icon || link.icon || '',
+    textIcon: currentIconType.value === IconType.text_icon ? iconData[IconType.text_icon] : textIcon || link.textIcon || '',
+    uploadIcon: currentIconType.value === IconType.upload_icon ? iconData[IconType.upload_icon] : uploadIcon || link.uploadIcon || '',
     iconType: currentIconType.value,
-    int: formData.value.int,
-    ext: formData.value.ext
-  }
+    int,
+    ext
+  };
 
-  let success
-  if (isEdit.value) {
-    success = await linkStore.updateLink(payload)
-  } else {
-    success = await linkStore.addLink(payload)
-  }
+  try {
+    // 根据是编辑还是添加执行不同操作
+    const action = isEdit.value
+      ? () => linkStore.updateLink(payload)
+      : () => linkStore.addLink(payload);
 
-  if (success) {
-    emit('update:visible', false)
-    emit('save')
-    showNotification(isEdit.value ? '更新成功' : '添加成功', 'success')
-  } else {
-    showNotification(linkStore.error || (isEdit.value ? '更新失败' : '添加失败'), 'error')
+    const success = await action();
+
+    if (success) {
+      emit('update:visible', false);
+      emit('save');
+      showNotification(isEdit.value ? '更新成功' : '添加成功', 'success');
+    } else {
+      throw new Error(linkStore.error || (isEdit.value ? '更新失败' : '添加失败'));
+    }
+  } catch (error) {
+    showNotification(error.message, 'error');
   }
-}
+};
+
+// const handleSave = async () => {
+//   // 确保所有图标类型的值都被保存
+//   let finalIconValue = formData.value.icon || props.link.icon || ''
+//   let finalTextIconValue = formData.value.textIcon || props.link.textIcon || ''
+//   let finalUploadIconValue = formData.value.uploadIcon || props.link.uploadIcon || ''
+
+//   // 根据当前选中的图标类型更新对应的值
+//   if (currentIconType.value === IconType.online_icon) {
+//     // 在线图标，更新icon字段
+//     finalIconValue = iconValue.value
+//   } else if (currentIconType.value === IconType.text_icon) {
+//     // 文字图标，更新textIcon字段
+//     finalTextIconValue = iconValue.value || (formData.value.name ? formData.value.name.substring(0, 2) : '')
+//   } else if (currentIconType.value === IconType.upload_icon) {
+//     // 上传图标，更新uploadIcon字段
+//     finalUploadIconValue = iconValue.value
+//   }
+
+//   const payload = {
+//     id: props.link.id,
+//     name: formData.value.name,
+//     desc: formData.value.desc,
+//     icon: finalIconValue,
+//     textIcon: finalTextIconValue,
+//     uploadIcon: finalUploadIconValue,
+//     iconType: currentIconType.value,
+//     int: formData.value.int,
+//     ext: formData.value.ext
+//   }
+
+//   let success
+//   if (isEdit.value) {
+//     success = await linkStore.updateLink(payload)
+//   } else {
+//     success = await linkStore.addLink(payload)
+//   }
+
+//   if (success) {
+//     emit('update:visible', false)
+//     emit('save')
+//     showNotification(isEdit.value ? '更新成功' : '添加成功', 'success')
+//   } else {
+//     showNotification(linkStore.error || (isEdit.value ? '更新失败' : '添加失败'), 'error')
+//   }
+// }
 
 // 取消
 const handleCancel = () => {
