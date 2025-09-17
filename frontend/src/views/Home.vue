@@ -1,9 +1,7 @@
 <template>
   <div class="home-container">
     <SearchBox />
-    <!-- <button @click="handleRefreshLinks" :disabled="loading">
-      {{ loading ? '加载中...' : '刷新' }}
-    </button> -->
+
     <CardGrid :links="links" :loading="loading" :error="error" @show-context-menu="showContextMenu"
       @add-link="handleAddLink" />
 
@@ -20,12 +18,12 @@
 </template>
 
 <script setup lang="ts">
-import SearchBox from '../components/SearchBox.vue'
-import CardGrid from '../components/CardGrid.vue'
-import ContextMenu from '../components/ContextMenu.vue'
-import EditModal from '../components/EditModal.vue'
-import ConfirmDialog from '../components/ConfirmDialog.vue'
-import { useHome } from '../composables/useHome'
+import SearchBox from '@/components/SearchBox.vue'
+import CardGrid from '@/components/CardGrid.vue'
+import ContextMenu from '@/components/ContextMenu.vue'
+import EditModal from '@/components/EditModal'
+import ConfirmDialog from '@/components/ConfirmDialog.vue'
+import { useHome } from '@/composables/useHome'
 
 // 使用首页业务逻辑
 const {

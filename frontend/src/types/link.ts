@@ -4,14 +4,17 @@
 export enum IconType {
   online_icon = 'online_icon',
   text_icon = 'text_icon',
-  upload_icon = 'upload_icon'
+  upload_icon = 'upload_icon',
+  paid_icon = 'paid_icon',
 }
 
 export interface LinkBase {
   name: string
-  icon?: string
+  icon?: string // 使用onlineIcon代替
+  onlineIcon?: string
   textIcon?: string
   uploadIcon?: string
+  paidIcon?: string
   iconType?: IconType
   int: string
   ext: string
@@ -27,6 +30,7 @@ export const DEFAULT_LINK: LinkBase = {
   icon: '',
   textIcon: '',
   uploadIcon: '',
+  paidIcon: '',
   iconType: IconType.online_icon,
   int: '',
   ext: '',
