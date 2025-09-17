@@ -13,5 +13,12 @@ export interface IcomPreviewProps {
     textIcon?: string
     uploadIcon?: string
     paidIcon?: string
-    iconType: IconType
+    iconType?: IconType
+}
+
+export interface FormDataProps {
+    name?: string
+    desc?: string
+    int?: string
+    ext?: string
 }

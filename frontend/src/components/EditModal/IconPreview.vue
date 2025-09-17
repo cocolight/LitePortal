@@ -2,21 +2,21 @@
   <div class="icon-preview-container">
     <!-- 在线图标 -->
     <div class="preview-item online-icon-wrapper" @click="selectIconType(IconType.online_icon)">
-      <div class="preview-icon online-icon" :class="{ selected: localState.currentIconType === IconType.online_icon }">
+      <div class="preview-icon online-icon" :class="{ selected: props.iconType === IconType.online_icon }">
         <img :src="iconPreviewUrl" alt="在线图标" onerror="this.src=DEFAULT_ICONS.online" />
       </div>
       <div class="preview-label">在线图标</div>
     </div>
     <!-- 文本图标 -->
     <div class="preview-item text-icon-wrapper" @click="selectIconType(IconType.text_icon)">
-      <div class="preview-icon text-icon" :class="{ selected: localState.currentIconType === IconType.text_icon }">
+      <div class="preview-icon text-icon" :class="{ selected: props.iconType === IconType.text_icon }">
         {{ textIconPreview }}
       </div>
       <div class="preview-label">文字图标</div>
     </div>
     <!-- 图标库图标 -->
     <div class="preview-item" @click="selectIconType(IconType.paid_icon)">
-      <div class="preview-icon upload-icon" :class="{ selected: localState.currentIconType === IconType.paid_icon }">
+      <div class="preview-icon upload-icon" :class="{ selected: props.iconType === IconType.paid_icon }">
         <img :src=paidIconPreviewUrl alt="定制图标" onerror="this.src=DEFAULT_ICONS.paid" />
       </div>
       <div class="preview-label">定制图标</div>
@@ -27,7 +27,7 @@
     <strong>{{ iconLabel }}</strong>
     <!-- 原生搜索框 -->
     <div class="input-wrapper">
-      <input v-model="localState.iconValue" :placeholder="iconPlaceholder">
+      <input v-model="iconValue" :placeholder="iconPlaceholder">
       <button class="search-btn" type="button" @click="triggerFetch">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
           <path
@@ -39,7 +39,7 @@
 </template>
 
 <script setup lang="ts">
-  import { computed, reactive } from 'vue'
+  import { computed, ref } from 'vue'
   import type { IcomPreviewProps } from './types'
   import { IconType } from '@/types'
 
@@ -50,21 +50,8 @@
 
   const props = defineProps<IcomPreviewProps>()
 
-  // 本地数据副本
-  const localState = reactive({
-    onlineIcon: props.onlineIcon,
-    textIcon: props.textIcon,
-    paidIcon: props.paidIcon,
-    currentIconType: props.iconType || IconType.online_icon, //图标类型
-    iconValue:''  // 图标框值
-  })
-
-  // 图标类型
-  // const currentIconType = ref<IconType>(
-  //   props.isEdit ? props.iconType || IconType.online_icon : IconType.online_icon
-  // )
   // 图标框值
-  // const iconValue = ref('')
+  const iconValue = ref('')
 
   // 定义事件
   const emit = defineEmits<{
@@ -74,19 +61,19 @@
     'update:textIcon': [value: string]
     'update:paidIcon': [value: string]
     // 获取图标
-    'fetchFavicon': [iconType: IconType ]
+    'fetchFavicon': [iconType: IconType, iconValue: string]
   }>()
 
   const iconPreviewUrl = computed(() => {
-    if (localState.currentIconType === IconType.online_icon) {
-      return localState.iconValue || props.onlineIcon || DEFAULT_ICONS.online
+    if (props.iconType === IconType.online_icon) {
+      return props.onlineIcon || DEFAULT_ICONS.online
     }
     return props.onlineIcon || DEFAULT_ICONS.online
   })
 
   const textIconPreview = computed(() => {
-    if (localState.currentIconType === IconType.text_icon) {
-      const text = localState.iconValue || props.textIcon
+    if (props.iconType === IconType.text_icon) {
+      const text = props.textIcon
       return text ? text.charAt(0).toUpperCase() : 'A'
     }
     return props.textIcon || 'A'
@@ -96,17 +83,9 @@
     return props.uploadIcon || DEFAULT_ICONS.paid
   })
 
-
-  // 监听表单数据变化
-  // watch(formData, (newVal) => {
-  //   emit('update:iconValue', newVal.icon || newVal.textIcon || newVal.uploadIcon
-  // })
-
-
-
   // 图标输入框名称
   const iconLabel = computed(() => {
-    switch (localState.currentIconType) {
+    switch (props.iconType) {
       case IconType.online_icon: return '图标URL'
       case IconType.text_icon: return '图标文字'
       case IconType.paid_icon: return '图标ID'
@@ -115,7 +94,7 @@
   })
   // 图标输入框提示词
   const iconPlaceholder = computed(() => {
-    switch (localState.currentIconType) {
+    switch (props.iconType) {
       case IconType.online_icon: return '输入图标URL'
       case IconType.text_icon: return '输入1-2个字符'
       case IconType.paid_icon: return '输入图标ID'
@@ -126,55 +105,45 @@
   // 选择图标类型
   const selectIconType = (newType: IconType) => {
     // 保存当前类型的值, 防止切换时丢失
-    switch (localState.currentIconType) {
+    switch (props.iconType) {
       case IconType.online_icon:
-        if (localState.iconValue) {
-          localState.onlineIcon = localState.iconValue;
+        if (iconValue.value) {
+          emit('update:onlineIcon', iconValue.value )
         }
         break;
       case IconType.text_icon:
-        if (localState.iconValue) {
-          localState.textIcon = localState.iconValue;
+        if (iconValue.value) {
+          emit('update:textIcon', iconValue.value )
         }
         break;
       case IconType.paid_icon:
-        if (localState.iconValue) {
-          localState.paidIcon = localState.iconValue;
+        if (iconValue.value) {
+          emit('update:paidIcon', iconValue.value )
         }
         break;
     }
 
     // 更新当前类型
-    localState.currentIconType = newType;
+    emit('update:iconType', newType)
 
     // 加载新类型的值
     switch (newType) {
       case IconType.online_icon:
-        localState.iconValue = localState.onlineIcon || '';
+        iconValue.value = props.onlineIcon || '';
         break;
       case IconType.text_icon:
-        localState.iconValue = localState.textIcon || '';
+        iconValue.value = props.textIcon || '';
         break;
       case IconType.paid_icon:
-        localState.iconValue = localState.paidIcon || '';
+        iconValue.value = props.paidIcon || '';
         break;
     }
   };
 
   // 手动获取图标
   const triggerFetch = () => {
-    emit('fetchFavicon', localState.currentIconType)
+    emit('fetchFavicon', props.iconType || IconType.online_icon, iconValue.value)
   }
-
-  // 数据保存方法
-  const handleSave = () => {
-    emit('update:iconType', localState.currentIconType)
-    emit('update:onlineIcon', localState.onlineIcon || '')
-    emit('update:textIcon', localState.textIcon || '')
-    emit('update:paidIcon', localState.paidIcon || '')
-  }
-  // 暴露方法，回传数据
-  defineExpose({save: handleSave})
 
 
 
