@@ -36,12 +36,12 @@
 
   const props = withDefaults(defineProps<EditModalProps>(), {
     visible: false,
-    link: () => ({ name: '', desc: '', int: '', ext: '', icon: '', iconType: IconType.online_icon, textIcon: '', uploadIcon: '' })
+    link: () => ({ name: '', desc: '', int: '', ext: '', icon: '', iconType: IconType.onlineIcon, textIcon: '', uploadIcon: '' })
   })
 
   const localLinkState = reactive({
     ...props.link,
-    iconType: props.link.iconType || IconType.online_icon
+    iconType: props.link.iconType || IconType.onlineIcon
   })
 
   // 监听 props.link 的变化
@@ -49,7 +49,7 @@
     if (newLink) {
       Object.assign(localLinkState, {
         ...newLink,
-        iconType: newLink.iconType || IconType.online_icon
+        iconType: newLink.iconType || IconType.onlineIcon
       });
     }
   }, { deep: true, immediate: true });
@@ -76,9 +76,9 @@
     if (!url) return
 
     try {
-      const faviconUrl = await fetchFavicon(IconType.online_icon, url)
+      const faviconUrl = await fetchFavicon(IconType.onlineIcon, url)
       localLinkState.onlineIcon = faviconUrl
-      // if (currentIconType.value === IconType.online_icon) {
+      // if (currentIconType.value === IconType.onlineIcon) {
       //   iconValue.value = faviconUrl
       // }
     } catch (error) {
@@ -89,11 +89,11 @@
   // 获取网站图标
   async function fetchFavicon(iconType: IconType, url: string) {
     switch (iconType) {
-      case IconType.online_icon:
+      case IconType.onlineIcon:
         return fetchOnlineIcon(url)
-      case IconType.text_icon:
+      case IconType.textIcon:
         return localLinkState.textIcon
-      case IconType.paid_icon:
+      case IconType.paidIcon:
         return fetchPaidIcon(url)
       // case IconType.upload_icon:
       //   return localLinkState.uploadIcon
@@ -176,7 +176,7 @@
 
     // 准备图标数据，根据当前类型设置值
     // const iconData = {
-    //   [IconType.online_icon]: iconValue.value,
+    //   [IconType.onlineIcon]: iconValue.value,
     //   [IconType.text_icon]: iconValue.value || (name ? name.substring(0, 2) : ''),
     //   [IconType.upload_icon]: iconValue.value
     // };
@@ -186,7 +186,7 @@
     //   id: link.id,
     //   name,
     //   desc,
-    //   icon: currentIconType.value === IconType.online_icon ? iconData[IconType.online_icon] : icon || link.icon || '',
+    //   icon: currentIconType.value === IconType.onlineIcon ? iconData[IconType.onlineIcon] : icon || link.icon || '',
     //   textIcon: currentIconType.value === IconType.text_icon ? iconData[IconType.text_icon] : textIcon || link.textIcon || '',
     //   uploadIcon: currentIconType.value === IconType.upload_icon ? iconData[IconType.upload_icon] : uploadIcon || link.uploadIcon || '',
     //   iconType: currentIconType.value,

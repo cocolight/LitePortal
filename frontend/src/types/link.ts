@@ -2,10 +2,10 @@
 // export type IconType = 'online_icon' | 'text_icon' | 'upload_icon'
 
 export enum IconType {
-  online_icon = 'online_icon',
-  text_icon = 'text_icon',
-  upload_icon = 'upload_icon',
-  paid_icon = 'paid_icon',
+  onlineIcon = 'online_icon',
+  textIcon = 'text_icon',
+  uploadIcon = 'upload_icon',
+  paidIcon = 'paid_icon',
 }
 
 export interface LinkBase {
@@ -31,7 +31,7 @@ export const DEFAULT_LINK: LinkBase = {
   textIcon: '',
   uploadIcon: '',
   paidIcon: '',
-  iconType: IconType.online_icon,
+  iconType: IconType.onlineIcon,
   int: '',
   ext: '',
   desc: ''

@@ -30,16 +30,16 @@ const displayIcon = computed(() => {
   }
 
   // 严格根据iconType字段显示对应的图标
-  const iconType = props.link?.iconType || IconType.online_icon
+  const iconType = props.link?.iconType || IconType.onlineIcon
   // const iconType = computed(() => props.link?.iconType || IconType.online_icon)
 
-  if (iconType === IconType.upload_icon) {
+  if (iconType === IconType.uploadIcon) {
     return props.link?.uploadIcon || 'https://api.iconify.design/mdi:upload.svg'
-  } else if (iconType === IconType.text_icon) {
+  } else if (iconType === IconType.textIcon) {
     // 文字图标使用data URL格式显示
     const text = props.link?.textIcon || props.link?.name || 'A'
     return generateTextSvg(text.charAt(0), {})
-  } else if (iconType === IconType.online_icon) {
+  } else if (iconType === IconType.onlineIcon) {
     return props.link?.onlineIcon || 'https://api.iconify.design/mdi:web.svg'
   } else {
     return props.link?.onlineIcon || 'https://api.iconify.design/mdi:web.svg'
