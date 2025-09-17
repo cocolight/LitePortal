@@ -72,11 +72,8 @@
   })
 
   const textIconPreview = computed(() => {
-    if (props.iconType === IconType.text_icon) {
-      const text = props.textIcon
-      return text ? text.charAt(0).toUpperCase() : 'A'
-    }
-    return props.textIcon || 'A'
+    const text = props.textIcon || 'A'
+    return text.charAt(0).toUpperCase()
   })
 
   const paidIconPreviewUrl = computed(() => {

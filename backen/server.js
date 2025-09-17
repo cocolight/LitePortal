@@ -93,12 +93,12 @@ function initDatabase() {
                 }
 
                 // 检查是否需要将icon字段重命名为online_icon
-                if (columns.includes('icon') && !columns.includes('online_icon')) {
-                    db.run("ALTER TABLE links RENAME COLUMN icon TO online_icon", (err) => {
-                        if (err) console.error('重命名icon字段为online_icon失败:', err.message);
-                        else console.log('成功重命名icon字段为online_icon');
-                    });
-                }
+                // if (columns.includes('icon') && !columns.includes('online_icon')) {
+                //     db.run("ALTER TABLE links RENAME COLUMN icon TO online_icon", (err) => {
+                //         if (err) console.error('重命名icon字段为online_icon失败:', err.message);
+                //         else console.log('成功重命名icon字段为online_icon');
+                //     });
+                // }
 
                 // 表创建成功后，根据环境变量决定是否初始化测试数据
                 const isDevelopment = process.env.NODE_ENV !== 'production';
@@ -151,7 +151,7 @@ app.get('/api/config', (req, res) => {
             return res.json(defaultCfg())
         }
 
-        db.all('SELECT link_id as id, name, online_icon as icon, text_icon as textIcon, upload_icon as uploadIcon, icon_type as iconType, int_url as int, ext_url as ext, description as desc FROM links WHERE user_id = ?', [userId], (err, rows) => {
+        db.all('SELECT link_id as id, name, online_icon as onlineIcon, text_icon as textIcon, upload_icon as uploadIcon, icon_type as iconType, int_url as int, ext_url as ext, description as desc FROM links WHERE user_id = ?', [userId], (err, rows) => {
             if (err) {
                 console.error('查询链接失败:', err.message)
                 return res.json(defaultCfg())
