@@ -12,6 +12,9 @@ node_modules
 dist
 dist-ssr
 *.local
+/frontend/node_modules
+/frontend/dist
+/frontend/stats.html
 
 # Editor directories and files
 .vscode/*

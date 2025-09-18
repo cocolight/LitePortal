@@ -3,16 +3,26 @@ const express = require('express')
 const cors = require('cors')
 const sqlite3 = require('sqlite3').verbose()
 const path = require('path')
+const fs = require('fs')
 const config = require('./config')
 
-// 加载环境变量
-require('dotenv').config({ path: `.env.${config.NODE_ENV}` })
+// 只在开发环境中加载 dotenv
+if (config.NODE_ENV === 'development') {
+  require('dotenv').config({ path: `.env.${config.NODE_ENV}` })
+}
 
 const app = express()
 const PORT = config.PORT
 const DB_PATH = config.DB_PATH
 const LOG_LEVEL = config.LOG_LEVEL
 const INIT_TEST_DATA = config.INIT_TEST_DATA
+
+// 确保数据库目录存在
+const dbDir = path.dirname(DB_PATH)
+if (!fs.existsSync(dbDir)) {
+  fs.mkdirSync(dbDir, { recursive: true })
+  console.log(`创建数据库目录: ${dbDir}`)
+}
 
 // 根据环境配置日志级别
 if (LOG_LEVEL === 'debug') {
@@ -23,16 +33,38 @@ if (LOG_LEVEL === 'debug') {
 }
 
 app.use(cors())
-app.use(express.json())
+app.use(express.json({ limit: config.MAX_BODY_SIZE }))
 
-app.use(express.static(path.join(__dirname, '../web')));
+// 静态文件服务 - 只在生产环境中使用打包后的前端文件
+if (config.NODE_ENV === 'production') {
+  // 判断是否在 pkg 打包环境中运行
+  if (config.IS_PKG) {
+    // 在打包环境中，使用相对于可执行文件的路径
+    const baseDir = path.dirname(process.execPath);
+    const webPath = path.join(baseDir, '..', 'web');
+    
+    // 检查web目录是否存在
+    if (fs.existsSync(webPath)) {
+      app.use(express.static(webPath));
+      console.log(`使用外部web目录: ${webPath}`);
+    } else {
+      console.warn(`外部web目录不存在: ${webPath}，将使用内置资源`);
+      app.use(express.static(path.join(__dirname, '../web')));
+    }
+  } else {
+    // 非打包环境，使用相对路径
+    app.use(express.static(path.join(__dirname, '../web')));
+  }
+}
 
 // 初始化数据库
 const db = new sqlite3.Database(DB_PATH, (err) => {
     if (err) {
         console.error('数据库连接失败:', err.message)
+        console.error('数据库路径:', DB_PATH)
     } else {
         console.log('已连接到SQLite数据库')
+        console.log('数据库路径:', DB_PATH)
         initDatabase()
     }
 })
@@ -105,14 +137,6 @@ function initDatabase() {
                         else console.log('成功添加 icon_type 字段');
                     });
                 }
-
-                // 检查是否需要将icon字段重命名为online_icon
-                // if (columns.includes('icon') && !columns.includes('online_icon')) {
-                //     db.run("ALTER TABLE links RENAME COLUMN icon TO online_icon", (err) => {
-                //         if (err) console.error('重命名icon字段为online_icon失败:', err.message);
-                //         else console.log('成功重命名icon字段为online_icon');
-                //     });
-                // }
 
                 // 表创建成功后，根据环境变量决定是否初始化测试数据
                 if (INIT_TEST_DATA) {
@@ -245,9 +269,27 @@ app.post('/api/config', (req, res) => {
 })
 
 // 单页应用路由回退（放在所有 API 路由之后）
-app.get(/^\/(?!api).*/, (req, res) => {
-  res.sendFile(path.join(__dirname, '../web/index.html'));
-});
+if (config.NODE_ENV === 'production') {
+  app.get(/^\/(?!api).*/, (req, res) => {
+    // 判断是否在 pkg 打包环境中运行
+    if (config.IS_PKG) {
+      // 在打包环境中，使用相对于可执行文件的路径
+      const baseDir = path.dirname(process.execPath);
+      const indexPath = path.join(baseDir, '..', 'web', 'index.html');
+      
+      // 检查index.html是否存在
+      if (fs.existsSync(indexPath)) {
+        res.sendFile(indexPath);
+      } else {
+        console.warn(`外部index.html不存在: ${indexPath}，将使用内置资源`);
+        res.sendFile(path.join(__dirname, '../web/index.html'));
+      }
+    } else {
+      // 非打包环境，使用相对路径
+      res.sendFile(path.join(__dirname, '../web/index.html'));
+    }
+  });
+}
 
 // 关闭数据库连接
 process.on('SIGINT', () => {
@@ -264,4 +306,6 @@ process.on('SIGINT', () => {
 app.listen(PORT, () => {
     const envName = config.NODE_ENV === 'development' ? '开发环境' : '生产环境'
     console.log(`✅ Express backend running at http://localhost:${PORT} (${envName})`)
+    console.log(`数据库路径: ${DB_PATH}`)
+    console.log(`是否在打包环境中运行: ${config.IS_PKG}`)
 })

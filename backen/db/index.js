@@ -1,7 +1,11 @@
 const sqlite3 = require('sqlite3').verbose()
+const path = require('path')
 const { DB_PATH } = require('../config')
 
-const db = new sqlite3.Database(DB_PATH, sqlite3.OPEN_READWRITE | sqlite3.OPEN_CREATE, (err) => {
+// 确保数据库路径是绝对路径
+const absoluteDbPath = path.resolve(DB_PATH)
+
+const db = new sqlite3.Database(absoluteDbPath, sqlite3.OPEN_READWRITE | sqlite3.OPEN_CREATE, (err) => {
   if (err) {
     console.error('Database connection error:', err.message)
     process.exit(1)

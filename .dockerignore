@@ -1,8 +1,42 @@
+# 依赖和构建产物
 node_modules/
+dist/
+frontend/dist/
+backen/dist/
+backen/executable/
+
+# 版本控制
 .git/
-.DS_Store
-*.log
-.env
-.vscode/
 .gitignore
+
+# 开发工具和环境
+.vscode/
+.idea/
+
+# 系统文件
+.DS_Store
+Thumbs.db
+
+# 日志文件
+*.log
+logs/
+
+# 环境配置
+.env*
+
+# 文档
 docs/
+README.md
+*.md
+
+# 测试文件
+test/
+tests/
+*.test.js
+*.spec.js
+
+# 临时文件
+tmp/
+temp/
+*.tmp
+*.temp
