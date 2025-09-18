@@ -3,10 +3,24 @@ const express = require('express')
 const cors = require('cors')
 const sqlite3 = require('sqlite3').verbose()
 const path = require('path')
+const config = require('./config')
+
+// 加载环境变量
+require('dotenv').config({ path: `.env.${config.NODE_ENV}` })
 
 const app = express()
-const PORT = 8080
-const DB_PATH = path.join(__dirname, 'database.sqlite')
+const PORT = config.PORT
+const DB_PATH = config.DB_PATH
+const LOG_LEVEL = config.LOG_LEVEL
+const INIT_TEST_DATA = config.INIT_TEST_DATA
+
+// 根据环境配置日志级别
+if (LOG_LEVEL === 'debug') {
+  app.use((req, res, next) => {
+    console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`)
+    next()
+  })
+}
 
 app.use(cors())
 app.use(express.json())
@@ -101,13 +115,12 @@ function initDatabase() {
                 // }
 
                 // 表创建成功后，根据环境变量决定是否初始化测试数据
-                const isDevelopment = process.env.NODE_ENV !== 'production';
-                if (isDevelopment) {
-                    console.log('开发环境，准备初始化测试数据...');
+                if (INIT_TEST_DATA) {
+                    console.log('当前环境允许初始化测试数据...');
                     const { initTestData } = require('./testDataInit');
                     initTestData(db);
                 } else {
-                    console.log('生产环境，跳过测试数据初始化');
+                    console.log('当前环境配置为不初始化测试数据');
                 }
             });
         }
@@ -204,7 +217,7 @@ app.post('/api/config', (req, res) => {
                 // 更新现有链接
                 db.run(
                     'UPDATE links SET name = ?, online_icon = ?, text_icon = ?, upload_icon = ?, icon_type = ?, int_url = ?, ext_url = ?, description = ?, updated_at = CURRENT_TIMESTAMP WHERE user_id = ? AND link_id = ?',
-                    [payload.name, payload.icon, payload.textIcon || '', payload.uploadIcon || '', payload.iconType || 'online_icon', payload.int, payload.ext, payload.desc, userId, payload.id],
+                    [payload.name, payload.onlineIcon || payload.icon, payload.textIcon || '', payload.uploadIcon || '', payload.iconType || 'online_icon', payload.int, payload.ext, payload.desc, userId, payload.id],
                     (err) => {
                         if (err) {
                             console.error('更新链接失败:', err.message)
@@ -217,7 +230,7 @@ app.post('/api/config', (req, res) => {
                 // 添加新链接
                 db.run(
                     'INSERT INTO links (user_id, link_id, name, online_icon, text_icon, upload_icon, icon_type, int_url, ext_url, description) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
-                    [userId, payload.id, payload.name, payload.icon, payload.textIcon || '', payload.uploadIcon || '', payload.iconType || 'online_icon', payload.int, payload.ext, payload.desc],
+                    [userId, payload.id, payload.name, payload.onlineIcon || payload.icon, payload.textIcon || '', payload.uploadIcon || '', payload.iconType || 'online_icon', payload.int, payload.ext, payload.desc],
                     (err) => {
                         if (err) {
                             console.error('添加链接失败:', err.message)
@@ -249,5 +262,6 @@ process.on('SIGINT', () => {
 })
 
 app.listen(PORT, () => {
-    console.log(`✅ Express backend running at http://localhost:${PORT}`)
+    const envName = config.NODE_ENV === 'development' ? '开发环境' : '生产环境'
+    console.log(`✅ Express backend running at http://localhost:${PORT} (${envName})`)
 })

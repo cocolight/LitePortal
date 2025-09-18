@@ -2,6 +2,7 @@
 import { computed } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import ThemeToggle from './components/ThemeToggle.vue'
+// import EnvironmentBadge from './components/EnvironmentBadge.vue'
 
 // 路由相关
 const router = useRouter()

@@ -5,7 +5,7 @@
         <h3>{{ isEdit ? '编辑' : '新增' }}图标</h3>
         <div class="icon-preview-section">
           <IconPreview :isEdit="isEdit" v-model:iconType="localLinkState.iconType" v-model:onlineIcon="localLinkState.onlineIcon"
-            v-model:textIcon="localLinkState.textIcon" v-model:uploadIcon="localLinkState.uploadIcon" @fetch-favicon="fetchFavicon" />
+            v-model:textIcon="localLinkState.textIcon" v-model:uploadIcon="localLinkState.uploadIcon" @fetch-favicon="handlefetchFavicon" />
           <div class="divider"></div>
         </div>
         <FormData v-model:name="localLinkState.name" v-model:desc="localLinkState.desc" v-model:int="localLinkState.int"
@@ -20,7 +20,8 @@
 </template>
 
 <script setup lang="ts">
-  import { computed, watch, reactive, toRefs } from 'vue'
+import { cloneDeep } from 'lodash-es'
+  import { computed, watch, reactive } from 'vue'
   import IconPreview from './IconPreview.vue';
   import FormData from './FormData.vue';
   import { useLinkStore } from '@/stores/linkStore'
@@ -40,7 +41,7 @@
   })
 
   const localLinkState = reactive({
-    ...props.link,
+    ...cloneDeep(props.link),
     iconType: props.link.iconType || IconType.onlineIcon
   })
 
@@ -52,8 +53,19 @@
         iconType: newLink.iconType || IconType.onlineIcon
       });
     }
-  }, { deep: true, immediate: true });
+  }, { deep: true });
 
+  // 监听模态框可见性变化，每次打开时确保状态干净
+  watch(() => props.visible, (visible) => {
+    if (!visible) {
+      // 模态框打开时，重置为初始状态
+      localLinkState.id = ''
+      // Object.assign(localLinkState, {
+      //   ...cloneDeep(props.link),
+      //   iconType: props.link.iconType || IconType.onlineIcon
+      // })
+    }
+  }, { immediate: true });
 
   const linkStore = useLinkStore()
 
@@ -78,9 +90,7 @@
     try {
       const faviconUrl = await fetchFavicon(IconType.onlineIcon, url)
       localLinkState.onlineIcon = faviconUrl
-      // if (currentIconType.value === IconType.onlineIcon) {
-      //   iconValue.value = faviconUrl
-      // }
+
     } catch (error) {
       console.error('获取网站图标失败:', error)
     }
@@ -88,13 +98,14 @@
 
   // 获取网站图标
   async function fetchFavicon(iconType: IconType, url: string) {
+
     switch (iconType) {
       case IconType.onlineIcon:
-        return fetchOnlineIcon(url)
+        return await fetchOnlineIcon(url)
       case IconType.textIcon:
         return localLinkState.textIcon
       case IconType.paidIcon:
-        return fetchPaidIcon(url)
+        return await fetchPaidIcon(url)
       // case IconType.upload_icon:
       //   return localLinkState.uploadIcon
       default:
@@ -103,16 +114,27 @@
   }
 
   async function fetchOnlineIcon(url: string) {
+
     try {
       // 规范化URL，确保有协议
       let domain = url
       if (!url.startsWith('http://') && !url.startsWith('https://')) {
+        // 检查URL是否包含有效域名或IP
+        if (!/^[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(url) && !/^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$/.test(url)) {
+          showNotification('请输入有效的网址', 'error')
+          return ''
+        }
         domain = 'https://' + url
       }
 
       // 创建URL对象以提取域名
-      const urlObj = new URL(domain)
-      domain = urlObj.origin
+      try {
+        const urlObj = new URL(domain)
+        domain = urlObj.origin
+      } catch (e) {
+        showNotification('无效的网址', 'error')
+        return ''
+      }
 
       // 尝试多种可能的图标路径
       const iconPaths = [
@@ -142,6 +164,7 @@
         }
       }
       showNotification('获取图标成功', 'success')
+
       // 如果所有常见路径都失败，尝试使用第三方服务
       // return `https://www.google.com/s2/favicons?domain=${urlObj.hostname}&sz=64`
     } catch (error) {
@@ -154,45 +177,25 @@
 
   async function fetchPaidIcon(url: string) {
     // TODO: 实现付费图标获取逻辑
-    return ''
+    return url
   }
 
-  // 图标类型
-  // const currentIconType = computed(() => localLinkState.iconType)
-
-  // 图标值
-  // const iconValue = computed({
-  //   get() {
-  //     switch (currentIconType.value) {
-
-  //   }
-  // }
+  const handlefetchFavicon = async (iconType: IconType, url: string) => {
+    if (url) {
+      await fetchFavicon(iconType, url)
+    } else {
+      if (iconType === IconType.onlineIcon) {
+        url = localLinkState.int || localLinkState.ext
+        const faviconUrl = await fetchFavicon(iconType, url)
+        localLinkState.onlineIcon = faviconUrl
+      } else {
+        showNotification('请输入图标地址', 'error')
+      }
+    }
+  }
 
   // 保存
   const handleSave = async () => {
-    // 准备基础数据
-    // const { onlineIcon, textIcon, uploadIcon, name, desc, int, ext } = localLinkState;
-    // const { link } = props;
-
-    // 准备图标数据，根据当前类型设置值
-    // const iconData = {
-    //   [IconType.onlineIcon]: iconValue.value,
-    //   [IconType.text_icon]: iconValue.value || (name ? name.substring(0, 2) : ''),
-    //   [IconType.upload_icon]: iconValue.value
-    // };
-
-    // 构建请求载荷
-    // const payload = {
-    //   id: link.id,
-    //   name,
-    //   desc,
-    //   icon: currentIconType.value === IconType.onlineIcon ? iconData[IconType.onlineIcon] : icon || link.icon || '',
-    //   textIcon: currentIconType.value === IconType.text_icon ? iconData[IconType.text_icon] : textIcon || link.textIcon || '',
-    //   uploadIcon: currentIconType.value === IconType.upload_icon ? iconData[IconType.upload_icon] : uploadIcon || link.uploadIcon || '',
-    //   iconType: currentIconType.value,
-    //   int,
-    //   ext
-    // };
 
     try {
       // 根据是编辑还是添加执行不同操作

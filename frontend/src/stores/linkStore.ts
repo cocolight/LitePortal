@@ -87,7 +87,10 @@ export const useLinkStore = defineStore('linkStore', () => {
     state.value.error = null
 
     try {
-      const response = await axios.post<ApiError>('/api/config', linkData)
+      const response = await axios.post<ApiError>('/api/config', {
+        action: 'update',
+        ...linkData
+      })
 
       // 后端返回 204 状态码表示成功
       if (response.status === 204) {
