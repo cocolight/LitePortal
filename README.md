@@ -1,8 +1,8 @@
 # LitePortal
 
-### **[开发计划](./docs/开发计划.md)** | **[Docker部署](./docs/Docker部署.md)** | 
+### **[更新计划](./docs/开发计划.md)** | **[Docker部署](./docs/Docker部署.md)** | [开发文档](./docs/开发文档.md)
 
-LitePortal是一个简洁高效的网页导航工具，支持内网和外网链接无缝自动切换。可以部署在自己的家庭局域网上。
+LitePortal是一个简洁高效的网页导航工具，支持内网和外网链接无缝自动切换。可以部署在自己的家庭局域网上。若想二次开发请查看开发文档。
 
 ![image-20250823084643150](./docs/image-20250823084643150.png)
 
@@ -19,26 +19,7 @@ LitePortal是一个简洁高效的网页导航工具，支持内网和外网链�
 - 响应式设计与暗黑模式
 - 支持Docker部署
 
-## 二、快速开发
-
-```shell
-# 克隆源码
-git clone https://gitee.com/yumos/LitePortal.git
-
-# 切换到项目目录
-cd /liteportal
-```
-
-#### 前端
-
-```bash
-cd frontend
-npm install
-npm run dev    # 开发模式
-npm run build  # 生产构建
-```
-
-#### 后端
+## 二、快速使用
 
 ```bash
 cd backend
@@ -48,17 +29,5 @@ npm start          # 启动服务器
 
 访问 http://localhost:8080
 
-## 三、主要API
-
-- `GET /` - 导航主页
-- `GET /api/config` - 获取配置
-- `POST /api/config` - 更新配置
-- `GET /api/health` - 健康检查
-
-## 四、技术栈
-
-- 前端：Vite + TypeScript
-- 后端：Node.js + Express + SQLite
-
-## 五、许可证
+## 许可证
 
