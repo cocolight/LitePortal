@@ -3,13 +3,12 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { LinkController } from './link.controller';
 import { LinkService } from './link.service';
 import { Link } from './link.entity';
-import { User } from '../users/user.entity';
-import { UserService } from '../users/user.service';
+import { UserModule} from '../users/user.module'
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Link, User])],
+  imports: [UserModule, TypeOrmModule.forFeature([Link])],
   controllers: [LinkController],
-  providers: [LinkService, UserService],
+  providers: [LinkService],
   exports: [LinkService],
 })
 export class LinkModule {}

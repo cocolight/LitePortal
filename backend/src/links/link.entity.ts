@@ -4,41 +4,41 @@ import { User } from '../users/user.entity';
 @Entity()
 export class Link {
   @PrimaryGeneratedColumn()
-  id: number;
+  id!: number;
 
   @ManyToOne(() => User, user => user.links)
-  user: User;
+  user!: User;
 
   @Column()
-  link_id: string;
+  link_id!: string;
 
   @Column()
-  name: string;
+  name!: string;
 
   @Column({ nullable: true })
-  online_icon: string;
+  online_icon!: string;
 
   @Column({ nullable: true })
-  text_icon: string;
+  text_icon!: string;
 
   @Column({ nullable: true })
-  upload_icon: string;
+  upload_icon!: string;
 
   @Column({ default: 'online_icon' })
-  icon_type: string;
+  icon_type!: string;
 
   @Column()
-  int_url: string;
+  int_url!: string;
 
   @Column()
-  ext_url: string;
+  ext_url!: string;
 
   @Column({ nullable: true })
-  description: string;
+  description!: string;
 
   @Column({ type: 'datetime', default: () => 'CURRENT_TIMESTAMP' })
-  created_at: Date;
+  created_at!: Date;
 
   @Column({ type: 'datetime', default: () => 'CURRENT_TIMESTAMP' })
-  updated_at: Date;
+  updated_at!: Date;
 }

@@ -26,7 +26,7 @@ export class LinkController {
   ) {
     const userId = await this.userService.getOrCreateUser(username || 'guest');
 
-    if ('action' in payload && payload.action === 'delete') {
+    if ('action' in payload && payload.action === 'delete' && payload.id) {
       await this.linkService.deleteLink(userId, payload.id);
       return res.status(HttpStatus.NO_CONTENT).send();
     }

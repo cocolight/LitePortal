@@ -1,10 +1,11 @@
 import { NestFactory } from '@nestjs/core';
 import { ConfigService } from '@nestjs/config';
 import { NestExpressApplication } from '@nestjs/platform-express';
-import { AppModule } from './app.module';
 import { join, dirname } from 'path';
-import { existsSync, mkdirSync } from 'fs';
+
 import express from 'express';
+import { AppModule } from './app.module';
+import { InitDataService } from './init/init-data.service';
 
 
 async function bootstrap() {
@@ -17,23 +18,7 @@ async function bootstrap() {
   // 配置请求体大小限制
   app.use(express.json({ limit: configService.get<string>('maxBodySize') }));
 
-  // 确保数据库目录存在
-  const dbPath = configService.get('dbPath');
-  let dbDir;
 
-  if (process.env.NODE_ENV === 'development' && !dbPath.includes('://')) {
-    // 开发环境，确保src/data目录存在
-    dbDir = join(__dirname, 'data');
-    if (!existsSync(dbDir)) {
-      mkdirSync(dbDir, { recursive: true });
-    }
-  } else {
-    // 生产环境或其他情况，使用数据库路径的目录
-    dbDir = dirname(dbPath);
-    if (!existsSync(dbDir)) {
-      mkdirSync(dbDir, { recursive: true });
-    }
-  }
 
   // 配置静态文件服务（仅在生产环境中使用打包后的前端文件）
   if (configService.get('nodeEnv') === 'production') {
@@ -42,13 +27,13 @@ async function bootstrap() {
 
   // 配置日志级别
   if (configService.get('logLevel') === 'debug') {
-    app.use((req, res, next) => {
+    app.use((req: express.Request, res: express.Response, next: express.NextFunction) => {
       console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
       next();
     });
   }
 
-  const port = configService.get<number>('port');
+  const port = configService.get<number>('port') ?? 3000;
   const nodeEnv = configService.get<string>('nodeEnv');
   const envName = nodeEnv === 'development' ? '开发环境' : '生产环境';
 
@@ -57,9 +42,9 @@ async function bootstrap() {
   console.log(`数据库路径: ${configService.get('dbPath')}`);
 
   // 初始化数据（如果有需要）
-  const initDataService = app.get('InitDataService');
+  const initService = app.get(InitDataService);
   if (configService.get('initTestData')) {
-    await initDataService.initTestData();
+    await initService.initTestData();
   }
 }
 bootstrap();

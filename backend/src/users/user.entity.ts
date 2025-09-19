@@ -4,14 +4,14 @@ import { Link } from '../links/link.entity';
 @Entity()
 export class User {
   @PrimaryGeneratedColumn()
-  id: number;
+  id!: number;
 
   @Column({ unique: true })
-  username: string;
+  username!: string;
 
   @Column({ type: 'datetime', default: () => 'CURRENT_TIMESTAMP' })
-  created_at: Date;
+  created_at!: Date;
 
   @OneToMany(() => Link, link => link.user)
-  links: Link[];
+  links!: Link[];
 }
