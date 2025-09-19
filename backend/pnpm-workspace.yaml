@@ -1,0 +1,6 @@
+ignoreScripts: false
+
+ignoredBuiltDependencies:
+  - '@nestjs/core'
+  - '@swc/core'
+  - better-sqlite3

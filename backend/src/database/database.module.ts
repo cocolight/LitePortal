@@ -1,7 +1,6 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { join } from 'path';
 
 @Module({
   imports: [
@@ -12,7 +11,7 @@ import { join } from 'path';
         console.log('>>> dbPath =', dbPath);
 
         return {
-          type: 'sqlite',
+          type: 'better-sqlite3',
           database: dbPath,
           entities: [__dirname + '/../**/*.entity{.ts,.js}'],
           synchronize: configService.get('nodeEnv') === 'development',

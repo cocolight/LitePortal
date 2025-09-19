@@ -4,6 +4,7 @@ export class CreateLinkDto {
   onlineIcon?: string;
   textIcon?: string;
   uploadIcon?: string;
+  paidIcon?: string;
   iconType?: string;
   int?: string;
   ext?: string;

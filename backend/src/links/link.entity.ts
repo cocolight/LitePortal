@@ -24,6 +24,9 @@ export class Link {
   @Column({ nullable: true })
   upload_icon!: string;
 
+  @Column({ nullable: true })
+  paid_icon!: string;
+
   @Column({ default: 'online_icon' })
   icon_type!: string;
 
