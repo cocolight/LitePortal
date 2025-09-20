@@ -97,13 +97,13 @@ async function usePkg() {
     // 3. pkg 自身
     console.log(' >>>检查 pkg 是否已安装...');
     try {
-      execSync('npx pkg --version', { stdio: 'pipe' });
-      console.log(' >>>✅pkg 已安装');
+      execSync('npx @yao-pkg/pkg --version', { stdio: 'pipe' });
+      console.log(' >>>@yao-pkg/pkg 已安装');
     }
     catch {
-      console.log(' >>>🚀 正在安装 pkg ...');
-      pnpmSilent('.', 'add -D pkg');
-      console.log(' >>>✅ pkg 安装完成');
+      console.log(' >>>🚀 正在安装 @yao-pkg/pkg ...');
+      pnpmSilent('.', 'add -D @yao-pkg/pkg');
+      console.log(' >>>✅ @yao-pkg/pkg 安装完成');
     }
 
     // 4. 写配置
@@ -111,27 +111,38 @@ async function usePkg() {
     pkgJson.bin = 'main.js';
     pkgJson.pkg = {
       targets: ['node22-win-x64'],
-      outputPath: 'executable',
+      outputPath:path.join(backendOutputDir, 'executable'),
       outputName: 'server',
-      assets: ['web/**/*']
+      assets: ['web/**/*', '.env.production', 'node_modules/better-sqlite3/**/*']
     };
     fs.writeFileSync('package.json', JSON.stringify(pkgJson, null, 2));
 
     // 5. 打包
     console.log(' >>>🚀 开始打包 exe , 耗时3分左右...');
-    try {
-      execSync('npx pkg .', { stdio: 'inherit' });
-    } catch (e) {
-      throw new Error('pkg 打包失败：' + (e.stderr?.toString() || e.message));
+    const out = execSync('npx @yao-pkg/pkg . -o executable/server.exe', {
+      cwd: '.',
+      stdio: 'pipe',          // 先截获日志
+      encoding: 'utf8'
+    });
 
+    // ① 日志里出现失败关键字 → 抛错
+    if (/Failed to fetch|checksum mismatch|ENOENT|404|ECONNRESET/i.test(out)) {
+      throw new Error('pkg 预编译二进制下载失败：\n' + out);
     }
-    console.log('✅ 打包完成 → executable/server.exe');
 
+    // ② 最终文件必须存在 → 兜底
+    const serverExe = path.join(process.cwd(), 'executable', 'server.exe');
+    if (!fs.existsSync(serverExe)) {
+      throw new Error('pkg 未生成目标文件：' + serverExe);
+    }
+
+    // 正常日志继续打印
+    process.stdout.write(out);
+    console.log('✅ 打包完成 →', serverExe);
     // 6. 清理
-    cleanAfterPkg();
+    // cleanAfterPkg();
   } finally {
     process.chdir(originalDir);
-    process.exit(1);
   }
 }
 
