@@ -1,6 +1,5 @@
 @echo off
 chcp 65001 >nul
-echo 开始构建 LitePortal 项目...
 
 REM 切换到脚本所在目录
 cd /d "%~dp0"
@@ -14,7 +13,7 @@ if %errorlevel% neq 0 (
 )
 
 REM 运行构建脚本
-echo 运行构建脚本...
+echo 运行构建脚本build.js...
 node build.js
 
 if %errorlevel% neq 0 (
@@ -23,5 +22,5 @@ if %errorlevel% neq 0 (
     exit /b 1
 )
 
-echo 构建完成！输出目录: dist
+echo 构建脚本build.js运行完成!
 pause

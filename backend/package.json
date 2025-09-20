@@ -8,7 +8,7 @@
   "scripts": {
     "preinstall": "npx only-allow pnpm",
     "build": "rimraf dist && nest build -p tsconfig.build.json -b swc",
-    "build:prod": "npm run build",
+    "build:prod": "pnpm run build",
     "build:tsc": "rimraf dist && tsc -p tsconfig.build.json",
     "start": "nest start",
     "start:dev": "cross-env NODE_ENV=development ts-node-dev --respawn --transpile-only -P tsconfig.json src/main.ts",
@@ -19,7 +19,7 @@
     "lint:ci": "eslint \"{src,apps,libs,test}/**/*.ts\" --max-warnings 0",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\" \"*.md\"",
     "format:check": "prettier --check \"src/**/*.ts\" \"test/**/*.ts\" \"*.md\"",
-    "code:check": "npm run lint:ci && npm run format:check && npm run test",
+    "code:check": "pnpm run lint:ci && pnpm run format:check && pnpm run test",
     "test": "jest --passWithNoTests",
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
@@ -27,6 +27,7 @@
     "test:e2e": "jest --config ./test/jest-e2e.json --forceExit --detectOpenHandles",
     "test:verbose": "jest --verbose",
     "clean": "rimraf dist coverage node_modules/.cache",
+    "clean:build": "rimraf dist coverage",
     "docker:build": "docker build -t backend .",
     "docker:run": "docker run -p 3000:3000 backend"
   },
