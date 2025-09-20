@@ -2,9 +2,6 @@ import { Module } from '@nestjs/common';
 import { ConfigModule as NestConfigModule } from '@nestjs/config';
 import { configuration } from './configuration';
 
-console.log('>>> process.env.NODE_ENV =', process.env.NODE_ENV);
-console.log('>>> process.env.DB_PATH   =', process.env.DB_PATH);
-
 @Module({
   imports: [
     NestConfigModule.forRoot({

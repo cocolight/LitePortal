@@ -8,7 +8,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
       imports: [ConfigModule],
       useFactory: (configService: ConfigService) => {
         const dbPath = configService.get('dbPath');
-        console.log('>>> dbPath =', dbPath);
+        // console.log('>>> dbPath =', dbPath);
 
         return {
           type: 'better-sqlite3',
