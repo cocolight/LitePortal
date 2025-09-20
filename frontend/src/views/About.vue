@@ -11,8 +11,8 @@
         <li>响应式设计，适配各种设备</li>
       </ul>
       <h2>技术栈</h2>
-      <p>前端：Vue 3 + TypeScript + Pinia + Vue Router</p>
-      <p>后端：Node.js + Express</p>
+      <p>前端：Vue 3 + TypeScript</p>
+      <p>后端：Node.js + Nest.js</p>
       <h2>联系我</h2>
       <ul>
         <li>个人博客: <a href="https://alili.website" target="_blank">个人学习经验分享</a></li>
