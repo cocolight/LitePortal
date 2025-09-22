@@ -29,7 +29,7 @@ async function bootstrap() {
 
   // 配置静态文件服务（仅在生产环境中使用打包后的前端文件）
   if (nodeEnv === 'production') {
-    app.useStaticAssets(join(__dirname, '../web'));
+    app.useStaticAssets(join(__dirname, './web'));
   }
 
   // 配置日志级别

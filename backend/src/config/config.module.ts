@@ -9,10 +9,10 @@ if (!process.env.NODE_ENV) process.env.NODE_ENV = 'production';
 const envFile = `.env.${process.env.NODE_ENV}`
 const envFilePath = path.resolve(__dirname, '../', envFile)
 
-const fullPath = path.join(__dirname, '..', envFile);
-console.log('[Config] 尝试加载:', fullPath);
-console.log('[Config] 文件存在:', require('fs').existsSync(fullPath));
-console.log('[Config] process.env.NODE_ENV=', process.env.NODE_ENV);
+// const fullPath = path.join(__dirname, '..', envFile);
+// console.log('[Config] 尝试加载:', fullPath);
+// console.log('[Config] 文件存在:', require('fs').existsSync(fullPath));
+// console.log('[Config] process.env.NODE_ENV=', process.env.NODE_ENV);
 
 @Module({
   imports: [

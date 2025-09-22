@@ -1,38 +1,26 @@
 @echo off
 chcp 65001 >nul
-echo 清理构建文件和临时文件...
 
-echo [1/3] 清理前端构建文件...
-REM 清理前端构建文件
-if exist "frontend\dist" (
-    echo 删除前端构建目录: frontend\dist
-    rmdir /s /q "frontend\dist"
+REM 切换到脚本所在目录
+cd /d "%~dp0"
+
+REM 检查 Node.js 是否安装
+node --version >nul 2>&1
+if %errorlevel% neq 0 (
+    echo 错误: 未找到 Node.js，请先安装 Node.js
+    pause
+    exit /b 1
 )
 
-echo [2/3] 清理后端构建文件...
-REM 清理后端构建文件
-if exist "backen\dist" (
-    echo 删除后端构建目录: backen\dist
-    rmdir /s /q "backen\dist"
+REM 运行构建脚本
+echo 运行清理脚本clean.build.js...
+node clean.build.js
+
+if %errorlevel% neq 0 (
+    echo 清理失败
+    pause
+    exit /b 1
 )
 
-echo [3/3] 清理项目构建输出...
-REM 清理项目构建输出
-if exist "dist" (
-    echo 删除项目构建目录: dist
-    rmdir /s /q "dist"
-)
-
-REM 清理 stats.html 文件
-if exist "frontend\stats.html" (
-    echo 删除前端 stats.html
-    del /f /q "frontend\stats.html"
-)
-
-if exist "web\stats.html" (
-    echo 删除 web 目录下的 stats.html
-    del /f /q "web\stats.html"
-)
-
-echo 清理完成！
+echo 清理脚本clean.build.js运行完成!
 pause
