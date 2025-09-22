@@ -1,4 +1,10 @@
 #!/usr/bin/env node
+/**
+ * 构建脚本
+ * 1. 清理旧的构建, 新建构建目录; 2. 前端 build; 3. 复制前端 dist 到 web 目录; 4.准备后端构建文件
+ * 5. 后端 build; 6. 复制后端 dist 到 backend 目录; 7. 使用@yao-pkg/pkg打包; 8. 创建启动脚本
+ *
+ */
 const fs   = require('fs');
 const path = require('path');
 const { execSync } = require('child_process');
@@ -80,6 +86,7 @@ function copyBackendDist() {
 }
 
 async function usePkg() {
+
   const originalDir = process.cwd();
   try {
     process.chdir(backendOutputDir);
@@ -113,7 +120,8 @@ async function usePkg() {
       targets: ['node22-win-x64'],
       outputPath:path.join(backendOutputDir, 'executable'),
       outputName: 'server',
-      assets: ['web/**/*', '.env.production', 'node_modules/better-sqlite3/**/*']
+      assets: ['web/**/*', '.env.production', 'node_modules/better-sqlite3/**/*'],
+      // env: { NODE_ENV: 'production' }
     };
     fs.writeFileSync('package.json', JSON.stringify(pkgJson, null, 2));
 
@@ -140,14 +148,14 @@ async function usePkg() {
     process.stdout.write(out);
     console.log('✅ 打包完成 →', serverExe);
     // 6. 清理
-    // cleanAfterPkg();
+    cleanAfterPkg();
   } finally {
     process.chdir(originalDir);
   }
 }
 
 function cleanAfterPkg() {
-  const white = new Set(['executable', 'node_modules']); // 保留
+  const white = new Set(['executable']); // 保留
   for (const entry of fs.readdirSync('.')) {
     if (!white.has(entry)) fs.rmSync(entry, { recursive: true, force: true });
   }
