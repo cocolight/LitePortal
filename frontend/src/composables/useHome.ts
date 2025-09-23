@@ -52,21 +52,32 @@ export function useHome() {
   }
 
   // 删除链接
-  const handleDeleteLink = (link: Pick<Link, 'id' | 'name'>) => {
+  const handleDeleteLink = (link: Pick<Link, 'linkId' | 'name'>) => {
     deletingLinkName.value = link.name
-    deletingLinkId.value = link.id
+    deletingLinkId.value = link.linkId
     confirmDialogVisible.value = true
   }
 
   // 确认删除链接
   const confirmDeleteLink = async () => {
+    // 先从前端状态中移除要删除的链接，提供即时反馈
+    const linkToDelete = links.value.find(link => link.linkId === deletingLinkId.value)
+    if (linkToDelete) {
+      // 使用store方法从状态中移除链接
+      store.removeLinkFromState(deletingLinkId.value)
+    }
+    
+    // 然后发送删除请求
     const success = await store.deleteLink(deletingLinkId.value)
     if (!success) {
+      // 如果删除失败，恢复链接
+      if (linkToDelete) {
+        store.restoreLinkToState(linkToDelete)
+      }
       showNotification('删除失败', 'error')
       return
     }
     showNotification('删除成功', 'success')
-    await store.fetchLinks()
   }
 
 
@@ -79,7 +90,7 @@ export function useHome() {
 
   // 保存链接后刷新数据
   const handleSaveLink = () => {
-    store.fetchLinks()
+    // 不再需要在这里刷新数据，因为addLink和updateLink方法已经处理了
   }
 
   onMounted(async () => {

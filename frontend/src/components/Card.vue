@@ -1,5 +1,5 @@
 <template>
-  <a class="card" :class="{ 'add-card': isAddCard }" :data-id="link?.id" @click="handleClick"
+  <a class="card" :class="{ 'add-card': isAddCard }" :data-id="link?.linkId" @click="handleClick"
     @contextmenu.prevent="handleContextMenu">
     <img :src="displayIcon" :alt="isAddCard ? '添加' : link?.name"
       onerror="this.src='https://api.iconify.design/mdi:web.svg'" />
@@ -49,13 +49,13 @@ const displayIcon = computed(() => {
 const handleClick = () => {
   if (props.isAddCard) {
     emit('add')
-  } else if (props.link && props.link.id !== undefined) {
+  } else if (props.link && props.link.linkId !== undefined) {
     openLink(props.link)
   }
 }
 
 const handleContextMenu = (event: MouseEvent) => {
-  if (!props.isAddCard && props.link && props.link.id !== undefined) {
+  if (!props.isAddCard && props.link && props.link.linkId !== undefined) {
     emit('contextmenu', event, props.link)
   }
 }

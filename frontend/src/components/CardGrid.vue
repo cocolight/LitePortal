@@ -5,7 +5,7 @@
     <template v-else>
       <Card
         v-for="link in props.links"
-        :key="link.id"
+        :key="link.linkId"
         :link="link"
         @contextmenu="showContextMenu"
       />

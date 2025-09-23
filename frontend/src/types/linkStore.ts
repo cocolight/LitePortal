@@ -12,7 +12,7 @@ export interface LinkStoreGetters {
     loading: ComputedRef<boolean>
     error: ComputedRef<string | null>
     linkCount: ComputedRef<number>
-    getLinkById: (id: string | number)=> ComputedRef<Link | undefined>
+    getLinkById: (linkId: string | number)=> ComputedRef<Link | undefined>
     getLinkByIntExt: (int: string, ext: string)=> ComputedRef<Link | undefined>
     getAllIconTypes: ()=> ComputedRef<IconType[]>
 }

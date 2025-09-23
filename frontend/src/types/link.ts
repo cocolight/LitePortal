@@ -22,7 +22,7 @@ export interface LinkBase {
 }
 
 export interface Link extends LinkBase{
-  id?: string | number
+  linkId?: string | number
 }
 
 export const DEFAULT_LINK: LinkBase = {

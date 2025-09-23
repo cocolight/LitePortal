@@ -15,7 +15,7 @@ export class LinkService {
   async getLinks(userId: number): Promise<Link[]> {
     return this.linkRepository.find({
       where: { user: { id: userId } },
-      select: ['id', 'link_id', 'name', 'online_icon', 'text_icon', 'upload_icon', 'paid_icon','icon_type', 'int_url', 'ext_url', 'desc'],
+      select: ['link_id', 'name', 'online_icon', 'text_icon', 'upload_icon', 'paid_icon','icon_type', 'int_url', 'ext_url', 'desc'],
       order: { created_at: 'DESC' }
     });
   }

@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 export class CreateLinkDto {
   @ApiProperty({description: 'Link id, 自动生成'})
-  id?: string;
+  linkId?: string;
 
   @ApiProperty({ required: false, description: 'Link 名称',example: '百度'})
   name?: string;
@@ -33,5 +33,5 @@ export class CreateLinkDto {
 
 export class DeleteLinkDto {
   @ApiProperty({required: true, description: 'Link id'})
-  id!: string;
+  linkId!: string;
 }

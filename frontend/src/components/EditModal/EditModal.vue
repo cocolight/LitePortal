@@ -59,17 +59,14 @@ import { cloneDeep } from 'lodash-es'
   watch(() => props.visible, (visible) => {
     if (!visible) {
       // 模态框打开时，重置为初始状态
-      localLinkState.id = ''
-      // Object.assign(localLinkState, {
-      //   ...cloneDeep(props.link),
-      //   iconType: props.link.iconType || IconType.onlineIcon
-      // })
+      localLinkState.linkId = ''
+
     }
   }, { immediate: true });
 
   const linkStore = useLinkStore()
 
-  const isEdit = computed(() => !!props.link.id)
+  const isEdit = computed(() => !!props.link.linkId)
 
   // 监听表单数据变化，自动获取图标
   let fetchTimer: ReturnType<typeof setTimeout>
@@ -196,8 +193,14 @@ import { cloneDeep } from 'lodash-es'
 
   // 保存
   const handleSave = async () => {
+    let linkIndex = -1;
 
     try {
+      // 如果是添加操作，先应用乐观更新
+      if (!isEdit.value) {
+        linkIndex = linkStore.addLinkToState(localLinkState);
+      }
+
       // 根据是编辑还是添加执行不同操作
       const action = isEdit.value
         ? () => linkStore.updateLink(localLinkState)
@@ -210,9 +213,17 @@ import { cloneDeep } from 'lodash-es'
         emit('save');
         showNotification(isEdit.value ? '更新成功' : '添加成功', 'success');
       } else {
+        // 如果添加失败，移除乐观添加的链接
+        if (!isEdit.value && linkIndex >= 0) {
+          linkStore.removeLinkFromStateByIndex(linkIndex);
+        }
         throw new Error(linkStore.error || (isEdit.value ? '更新失败' : '添加失败'));
       }
     } catch (error) {
+      // 如果添加失败，移除乐观添加的链接
+      if (!isEdit.value && linkIndex >= 0) {
+        linkStore.removeLinkFromStateByIndex(linkIndex);
+      }
       showNotification('更新保存失败', 'error');
     }
   };
