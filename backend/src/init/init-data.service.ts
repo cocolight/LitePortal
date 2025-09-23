@@ -35,19 +35,19 @@ export class InitDataService {
     const sampleLinks = [
       {
         link_id: '1',
-        name: 'Google',
-        online_icon: 'https://www.google.com/favicon.ico',
-        int_url: 'https://www.google.com',
-        ext_url: 'https://www.google.com',
-        description: 'Google 搜索引擎',
+        name: '个人博客',
+        online_icon: 'https://alili.website/favicon.ico',
+        int_url: 'https://alili.website',
+        ext_url: 'https://alili.website',
+        desc: '我的博客',
       },
       {
         link_id: '2',
-        name: 'GitHub',
-        online_icon: 'https://github.com/fluidicon.png',
-        int_url: 'https://github.com',
-        ext_url: 'https://github.com',
-        description: 'GitHub 代码托管平台',
+        name: '百度',
+        online_icon: 'https://www.baidu.com/favicon.ico',
+        int_url: 'https://www.baidu.com',
+        ext_url: 'https://www.baidu.com',
+        desc: '百度搜索',
       },
     ];
 

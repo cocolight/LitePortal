@@ -37,7 +37,7 @@ export class Link {
   ext_url!: string;
 
   @Column({ nullable: true })
-  description!: string;
+  desc!: string;
 
   @Column({ type: 'datetime', default: () => 'CURRENT_TIMESTAMP' })
   created_at!: Date;

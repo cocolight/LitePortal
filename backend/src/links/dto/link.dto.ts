@@ -22,10 +22,10 @@ export class CreateLinkDto {
   iconType?: string;
 
   @ApiProperty({required: false, description: '内网地址',example: 'https://192.168.1.1'})
-  int?: string;
+  intUrl?: string;
 
   @ApiProperty({required: false, description: '外网地址',example: 'https://www.baidu.com'})
-  ext?: string;
+  extUrl?: string;
 
   @ApiProperty({required: false, description: '备注'})
   desc?: string;

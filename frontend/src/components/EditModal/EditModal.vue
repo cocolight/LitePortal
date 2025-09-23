@@ -8,8 +8,8 @@
             v-model:textIcon="localLinkState.textIcon" v-model:uploadIcon="localLinkState.uploadIcon" @fetch-favicon="handlefetchFavicon" />
           <div class="divider"></div>
         </div>
-        <FormData v-model:name="localLinkState.name" v-model:desc="localLinkState.desc" v-model:int="localLinkState.int"
-          v-model:ext="localLinkState.ext" />
+        <FormData v-model:name="localLinkState.name" v-model:desc="localLinkState.desc" v-model:intUrl="localLinkState.intUrl"
+          v-model:extUrl="localLinkState.extUrl" />
         <div class="modal-btns">
           <button id="mSave" @click="handleSave">保存</button>
           <button id="mCancel" @click="handleCancel">取消</button>
@@ -37,7 +37,7 @@ import { cloneDeep } from 'lodash-es'
 
   const props = withDefaults(defineProps<EditModalProps>(), {
     visible: false,
-    link: () => ({ name: '', desc: '', int: '', ext: '', icon: '', iconType: IconType.onlineIcon, textIcon: '', uploadIcon: '' })
+    link: () => ({ name: '', desc: '', intUrl: '', extUrl: '', onlineIcon: '', iconType: IconType.onlineIcon, textIcon: '', uploadIcon: '', paidIcon: '' })
   })
 
   const localLinkState = reactive({
@@ -75,7 +75,7 @@ import { cloneDeep } from 'lodash-es'
   let fetchTimer: ReturnType<typeof setTimeout>
 
   // 监听内外网址变化，自动获取在线图标（仅在onlineIcon为空时）
-  watch([() => localLinkState.int, () => localLinkState.ext, () => localLinkState.onlineIcon], ([newInt, newExt, onlineIcon]) => {
+  watch([() => localLinkState.intUrl, () => localLinkState.extUrl, () => localLinkState.onlineIcon], ([newInt, newExt, onlineIcon]) => {
     clearTimeout(fetchTimer);
     const url = newInt || newExt;
     if (url && !onlineIcon) {
@@ -185,7 +185,7 @@ import { cloneDeep } from 'lodash-es'
       await fetchFavicon(iconType, url)
     } else {
       if (iconType === IconType.onlineIcon) {
-        url = localLinkState.int || localLinkState.ext
+        url = localLinkState.intUrl || localLinkState.extUrl
         const faviconUrl = await fetchFavicon(iconType, url)
         localLinkState.onlineIcon = faviconUrl
       } else {

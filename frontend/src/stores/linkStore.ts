@@ -25,7 +25,7 @@ export const useLinkStore = defineStore('linkStore', () => {
 
   // 根据内部(int)和外部(ext)标识获取链接
   const getLinkByIntExt = computed(() => (int: string, ext: string) => {
-    return state.value.links.find(link => link.int === int && link.ext === ext)
+    return state.value.links.find(link => link.intUrl === int && link.extUrl === ext)
   })
 
   // 获取所有图标类型

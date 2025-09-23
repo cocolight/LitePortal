@@ -15,7 +15,7 @@ export class LinkService {
   async getLinks(userId: number): Promise<Link[]> {
     return this.linkRepository.find({
       where: { user: { id: userId } },
-      select: ['id', 'link_id', 'name', 'online_icon', 'text_icon', 'upload_icon', 'paid_icon','icon_type', 'int_url', 'ext_url', 'description'],
+      select: ['id', 'link_id', 'name', 'online_icon', 'text_icon', 'upload_icon', 'paid_icon','icon_type', 'int_url', 'ext_url', 'desc'],
       order: { created_at: 'DESC' }
     });
   }
@@ -35,9 +35,9 @@ export class LinkService {
         upload_icon: payload.uploadIcon || '',
         paid_icon: payload.paidIcon || '',
         icon_type: payload.iconType || 'online_icon',
-        int_url: payload.int,
-        ext_url: payload.ext,
-        description: payload.desc,
+        int_url: payload.intUrl,
+        ext_url: payload.extUrl,
+        desc: payload.desc,
       };
 
       let existingLink: Link | null=null;

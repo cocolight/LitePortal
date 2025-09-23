@@ -19,6 +19,6 @@ export interface IcomPreviewProps {
 export interface FormDataProps {
     name?: string
     desc?: string
-    int?: string
-    ext?: string
+    intUrl?: string
+    extUrl?: string
 }

@@ -11,12 +11,12 @@
 
     <label>
         <strong>内网地址</strong>
-        <input id="mInt" :value="props.int || ''" @input="handleInput($event, 'int')"/>
+        <input id="mInt" :value="props.intUrl || ''" @input="handleInput($event, 'intUrl')"/>
     </label>
 
     <label>
         <strong>公网地址</strong>
-        <input id="mExt" :value="props.ext || ''" @input="handleInput($event, 'ext')"/>
+        <input id="mExt" :value="props.extUrl || ''" @input="handleInput($event, 'extUrl')"/>
     </label>
 </template>
 
@@ -38,54 +38,6 @@ const handleInput = (event: Event, field: keyof FormDataProps) => {
     emit(`update:${field}`, target.value)
 }
 
-
-// props本地副本
-// const localState = reactive({
-//   name: props.name || '',
-//   desc: props.desc || '',
-//   int: props.int || '',
-//   ext: props.ext || ''
-// })
-
-
-
-// 监听本地副本变化，更新props
-// watch(localState, (newVal) => {
-//   emit('update:name', newVal.name)
-//   emit('update:desc', newVal.desc)
-//   emit('update:int', newVal.int)
-//   emit('update:ext', newVal.ext)
-
-
-
-// 自动获取图标
-// const autoFetchIcon = async (url: string) => {
-//   const response = await fetch(`https://api.iconify.design/mdi/${url}.svg?color=currentColor`)
-//   if (response.ok) {
-//     const svg = await response.text()
-//     localState.icon = svg
-//   }
-// }
-
-// 监听表单数据变化，自动获取图标
-// watch(localState, (newVal
-
-// })
-
-// 表单数据
-// const formData = ref({ ...props.link })
-
-// 监听表单数据变化，自动获取图标
-// let fetchTimer: ReturnType<typeof setTimeout>
-
-// 监听内外网址变化，自动获取在线图标
-// watch([() => formData.value.int, () => formData.value.ext], ([newInt, newExt]) => {
-//     clearTimeout(fetchTimer);
-//     const url = newInt || newExt;
-//     if (url) {
-//         fetchTimer = setTimeout(() => autoFetchIcon(url), 1000);
-//     }
-// })
 
 </script>
 

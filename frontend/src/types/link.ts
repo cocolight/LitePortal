@@ -16,8 +16,8 @@ export interface LinkBase {
   uploadIcon?: string
   paidIcon?: string
   iconType?: IconType
-  int: string
-  ext: string
+  intUrl: string
+  extUrl: string
   desc?: string
 }
 
@@ -32,7 +32,7 @@ export const DEFAULT_LINK: LinkBase = {
   uploadIcon: '',
   paidIcon: '',
   iconType: IconType.onlineIcon,
-  int: '',
-  ext: '',
+  intUrl: '',
+  extUrl: '',
   desc: ''
 }

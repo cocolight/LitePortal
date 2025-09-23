@@ -1,6 +1,8 @@
 import { Module } from '@nestjs/common';
+import { APP_INTERCEPTOR} from '@nestjs/core'
 import { ConfigModule } from './config/config.module';
 import { DatabaseModule } from './database/database.module';
+import { TransformInterceptor } from './interceptors/index'
 import { LinkModule } from './links/link.module';
 import { UserModule } from './users/user.module';
 import { InitModule } from './init/init.module'
@@ -13,5 +15,12 @@ import { InitModule } from './init/init.module'
     LinkModule,        // 4. 链接业务（控制器+服务+实体）
     InitModule
   ],
+  controllers: [],
+  providers:[
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: TransformInterceptor
+    }
+  ]
 })
 export class AppModule {}
