@@ -29,11 +29,12 @@ export function useHome() {
 
   // 获取链接数据
   const handleRefreshLinks =async()=>{
-    try {
-      await store.fetchLinks()
+    await store.fetchLinks()
+    if(store.error){
+      showNotification('刷新失败: ' + store.error, 'error')
+      store.clearError()
+    }else{
       showNotification('刷新成功', 'success')
-    }catch (error) {
-      showNotification('刷新失败', 'error')
     }
 
   }
@@ -66,7 +67,7 @@ export function useHome() {
       // 使用store方法从状态中移除链接
       store.removeLinkFromState(deletingLinkId.value)
     }
-    
+
     // 然后发送删除请求
     const success = await store.deleteLink(deletingLinkId.value)
     if (!success) {

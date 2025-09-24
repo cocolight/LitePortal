@@ -37,7 +37,7 @@ import { cloneDeep } from 'lodash-es'
 
   const props = withDefaults(defineProps<EditModalProps>(), {
     visible: false,
-    link: () => ({ name: '', desc: '', intUrl: '', extUrl: '', onlineIcon: '', iconType: IconType.onlineIcon, textIcon: '', uploadIcon: '', paidIcon: '' })
+    link: () => ({ linkId:'', name: '', desc: '', intUrl: '', extUrl: '', onlineIcon: '', iconType: IconType.onlineIcon, textIcon: '', uploadIcon: '', paidIcon: '' })
   })
 
   const localLinkState = reactive({
@@ -56,13 +56,13 @@ import { cloneDeep } from 'lodash-es'
   }, { deep: true });
 
   // 监听模态框可见性变化，每次打开时确保状态干净
-  watch(() => props.visible, (visible) => {
-    if (!visible) {
-      // 模态框打开时，重置为初始状态
-      localLinkState.linkId = ''
+  // watch(() => props.visible, (visible) => {
+  //   if (!visible) {
+  //     // 模态框打开时，重置为初始状态
+  //     localLinkState.linkId = ''
 
-    }
-  }, { immediate: true });
+  //   }
+  // }, { immediate: true });
 
   const linkStore = useLinkStore()
 
@@ -126,8 +126,8 @@ import { cloneDeep } from 'lodash-es'
 
       // 创建URL对象以提取域名
       try {
-        const urlObj = new URL(domain)
-        domain = urlObj.origin
+      const urlObj = new URL(domain)
+      domain = urlObj.origin
       } catch (e) {
         showNotification('无效的网址', 'error')
         return ''
@@ -154,27 +154,24 @@ import { cloneDeep } from 'lodash-es'
             img.onload = resolve
             img.onerror = reject
           })
-
+          
+          showNotification('获取图标成功', 'success')
           return iconUrl
         } catch (e) {
           // 继续尝试下一个路径
         }
       }
-      showNotification('获取图标成功', 'success')
 
-      // 如果所有常见路径都失败，尝试使用第三方服务
-      // return `https://www.google.com/s2/favicons?domain=${urlObj.hostname}&sz=64`
     } catch (error) {
       showNotification('获取图标失败', 'error')
       console.error('获取网站图标失败:', error)
-      // return DEFAULT_ICONS.online
-      // throw new Error('无法获取网站图标')
     }
   }
 
   async function fetchPaidIcon(url: string) {
     // TODO: 实现付费图标获取逻辑
-    return url
+    showNotification('付费图标功能尚未实现', 'info')
+    return ''
   }
 
   const handlefetchFavicon = async (iconType: IconType, url: string) => {
@@ -193,14 +190,7 @@ import { cloneDeep } from 'lodash-es'
 
   // 保存
   const handleSave = async () => {
-    let linkIndex = -1;
-
     try {
-      // 如果是添加操作，先应用乐观更新
-      if (!isEdit.value) {
-        linkIndex = linkStore.addLinkToState(localLinkState);
-      }
-
       // 根据是编辑还是添加执行不同操作
       const action = isEdit.value
         ? () => linkStore.updateLink(localLinkState)
@@ -213,17 +203,9 @@ import { cloneDeep } from 'lodash-es'
         emit('save');
         showNotification(isEdit.value ? '更新成功' : '添加成功', 'success');
       } else {
-        // 如果添加失败，移除乐观添加的链接
-        if (!isEdit.value && linkIndex >= 0) {
-          linkStore.removeLinkFromStateByIndex(linkIndex);
-        }
         throw new Error(linkStore.error || (isEdit.value ? '更新失败' : '添加失败'));
       }
     } catch (error) {
-      // 如果添加失败，移除乐观添加的链接
-      if (!isEdit.value && linkIndex >= 0) {
-        linkStore.removeLinkFromStateByIndex(linkIndex);
-      }
       showNotification('更新保存失败', 'error');
     }
   };

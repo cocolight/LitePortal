@@ -10,7 +10,7 @@
       @edit="handleEditLink" @delete="handleDeleteLink" @refresh="handleSaveLink" />
 
     <!-- 编辑模态框 -->
-    <EditModal v-model:visible="editModalVisible" :link="editingLink" @save="handleSaveLink" />
+    <EditModal v-model:visible="editModalVisible" :link="editingLink" @save="handleSaveLink" :key="modalKey"/>
 
     <!-- 确认对话框 -->
     <ConfirmDialog v-model:visible="confirmDialogVisible" :item-name="deletingLinkName" @confirm="confirmDeleteLink" />
@@ -18,12 +18,15 @@
 </template>
 
 <script setup lang="ts">
+import { ref, watch } from 'vue'
 import SearchBox from '@/components/SearchBox.vue'
 import CardGrid from '@/components/CardGrid.vue'
 import ContextMenu from '@/components/ContextMenu.vue'
 import EditModal from '@/components/EditModal'
 import ConfirmDialog from '@/components/ConfirmDialog.vue'
 import { useHome } from '@/composables/useHome'
+
+const modalKey = ref(0)
 
 // 使用首页业务逻辑
 const {
@@ -45,6 +48,8 @@ const {
   handleSaveLink,
   // handleRefreshLinks
 } = useHome()
+
+watch(editModalVisible, v => { if (v) modalKey.value++ })
 </script>
 
 <style scoped>
