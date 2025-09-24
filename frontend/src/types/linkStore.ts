@@ -26,7 +26,7 @@ export interface LinkStoreActions {
   resetState: ()=> void
 }
 
-export interface ApiError {
-  message?: string
-  error?: string
-}
+// export interface ApiError {
+//   message?: string
+//   error?: string
+// }

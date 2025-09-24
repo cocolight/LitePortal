@@ -1,9 +1,17 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
-import axios from 'axios'
+import { httpClient, LINKS_ENDPOINTS } from '@/api'
 import { initialLinkStoreState } from '@/utils/initialStates'
-import type { LinkBase, Link } from '@/types'
-import type { LinkStoreState, ApiError } from '@/types'
+import type {
+  LinkBase,
+  Link,
+  ApiResponse,
+  LinkConfigResponse,
+  LinkAddRequest,
+  LinkUpdateRequest,
+  LinkDeleteRequest
+} from '@/types'
+import type { LinkStoreState } from '@/types'
 
 
 export const useLinkStore = defineStore('linkStore', () => {
@@ -45,8 +53,8 @@ export const useLinkStore = defineStore('linkStore', () => {
     state.value.error = null
 
     try {
-      const response = await axios.get<{ links: Link[] }>('/api/config')
-      state.value.links = response.data.links || []
+      const response = await httpClient.get<ApiResponse<LinkConfigResponse>>(LINKS_ENDPOINTS.LIST)
+      state.value.links = response.data?.links || []
     } catch (err) {
       state.value.error = err instanceof Error ? err.message : '获取链接数据失败'
       console.error('获取链接数据失败:', err)
@@ -56,23 +64,25 @@ export const useLinkStore = defineStore('linkStore', () => {
   }
 
   const addLink = async (linkData: LinkBase): Promise<boolean> => {
+    const tempId = addLinkToState(linkData)
     state.value.loading = true
     state.value.error = null
 
     try {
-      const response = await axios.post('/api/config', {
-        action: 'add',
+      const requestData: LinkAddRequest = {
         ...linkData
-      })
+      }
+      const response = await httpClient.post<ApiResponse>(LINKS_ENDPOINTS.CREATE, requestData)
 
-      // 后端返回 204 状态码表示成功
-      if (response.status === 204) {
+      // 后端返回成功状态码表示成功
+      if (response.success) {
         return true
       } else {
-        state.value.error = response.data?.message || response.data?.error || '添加链接失败'
+        state.value.error = response.message || '添加链接失败'
         return false
       }
     } catch (err) {
+      removeLinkFromStateById(tempId)
       state.value.error = err instanceof Error ? err.message : '添加链接失败'
       console.error('添加链接失败:', err)
       return false
@@ -86,17 +96,17 @@ export const useLinkStore = defineStore('linkStore', () => {
     state.value.error = null
 
     try {
-      const response = await axios.post<ApiError>('/api/config', {
-        action: 'update',
+      const requestData: LinkUpdateRequest = {
         ...linkData
-      })
+      }
+      const response = await httpClient.put<ApiResponse>(LINKS_ENDPOINTS.UPDATE(linkData.linkId), requestData)
 
-      // 后端返回 204 状态码表示成功
-      if (response.status === 204) {
+      // 后端返回成功状态码表示成功
+      if (response.success) {
         await fetchLinks()
         return true
       } else {
-        state.value.error = response.data?.message || response.data?.error || '更新链接失败'
+        state.value.error = response.message || '更新链接失败'
         return false
       }
     } catch (err) {
@@ -109,23 +119,29 @@ export const useLinkStore = defineStore('linkStore', () => {
   }
 
   const deleteLink = async (linkId: string | number): Promise<boolean> => {
+
+    const backup = links.value.find(l => l.linkId === linkId)
+    removeLinkFromState(linkId)
+
     state.value.loading = true
     state.value.error = null
 
     try {
-      const response = await axios.post<ApiError>('/api/config', {
-        action: 'delete',
+      const requestData: LinkDeleteRequest = {
         linkId
-      })
+      }
 
-      // 后端返回 204 状态码表示删除成功
-      if (response.status === 204) {
+      const response = await httpClient.delete<ApiResponse>(LINKS_ENDPOINTS.DELETE(requestData.linkId))
+
+      // 后端返回成功状态码表示删除成功
+      if (response.success) {
         return true
       } else {
-        state.value.error = response.data?.message || response.data?.error || '删除链接失败'
+        state.value.error = response.message || '删除链接失败'
         return false
       }
     } catch (err) {
+      if(backup) restoreLinkToState(backup)
       state.value.error = err instanceof Error ? err.message : '删除链接失败'
       console.error('删除链接失败:', err)
       return false
@@ -146,22 +162,22 @@ export const useLinkStore = defineStore('linkStore', () => {
 
   // 直接将链接添加到状态中（用于乐观更新）
   const addLinkToState = (linkData: LinkBase): number => {
-    // 创建一个新链接，使用一个临时的索引作为ID
-    const newLink: Link = {
-      ...linkData
-    }
-    // 将新链接添加到列表开头
+    const tempId = -Date.now()
+    const newLink: Link = { ...linkData, linkId: tempId } as Link
     state.value.links.unshift(newLink)
-    // 返回索引（0），因为新添加的链接在数组开头
-    return 0
+    return tempId        // 返回临时 id
   }
 
   // 从状态中移除链接（用于添加失败时移除）
-  const removeLinkFromStateByIndex = (index: number): void => {
-    if (index >= 0 && index < state.value.links.length) {
-      state.value.links.splice(index, 1)
-    }
+  const removeLinkFromStateById = (tempId: number): void => {
+    const idx = state.value.links.findIndex(l => l.linkId === tempId)
+    if (idx > -1) state.value.links.splice(idx, 1)
   }
+  // const removeLinkFromStateByIndex = (index: number): void => {
+  //   if (index >= 0 && index < state.value.links.length) {
+  //     state.value.links.splice(index, 1)
+  //   }
+  // }
 
   // 清除错误
   const clearError = (): void => {
@@ -199,7 +215,7 @@ export const useLinkStore = defineStore('linkStore', () => {
     removeLinkFromState,
     restoreLinkToState,
     addLinkToState,
-    removeLinkFromStateByIndex,
+    removeLinkFromStateById,
     clearError,
     resetState
   }
