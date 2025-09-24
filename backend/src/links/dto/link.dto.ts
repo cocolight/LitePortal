@@ -1,37 +1,80 @@
 import { ApiProperty } from '@nestjs/swagger';
+
 export class CreateLinkDto {
   @ApiProperty({description: 'Link id, 自动生成'})
   linkId?: string;
 
-  @ApiProperty({ required: false, description: 'Link 名称',example: '百度'})
-  name?: string;
+  @ApiProperty({ required: true, description: 'Link 名称', example: '百度' })
+  name: string;
 
-  @ApiProperty({required: false, description: '在线图标地址',example: 'https://www.baidu.com'})
+  @ApiProperty({ required: false, description: '在线图标地址', example: 'https://www.baidu.com/favicon.ico' })
   onlineIcon?: string;
 
-  @ApiProperty({required: false, description: '文字图标',example: 'BD'})
+  @ApiProperty({ required: false, description: '文字图标', example: 'BD' })
   textIcon?: string;
 
-  @ApiProperty({required: false, description: '上传图标地址',example: 'https://www.baidu.com'})
+  @ApiProperty({ required: false, description: '上传图标地址', example: 'https://example.com/icon.png' })
   uploadIcon?: string;
 
-  @ApiProperty({required: false, description: '图标库图标编码',example: 'safdsgsd'})
+  @ApiProperty({ required: false, description: '图标库图标编码', example: 'icon-code' })
   paidIcon?: string;
 
-  @ApiProperty({required: false, description: '图标类型', enum: ['online_icon', 'text_icon', 'upload_icon', 'paid_icon']})
+  @ApiProperty({ 
+    required: false, 
+    description: '图标类型', 
+    enum: ['online_icon', 'text_icon', 'upload_icon', 'paid_icon'],
+    default: 'online_icon'
+  })
   iconType?: string;
 
-  @ApiProperty({required: false, description: '内网地址',example: 'https://192.168.1.1'})
-  intUrl?: string;
+  @ApiProperty({ required: true, description: '内网地址', example: 'https://192.168.1.1' })
+  intUrl: string;
 
-  @ApiProperty({required: false, description: '外网地址',example: 'https://www.baidu.com'})
-  extUrl?: string;
+  @ApiProperty({ required: true, description: '外网地址', example: 'https://www.baidu.com' })
+  extUrl: string;
 
-  @ApiProperty({required: false, description: '备注'})
+  @ApiProperty({ required: false, description: '备注' })
+  desc?: string;
+}
+
+export class UpdateLinkDto {
+  @ApiProperty({ required: true, description: 'Link id' })
+  linkId: string;
+
+  @ApiProperty({ required: true, description: 'Link 名称', example: '百度' })
+  name: string;
+
+  @ApiProperty({ required: false, description: '在线图标地址', example: 'https://www.baidu.com/favicon.ico' })
+  onlineIcon?: string;
+
+  @ApiProperty({ required: false, description: '文字图标', example: 'BD' })
+  textIcon?: string;
+
+  @ApiProperty({ required: false, description: '上传图标地址', example: 'https://example.com/icon.png' })
+  uploadIcon?: string;
+
+  @ApiProperty({ required: false, description: '图标库图标编码', example: 'icon-code' })
+  paidIcon?: string;
+
+  @ApiProperty({ 
+    required: false, 
+    description: '图标类型', 
+    enum: ['online_icon', 'text_icon', 'upload_icon', 'paid_icon'],
+    default: 'online_icon'
+  })
+  iconType?: string;
+
+  @ApiProperty({ required: true, description: '内网地址', example: 'https://192.168.1.1' })
+  intUrl: string;
+
+  @ApiProperty({ required: true, description: '外网地址', example: 'https://www.baidu.com' })
+  extUrl: string;
+
+  @ApiProperty({ required: false, description: '备注' })
   desc?: string;
 }
 
 export class DeleteLinkDto {
-  @ApiProperty({required: true, description: 'Link id'})
+  @ApiProperty({ required: true, description: 'Link id' })
   linkId!: string;
 }

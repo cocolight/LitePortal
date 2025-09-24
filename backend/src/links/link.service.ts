@@ -20,7 +20,7 @@ export class LinkService {
     });
   }
 
-  async createOrUpdateLink(userId: number, payload: any): Promise<Link> {
+  async createLink(userId: number, payload: any): Promise<Link> {
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
@@ -28,52 +28,87 @@ export class LinkService {
     try {
       const linkData = {
         user: { id: userId },
-        link_id: payload.id || Date.now().toString(),
+        link_id: payload.linkId || Date.now().toString(),
         name: payload.name,
-        online_icon: payload.onlineIcon || payload.icon,
+        online_icon: payload.onlineIcon || '',
         text_icon: payload.textIcon || '',
         upload_icon: payload.uploadIcon || '',
         paid_icon: payload.paidIcon || '',
         icon_type: payload.iconType || 'online_icon',
         int_url: payload.intUrl,
         ext_url: payload.extUrl,
-        desc: payload.desc,
+        desc: payload.desc || '',
       };
 
-      let existingLink: Link | null=null;
-      if (payload.id) {
-        existingLink = await queryRunner.manager.findOne(Link, {
-          where: { user: { id: userId }, link_id: payload.id }
-        });
-      }
+      // 创建新链接
+      const link = await queryRunner.manager.create(Link, {
+        ...linkData,
+        created_at: new Date(),
+        updated_at: new Date()
+      });
 
-      let link: Link;
-      if (existingLink) {
-        // 更新现有链接
-        link = await queryRunner.manager.save(Link, {
-          ...existingLink,
-          ...linkData,
-          updated_at: new Date()
-        });
-      } else {
-        // 创建新链接
-        link = await queryRunner.manager.create(Link, {
-          ...linkData,
-          created_at: new Date()
-        });
-        link = await queryRunner.manager.save(Link, link);
-      }
+      const savedLink = await queryRunner.manager.save(Link, link);
 
       await queryRunner.commitTransaction();
-      return link;
+      return savedLink;
     } catch (err) {
       await queryRunner.rollbackTransaction();
       if(err instanceof Error){
-        throw new BadRequestException(`操作失败: ${err.message}`);
-      }else{
-        throw new BadRequestException(`操作失败: ${String(err)}`);
+        throw new BadRequestException(`创建链接失败: ${err.message}`);
+      } else {
+        throw new BadRequestException(`创建链接失败: ${String(err)}`);
+      }
+    } finally {
+      await queryRunner.release();
+    }
+  }
+
+  async updateLink(userId: number, linkId: string, payload: any): Promise<Link> {
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
+    try {
+      // 查找现有链接
+      const existingLink = await queryRunner.manager.findOne(Link, {
+        where: { user: { id: userId }, link_id: linkId }
+      });
+
+      if (!existingLink) {
+        throw new NotFoundException('链接不存在或无权更新');
       }
 
+      const linkData = {
+        name: payload.name,
+        online_icon: payload.onlineIcon || '',
+        text_icon: payload.textIcon || '',
+        upload_icon: payload.uploadIcon || '',
+        paid_icon: payload.paidIcon || '',
+        icon_type: payload.iconType || 'online_icon',
+        int_url: payload.intUrl,
+        ext_url: payload.extUrl,
+        desc: payload.desc || '',
+      };
+
+      // 更新现有链接
+      const updatedLink = await queryRunner.manager.save(Link, {
+        ...existingLink,
+        ...linkData,
+        updated_at: new Date()
+      });
+
+      await queryRunner.commitTransaction();
+      return updatedLink;
+    } catch (err) {
+      await queryRunner.rollbackTransaction();
+      if (err instanceof NotFoundException) {
+        throw err; // 重新抛出 NotFoundException
+      }
+      if(err instanceof Error){
+        throw new BadRequestException(`更新链接失败: ${err.message}`);
+      } else {
+        throw new BadRequestException(`更新链接失败: ${String(err)}`);
+      }
     } finally {
       await queryRunner.release();
     }
@@ -83,6 +118,15 @@ export class LinkService {
     const result = await this.linkRepository.delete({ user: { id: userId }, link_id: linkId });
     if (result.affected === 0) {
       throw new NotFoundException('链接不存在或无权删除');
+    }
+  }
+
+  // 保持向后兼容的旧方法
+  async createOrUpdateLink(userId: number, payload: any): Promise<Link> {
+    if (payload.linkId) {
+      return this.updateLink(userId, payload.linkId, payload);
+    } else {
+      return this.createLink(userId, payload);
     }
   }
 }
