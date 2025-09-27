@@ -9,7 +9,7 @@ import { storeToRefs } from 'pinia'
 export function useHome() {
   // 链接数据
   const store = useLinkStore()
-  const { links, loading, error} = storeToRefs(store)
+  const { links, loading, error, message} = storeToRefs(store)
 
 
   // 右键菜单状态
@@ -31,7 +31,7 @@ export function useHome() {
   const handleRefreshLinks =async()=>{
     await store.fetchLinks()
     if(store.error){
-      showNotification('刷新失败: ' + store.error, 'error')
+      showNotification('刷新失败: ' + store.message, 'error')
       store.clearError()
     }else{
       showNotification('刷新成功', 'success')
@@ -75,7 +75,7 @@ export function useHome() {
       if (linkToDelete) {
         store.restoreLinkToState(linkToDelete)
       }
-      showNotification('删除失败', 'error')
+      showNotification('删除失败: '+ store.message, 'error')
       return
     }
     showNotification('删除成功', 'success')
@@ -103,6 +103,7 @@ export function useHome() {
     links: links,
     loading: loading,
     error: error,
+    message: message,
 
     // 右键菜单状态
     contextMenuVisible,
