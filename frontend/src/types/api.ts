@@ -5,8 +5,11 @@
 // 导入链接相关类型
 import type { LinkBase, Link } from './link'
 
+// API响应联合接口
+export type ApiResult<T extends object> = ApiResponse<T> | ApiError
+
 // API响应基础接口
-export interface ApiResponse<T = any> {
+export interface ApiResponse<T extends object = any> {
   code: number
   data: T
   message: string
@@ -23,6 +26,11 @@ export interface ApiError {
     field: string
     message: string
   }>
+}
+
+// 类型守卫
+export function isApiSuccess<T extends object>(res: ApiResult<T>): res is ApiResponse<T> {
+  return 'success' in res && res.success === true
 }
 
 // 链接请求参数
@@ -49,7 +57,7 @@ export interface BatchDeleteRequest {
 }
 
 // 链接配置响应
-export interface LinkConfigResponse {
+export interface LinkResponse {
   links: Link[]
 }
 
