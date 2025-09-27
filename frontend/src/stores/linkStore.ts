@@ -5,13 +5,14 @@ import { initialLinkStoreState } from '@/utils/initialStates'
 import type {
   LinkBase,
   Link,
-  ApiResponse,
-  LinkConfigResponse,
+  ApiResult,
+  LinkResponse,
   LinkAddRequest,
   LinkUpdateRequest,
-  LinkDeleteRequest
+  LinkDeleteRequest,
+  LinkStoreState
 } from '@/types'
-import type { LinkStoreState } from '@/types'
+import { isApiSuccess} from '@/types'
 
 
 export const useLinkStore = defineStore('linkStore', () => {
@@ -22,6 +23,7 @@ export const useLinkStore = defineStore('linkStore', () => {
   const links = computed(() => state.value.links)
   const loading = computed(() => state.value.loading)
   const error = computed(() => state.value.error)
+  const message = computed(() => state.value.message)
 
   // 获取链接总数
   const linkCount = computed(() => state.value.links.length)
@@ -53,11 +55,21 @@ export const useLinkStore = defineStore('linkStore', () => {
     state.value.error = null
 
     try {
-      const response = await httpClient.get<ApiResponse<LinkConfigResponse>>(LINKS_ENDPOINTS.LIST)
-      state.value.links = response.data?.links || []
+      const response = await httpClient.get<ApiResult<LinkResponse>>(LINKS_ENDPOINTS.LIST)
+      const result: ApiResult<LinkResponse> = response.data
+
+      if (isApiSuccess(result)) {
+        state.value.links = result.data?.links ?? []
+      }else{
+        // ApiError
+        state.value.message = result.message || '获取链接数据失败'
+        console.warn('[Business Error]', result.error)
+      }
+
     } catch (err) {
+      // 网络 / 非 2xx
       state.value.error = err instanceof Error ? err.message : '获取链接数据失败'
-      console.error('获取链接数据失败:', err)
+      console.error('[Network/Http Error]', err)
     } finally {
       state.value.loading = false
     }
@@ -72,19 +84,22 @@ export const useLinkStore = defineStore('linkStore', () => {
       const requestData: LinkAddRequest = {
         ...linkData
       }
-      const response = await httpClient.post<ApiResponse>(LINKS_ENDPOINTS.CREATE, requestData)
+      const response = await httpClient.post<ApiResult<LinkResponse>>(LINKS_ENDPOINTS.CREATE, requestData)
+      const result: ApiResult<LinkResponse> = response.data
 
       // 后端返回成功状态码表示成功
-      if (response.success) {
+      if (isApiSuccess(result)) {
         return true
       } else {
-        state.value.error = response.message || '添加链接失败'
+        // ApiError
+        state.value.message = result.message || '添加链接失败'
+        console.warn('[Business Error]', result.error)
         return false
       }
     } catch (err) {
       removeLinkFromStateById(tempId)
       state.value.error = err instanceof Error ? err.message : '添加链接失败'
-      console.error('添加链接失败:', err)
+      console.error('[Network/Http Error]', err)
       return false
     } finally {
       state.value.loading = false
@@ -95,27 +110,34 @@ export const useLinkStore = defineStore('linkStore', () => {
     state.value.loading = true
     state.value.error = null
 
+    const backup = updateLinkInState(linkData)
+
     try {
       const {linkId, ...rest} = linkData
       const requestData: LinkUpdateRequest = rest
 
-      const response = await httpClient.put<ApiResponse>(LINKS_ENDPOINTS.UPDATE(linkData.linkId), requestData)
+      const response = await httpClient.put<ApiResult<LinkResponse>>(LINKS_ENDPOINTS.UPDATE(linkData.linkId), requestData)
+      const result: ApiResult<LinkResponse> = response.data
 
       /**
        * ! 返回判断有误，返回200，但是消息提示更新错误
        * TODO 修改返回判断逻辑
        */
       // 后端返回成功状态码表示成功
-      if (response.success) {
-        await fetchLinks()
+      if (isApiSuccess(result)) {
+        // await fetchLinks()
         return true
       } else {
-        state.value.error = response.message || '更新链接失败'
+        // ApiError
+        if(backup) restoreLinkToState(backup)
+        state.value.message = result.message || '更新链接失败'
+        console.warn('[Business Error]', result.error)
         return false
       }
     } catch (err) {
+      if(backup) restoreLinkToState(backup)
       state.value.error = err instanceof Error ? err.message : '更新链接失败'
-      console.error('更新链接失败:', err)
+      console.error('[Network/Http Error]', err)
       return false
     } finally {
       state.value.loading = false
@@ -131,23 +153,23 @@ export const useLinkStore = defineStore('linkStore', () => {
     state.value.error = null
 
     try {
-      const requestData: LinkDeleteRequest = {
-        linkId
-      }
+      const requestData: LinkDeleteRequest = { linkId }
 
-      const response = await httpClient.delete<ApiResponse>(LINKS_ENDPOINTS.DELETE(requestData.linkId))
+      const response = await httpClient.delete<ApiResult<LinkResponse>>(LINKS_ENDPOINTS.DELETE(requestData.linkId))
+      const result: ApiResult<LinkResponse> = response.data
 
       // 后端返回成功状态码表示删除成功
-      if (response.success) {
+      if (isApiSuccess(result)) {
         return true
       } else {
-        state.value.error = response.message || '删除链接失败'
+        state.value.message = result.message || '删除链接失败'
+        console.warn('[Business Error]', result.error)
         return false
       }
     } catch (err) {
       if(backup) restoreLinkToState(backup)
       state.value.error = err instanceof Error ? err.message : '删除链接失败'
-      console.error('删除链接失败:', err)
+      console.error('[Network/Http Error]', err)
       return false
     } finally {
       state.value.loading = false
@@ -177,11 +199,31 @@ export const useLinkStore = defineStore('linkStore', () => {
     const idx = state.value.links.findIndex(l => l.linkId === tempId)
     if (idx > -1) state.value.links.splice(idx, 1)
   }
-  // const removeLinkFromStateByIndex = (index: number): void => {
-  //   if (index >= 0 && index < state.value.links.length) {
-  //     state.value.links.splice(index, 1)
-  //   }
-  // }
+
+  // 更新状态中的链接（用于乐观更新）
+  const updateLinkInState = (linkData: Link): Link | null => {
+    const originalLink = links.value.find(link => link.linkId === linkData.linkId)
+    if (originalLink) {
+      const index = state.value.links.findIndex(link => link.linkId === linkData.linkId)
+      if (index !== -1) {
+        // 备份原始链接
+        const backup = { ...originalLink }
+        // 更新链接
+        state.value.links[index] = { ...linkData }
+        return backup
+      }
+    }
+    return null
+  }
+
+  // 恢复状态中的链接（用于更新失败时恢复）
+  const restoreLinkInState = (backup: Link): void => {
+    const index = state.value.links.findIndex(link => link.linkId === backup.linkId)
+    if (index !== -1) {
+      state.value.links[index] = backup
+    }
+  }
+
 
   // 清除错误
   const clearError = (): void => {
@@ -193,7 +235,8 @@ export const useLinkStore = defineStore('linkStore', () => {
     state.value = {
       links: [],
       loading: false,
-      error: null
+      error: null,
+      message: null,
     }
   }
 
@@ -206,6 +249,7 @@ export const useLinkStore = defineStore('linkStore', () => {
     links,
     loading,
     error,
+    message,
     linkCount,
     getLinkById,
     getLinkByIntExt,

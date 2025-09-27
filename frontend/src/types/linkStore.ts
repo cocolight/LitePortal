@@ -5,6 +5,7 @@ export interface LinkStoreState {
   links: Link[]
   loading: boolean
   error: string | null
+  message: string | null
 }
 
 export interface LinkStoreGetters {
@@ -25,8 +26,3 @@ export interface LinkStoreActions {
   clearError: ()=> void
   resetState: ()=> void
 }
-
-// export interface ApiError {
-//   message?: string
-//   error?: string
-// }
