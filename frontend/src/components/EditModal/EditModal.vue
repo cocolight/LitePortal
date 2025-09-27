@@ -60,6 +60,21 @@ import { cloneDeep } from 'lodash-es'
 
   const isEdit = computed(() => !!props.link.linkId)
 
+  // 监听表单是否变化，用于显示保存按钮
+  const hasChanges = computed(() => {
+    const original = props.link
+    return !(
+      original.name === localLinkState.name &&
+      original.desc === localLinkState.desc &&
+      original.intUrl === localLinkState.intUrl &&
+      original.extUrl === localLinkState.extUrl &&
+      original.iconType === localLinkState.iconType &&
+      original.onlineIcon === localLinkState.onlineIcon &&
+      original.textIcon === localLinkState.textIcon &&
+      original.uploadIcon === localLinkState.uploadIcon
+    )
+  })
+
   // 监听表单数据变化，自动获取图标
   let fetchTimer: ReturnType<typeof setTimeout>
 
@@ -183,6 +198,13 @@ import { cloneDeep } from 'lodash-es'
 
   // 保存
   const handleSave = async () => {
+
+    if (!hasChanges.value) {
+      showNotification('没有数据变更', 'info')
+      emit('update:visible', false)
+      return
+    }
+
     try {
       // 根据是编辑还是添加执行不同操作
       const action = isEdit.value
