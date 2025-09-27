@@ -1,4 +1,4 @@
-import axios, { type AxiosInstance, type AxiosRequestConfig } from 'axios'
+import axios, { type AxiosInstance, type AxiosRequestConfig, type AxiosResponse } from 'axios'
 
 /**
  * 简化的HTTP客户端
@@ -23,20 +23,19 @@ class HttpClient {
     this.instance.interceptors.request.use(
       (config) => {
         const token = localStorage.getItem('token')
-        if (token) {
-          config.headers.Authorization = `Bearer ${token}`
-        }
+        if (token) config.headers.Authorization = `Bearer ${token}`
         return config
       },
       (error) => Promise.reject(error)
     )
 
-    // 响应拦截器 - 统一处理错误
+    // 响应拦截器 - 统一处理错误, 不要把 data 提前拆出来
     this.instance.interceptors.response.use(
-      (response) => response.data,
+      (response) => response,
       (error) => {
         if (error.response?.status === 401) {
           console.error('未授权，请重新登录')
+          // 或者登出
         }
         return Promise.reject(error)
       }
@@ -44,22 +43,23 @@ class HttpClient {
   }
 
   // 基础HTTP方法
-  public get<T = any>(url: string, config?: AxiosRequestConfig): Promise<T> {
-    return this.instance.get(url, config)
+  public get<T>(url: string, config?: AxiosRequestConfig): Promise<AxiosResponse<T>> {
+    return this.instance.get<T>(url, config)
   }
 
-  public post<T = any>(url: string, data?: any, config?: AxiosRequestConfig): Promise<T> {
-    return this.instance.post(url, data, config)
+  public post<T>(url: string, data?: any, config?: AxiosRequestConfig): Promise<AxiosResponse<T>> {
+    return this.instance.post<T>(url, data, config)
   }
 
-  public put<T = any>(url: string, data?: any, config?: AxiosRequestConfig): Promise<T> {
-    return this.instance.put(url, data, config)
+  public put<T>(url: string, data?: any, config?: AxiosRequestConfig): Promise<AxiosResponse<T>> {
+    return this.instance.put<T>(url, data, config)
   }
 
-  public delete<T = any>(url: string, config?: AxiosRequestConfig): Promise<T> {
-    return this.instance.delete(url, config)
+  public delete<T = any>(url: string, config?: AxiosRequestConfig): Promise<AxiosResponse<T>> {
+    return this.instance.delete<T>(url, config)
   }
 }
 
 // 创建全局实例
 export const httpClient = new HttpClient()
+
