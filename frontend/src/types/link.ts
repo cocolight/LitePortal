@@ -10,7 +10,6 @@ export enum IconType {
 
 export interface LinkBase {
   name: string
-  // icon?: string // 使用onlineIcon代替
   onlineIcon?: string
   textIcon?: string
   uploadIcon?: string

@@ -17,7 +17,12 @@ export interface ApiResponse<T = any> {
 export interface ApiError {
   code: number
   message: string
-  error?: string
+  error: string
+  traceId?: string
+  details?: Array<{
+    field: string
+    message: string
+  }>
 }
 
 // 链接请求参数
@@ -31,7 +36,7 @@ export interface LinkRequestParams {
 export interface LinkAddRequest extends LinkBase {}
 
 // 链接更新请求
-export interface LinkUpdateRequest extends Link{}
+export interface LinkUpdateRequest extends LinkBase{}
 
 // 链接删除请求
 export interface LinkDeleteRequest {

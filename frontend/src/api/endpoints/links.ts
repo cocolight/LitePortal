@@ -2,12 +2,12 @@
  * 链接相关接口端点
  */
 export const LINKS_ENDPOINTS = {
-  // 链接管理
-  LIST: '/api/links',
-  CREATE: '/api/links',
-  DETAIL: (id: string | number) => `/api/links/${id}`,
-  UPDATE: (id: string | number) => `/api/links/${id}`,
-  DELETE: (id: string | number) => `/api/links/${id}`,
+  // 链接管理, id指linkId
+  LIST: '/links',
+  CREATE: '/links',
+  DETAIL: (id: string | number) => `/links/${id}`,
+  UPDATE: (id: string | number) => `/links/${id}`,
+  DELETE: (id: string | number) => `/links/${id}`,
   // BATCH_DELETE: '/api/links/batch-delete',
 
   // 链接统计

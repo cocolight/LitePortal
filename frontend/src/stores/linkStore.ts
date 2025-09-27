@@ -96,11 +96,15 @@ export const useLinkStore = defineStore('linkStore', () => {
     state.value.error = null
 
     try {
-      const requestData: LinkUpdateRequest = {
-        ...linkData
-      }
+      const {linkId, ...rest} = linkData
+      const requestData: LinkUpdateRequest = rest
+
       const response = await httpClient.put<ApiResponse>(LINKS_ENDPOINTS.UPDATE(linkData.linkId), requestData)
 
+      /**
+       * ! 返回判断有误，返回200，但是消息提示更新错误
+       * TODO 修改返回判断逻辑
+       */
       // 后端返回成功状态码表示成功
       if (response.success) {
         await fetchLinks()
