@@ -55,14 +55,6 @@ import { cloneDeep } from 'lodash-es'
     }
   }, { deep: true });
 
-  // 监听模态框可见性变化，每次打开时确保状态干净
-  // watch(() => props.visible, (visible) => {
-  //   if (!visible) {
-  //     // 模态框打开时，重置为初始状态
-  //     localLinkState.linkId = ''
-
-  //   }
-  // }, { immediate: true });
 
   const linkStore = useLinkStore()
 
@@ -75,6 +67,7 @@ import { cloneDeep } from 'lodash-es'
   watch([() => localLinkState.intUrl, () => localLinkState.extUrl, () => localLinkState.onlineIcon], ([newInt, newExt, onlineIcon]) => {
     clearTimeout(fetchTimer);
     const url = newInt || newExt;
+
     if (url && !onlineIcon) {
       fetchTimer = setTimeout(() => autoFetchIcon(url), 1000);
     }
@@ -154,7 +147,7 @@ import { cloneDeep } from 'lodash-es'
             img.onload = resolve
             img.onerror = reject
           })
-          
+
           showNotification('获取图标成功', 'success')
           return iconUrl
         } catch (e) {
