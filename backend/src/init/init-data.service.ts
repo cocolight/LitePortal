@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Link } from '../links/link.entity';
-import { User } from '../users/user.entity';
+import { Link } from '../modules/links/link.entity';
+import { User } from '../modules/users/user.entity';
 import { ConfigService } from '@nestjs/config';
 
 @Injectable()
@@ -53,7 +53,7 @@ export class InitDataService {
 
     for (const linkData of sampleLinks) {
       const existingLink = await this.linkRepository.findOne({
-        where: { user: { id: user.id }, link_id: linkData.link_id }
+        where: { user: { id: user.id }, linkId: linkData.link_id }
       });
 
       if (!existingLink) {

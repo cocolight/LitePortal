@@ -2,8 +2,8 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule } from '@nestjs/config';
 import { InitDataService } from './init-data.service';
-import { User } from '../users/user.entity';
-import { Link } from '../links/link.entity';
+import { User } from '../modules/users/user.entity';
+import { Link } from '../modules/links/link.entity';
 
 @Module({
   imports: [

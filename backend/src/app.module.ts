@@ -1,10 +1,8 @@
 import { Module } from '@nestjs/common';
-import { APP_INTERCEPTOR} from '@nestjs/core'
 import { ConfigModule } from './config/config.module';
 import { DatabaseModule } from './database/database.module';
-import { TransformInterceptor } from './interceptors/index'
-import { LinkModule } from './links/link.module';
-import { UserModule } from './users/user.module';
+import { LinkModule } from './modules/links/link.module';
+import { UserModule } from './modules/users/user.module';
 import { InitModule } from './init/init.module'
 
 @Module({
@@ -16,11 +14,6 @@ import { InitModule } from './init/init.module'
     InitModule
   ],
   controllers: [],
-  providers:[
-    {
-      provide: APP_INTERCEPTOR,
-      useClass: TransformInterceptor
-    }
-  ]
+  providers:[ ]
 })
 export class AppModule {}

@@ -4,11 +4,12 @@ import { LinkController } from './link.controller';
 import { LinkService } from './link.service';
 import { Link } from './link.entity';
 import { UserModule} from '../users/user.module'
+import { UserGuard } from '../../common/guards/user.guard';
 
 @Module({
   imports: [UserModule, TypeOrmModule.forFeature([Link])],
   controllers: [LinkController],
-  providers: [LinkService],
+  providers: [LinkService, UserGuard],
   exports: [LinkService],
 })
 export class LinkModule {}
