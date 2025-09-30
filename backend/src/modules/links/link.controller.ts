@@ -40,7 +40,8 @@ export class LinkController {
     @UserId() userId: number,
   ): Promise<{ links: LinkResponseDto[] }> {
     const links = await this.linkService.getLinks(userId);
-    return { "links": plainToInstance(LinkResponseDto, links) };
+    return {'links': links.map((l) => plainToInstance(LinkResponseDto, l))}
+    // return { "links": plainToInstance(LinkResponseDto, links) };
   }
 
   /* 创建链接 */
