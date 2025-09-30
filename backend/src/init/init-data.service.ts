@@ -34,26 +34,26 @@ export class InitDataService {
     // 添加一些示例链接
     const sampleLinks = [
       {
-        link_id: '1',
+        linkId: '1',
         name: '个人博客',
-        online_icon: 'https://alili.website/favicon.ico',
-        int_url: 'https://alili.website',
-        ext_url: 'https://alili.website',
+        onlineIcon: 'https://alili.website/favicon.ico',
+        intUrl: 'https://alili.website',
+        extUrl: 'https://alili.website',
         desc: '我的博客',
       },
       {
-        link_id: '2',
+        linkId: '2',
         name: '百度',
-        online_icon: 'https://www.baidu.com/favicon.ico',
-        int_url: 'https://www.baidu.com',
-        ext_url: 'https://www.baidu.com',
+        onlineIcon: 'https://www.baidu.com/favicon.ico',
+        intUrl: 'https://www.baidu.com',
+        extUrl: 'https://www.baidu.com',
         desc: '百度搜索',
       },
     ];
 
     for (const linkData of sampleLinks) {
       const existingLink = await this.linkRepository.findOne({
-        where: { user: { id: user.id }, linkId: linkData.link_id }
+        where: { user: { id: user.id }, linkId: linkData.linkId }
       });
 
       if (!existingLink) {
