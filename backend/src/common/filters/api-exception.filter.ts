@@ -40,7 +40,10 @@ export class ApiExceptionFilter implements ExceptionFilter {
     // 获取请求对象
     // const request = ctx.getRequest();
 
-    // 简单 traceId（生产可用 uuid 或 cls-hooked）
+    /**
+     * 简单 traceId（生产可用 uuid 或 cls-hooked）
+     * TODO: 实现生产级别traceId
+     */
     const traceId = `${Date.now()}-${Math.random().toString(36).slice(2)}`;
 
     // 2. 统一错误 DTO
