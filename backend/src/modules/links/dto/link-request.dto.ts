@@ -42,17 +42,17 @@ export class CreateLinkDto {
   })
   iconType?: string;
 
-  @IsNotEmpty()
+  @IsOptional()
   @IsString()
   @ApiProperty({ description: '内网地址', example: 'https://192.168.1.1' })
   intUrl?: string;
 
-  @IsNotEmpty()
+  @IsOptional()
   @IsString()
   @ApiProperty({ description: '外网地址', example: 'https://www.baidu.com' })
   extUrl?: string;
 
-  @IsNotEmpty()
+  @IsOptional()
   @IsString()
   @ApiProperty({ description: '备注' })
   desc?: string;

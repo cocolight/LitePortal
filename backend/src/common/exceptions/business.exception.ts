@@ -1,5 +1,9 @@
 import { HttpException, HttpStatus } from '@nestjs/common';
 
+/**
+ * 业务异常类，继承自HttpException
+ * 用于处理业务逻辑上的异常情况
+ */
 export class BusinessException extends HttpException {
   constructor(
     public readonly code: number,   // 1000+
