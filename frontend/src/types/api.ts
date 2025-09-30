@@ -13,11 +13,12 @@ export interface ApiResponse<T extends object = any> {
   code: number
   data: T
   message: string
-  success: boolean
+  success: true
 }
 
 // API错误响应
 export interface ApiError {
+  success: false
   code: number
   message: string
   error: string
