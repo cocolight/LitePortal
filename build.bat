@@ -14,7 +14,7 @@ if %errorlevel% neq 0 (
 
 REM 运行构建脚本
 echo 运行构建脚本build.js...
-node build.js
+node build.exe.js
 
 if %errorlevel% neq 0 (
     echo 构建失败

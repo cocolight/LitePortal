@@ -5,22 +5,23 @@
  * 5. 后端 build; 6. 复制后端 dist 到 backend 目录; 7. 使用@yao-pkg/pkg打包; 8. 创建启动脚本
  *
  */
-const fs   = require('fs');
+const fs = require('fs');
 const path = require('path');
 const { execSync } = require('child_process');
+const { log } = require('console');
 
 // ========== 配置 ==========
 const config = {
   frontendDir: 'frontend',
-  backendDir:  'backend',
-  outputDir:   'dist',
-  webDir:      'web'
+  backendDir: 'backend',
+  outputDir: 'dist',
+  webDir: 'web'
 };
-const projectRoot       = process.cwd();
-const backendOutputDir  = path.join(projectRoot, config.outputDir);
-const webDir            = path.join(backendOutputDir, config.webDir);
-const dataDir           = path.join(backendOutputDir, 'data');
-const executableDir     = path.join(backendOutputDir, 'executable');
+const projectRoot = process.cwd();
+const backendOutputDir = path.join(projectRoot, config.outputDir);
+const webDir = path.join(backendOutputDir, config.webDir);
+const dataDir = path.join(backendOutputDir, 'data');
+const executableDir = path.join(backendOutputDir, 'executable');
 
 // ========== 工具：静默pnpm，出错才打印 ==========
 function pnpmSilent(cwd, script) {
@@ -41,7 +42,7 @@ function cleanAll() {
   if (fs.existsSync(config.outputDir)) fs.rmSync(config.outputDir, { recursive: true, force: true });
   // 前后端 clean:build
   pnpmSilent(path.join(projectRoot, config.frontendDir), 'run clean:build');
-  pnpmSilent(path.join(projectRoot, config.backendDir),  'run clean:build');
+  pnpmSilent(path.join(projectRoot, config.backendDir), 'run clean:build');
 }
 
 function prepareDir() {
@@ -117,11 +118,13 @@ async function usePkg() {
     const pkgJson = JSON.parse(fs.readFileSync('package.json', 'utf-8'));
     pkgJson.bin = 'main.js';
     pkgJson.pkg = {
-      targets: ['node22-win-x64', 'node22-linux-x64', 'node22-macos-x64'],
-      outputPath:path.join(backendOutputDir, 'executable'),
+      // targets: ['node22-win-x64', 'node22-linux-x64', 'node22-macos-x64'],
+      targets: ['node22-win-x64'],
+      outputPath: path.join(backendOutputDir, 'executable'),
       outputName: 'server',
       assets: ['web/**/*', '.env.production', 'node_modules/better-sqlite3/**/*'],
-      // env: { NODE_ENV: 'production' }
+      debug: true,
+      log: 'info'
     };
     fs.writeFileSync('package.json', JSON.stringify(pkgJson, null, 2));
 
@@ -148,7 +151,7 @@ async function usePkg() {
     process.stdout.write(out);
     console.log('✅ 打包完成 →', serverExe);
     // 6. 清理
-    // cleanAfterPkg();
+    cleanAfterPkg();
   } finally {
     process.chdir(originalDir);
   }
@@ -173,7 +176,7 @@ pause
   fs.writeFileSync(path.join(config.outputDir, 'start.bat'), win, 'utf-8');
   if (process.platform !== 'win32') {
     try { execSync(`chmod +x ${path.join(config.outputDir, 'start.sh')}`); }
-    catch {}
+    catch { }
   }
 }
 
