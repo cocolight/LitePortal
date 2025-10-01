@@ -13,12 +13,15 @@ jobs:
           - os: ubuntu-latest
             target: node22-linux-x64
             ext: ''
+            artifact_name: server-linux
           - os: macos-latest
             target: node22-macos-x64
             ext: ''
+            artifact_name: server-macos
           - os: windows-latest
             target: node22-win-x64
             ext: .exe
+            artifact_name: server-windows
 
     runs-on: ${{ matrix.os }}
 
@@ -33,19 +36,22 @@ jobs:
         with:
           version: 9
 
-      # 3. 前端构建
+      # 3. 安装 Node.js
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'pnpm'
+          cache-dependency-path: |
+            frontend/pnpm-lock.yaml
+            backend/pnpm-lock.yaml
+
+      # 4. 前端构建
       - name: Frontend install & build
         working-directory: frontend
         run: |
           pnpm install --frozen-lockfile
           pnpm run build
-
-      # 4. 后端构建
-      - name: Backend install & build
-        working-directory: backend
-        run: |
-          pnpm install --frozen-lockfile
-          pnpm run build:prod
 
       # 5. 复制前端产物到 backend/web
       - name: Copy frontend dist
@@ -53,33 +59,85 @@ jobs:
           mkdir -p backend/web
           cp -r frontend/dist/* backend/web/
 
-      # 6. 安装后端生产依赖 + 重编原生模块
-      - name: Backend prod dependencies & rebuild
+      # 6. 后端依赖安装和构建
+      - name: Backend setup
         working-directory: backend
         run: |
+          # 安装所有依赖
+          pnpm install --frozen-lockfile
+          # 构建 TypeScript 项目
+          pnpm run build:prod
+          # 验证 main.js 文件是否存在
+          ls -la dist/
+          # 检查文件是否存在
+          if [ ! -f "dist/main.js" ]; then
+            echo "Error: dist/main.js does not exist after build!"
+            exit 1
+          fi
+
+      # 7. 安装生产依赖和 pkg
+      - name: Backend prod dependencies
+        working-directory: backend
+        run: |
+          # 安装生产依赖
           pnpm install --production --shamefully-hoist
+          # 安装 @yao-pkg/pkg
+          pnpm add -D @yao-pkg/pkg
+          # 重建原生模块
           pnpm rebuild better-sqlite3
 
-      # 7. 写入 pkg 配置（动态）
-      - name: Configure pkg
+      # 8. 配置 package.json 用于 pkg
+      - name: Configure package.json for pkg
         working-directory: backend
-        shell: bash
         run: |
-          jq '.bin = "main.js" |
-              .pkg = {
-                "targets": ["${{ matrix.target }}"],
-                "outputPath": "../dist",
-                "assets": ["dist/**/*", "web/**/*", "node_modules/better-sqlite3/**/*"]
-              }' package.json > tmp.$$.json && mv tmp.$$.json package.json
+          # 创建备份
+          cp package.json package.json.backup
 
-      # 8. 打包
-      - name: Package with pkg
+          # 使用 jq 正确配置 pkg
+          jq '. + {
+            "bin": "dist/main.js",
+            "pkg": {
+              "targets": ["${{ matrix.target }}"],
+              "outputPath": "../dist",
+              "assets": [
+                "dist/**/*",
+                "web/**/*",
+                "node_modules/better-sqlite3/**/*",
+                "node_modules/**/*.node",
+                "package.json"
+              ]
+            }
+          }' package.json > package.json.tmp && mv package.json.tmp package.json
+
+          # 验证配置
+          echo "Updated package.json content:"
+          cat package.json | jq '.bin'
+          cat package.json | jq '.pkg'
+
+      # 9. 使用 @yao-pkg/pkg 打包
+      - name: Package with @yao-pkg/pkg
         working-directory: backend
-        shell: bash
-        run: npx pkg . -o ../dist/server${{ matrix.ext }}
+        run: |
+          echo "Current directory: $(pwd)"
+          echo "Files in current directory:"
+          ls -la
+          echo "Files in dist directory:"
+          ls -la dist/ || echo "dist directory does not exist"
 
-      # 9. 上传产物
-      - uses: actions/upload-artifact@v4
+          # 使用 pkg 打包
+          npx pkg . --target ${{ matrix.target }} --output ../dist/server${{ matrix.ext }}
+
+      # 10. 验证生成的可执行文件
+      - name: Verify executable
+        run: |
+          echo "Generated files in dist:"
+          ls -la dist/
+          file dist/server${{ matrix.ext }} || echo "Cannot check file type"
+
+      # 11. 上传产物
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
         with:
-          name: server-${{ matrix.target }}
+          name: ${{ matrix.artifact_name }}
           path: dist/server${{ matrix.ext }}
+          retention-days: 7
