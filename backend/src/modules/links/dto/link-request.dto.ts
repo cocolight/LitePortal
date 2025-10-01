@@ -58,8 +58,4 @@ export class CreateLinkDto {
   desc?: string;
 }
 
-export class UpdateLinkDto extends PartialType(OmitType(CreateLinkDto, ['linkId'])) {
-  @IsNotEmpty()
-  @IsString()
-  linkId!: string;
-}
+export class UpdateLinkDto extends PartialType(OmitType(CreateLinkDto, ['linkId'])) {}

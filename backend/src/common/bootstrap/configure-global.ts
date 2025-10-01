@@ -31,6 +31,7 @@ export function configureGlobal(app: NestExpressApplication): void {
       transform: true,        // 启用自动转换
       whitelist: true,        // 启用白名单过滤
       forbidNonWhitelisted: true,  // 禁止非白名单属性
+      validateCustomDecorators: false, // 只校验 body，不碰 param/query
       exceptionFactory: (errors) => {  // 自定义异常工厂
         const msg = errors
           .map((e) => Object.values(e.constraints || {}).join(';'))  // 合并所有错误信息
