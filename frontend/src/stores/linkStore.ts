@@ -29,7 +29,7 @@ export const useLinkStore = defineStore('linkStore', () => {
   const linkCount = computed(() => state.value.links.length)
 
   // 根据ID获取链接
-  const getLinkById = computed(() => (linkId: string | number) => {
+  const getLinkById = computed(() => (linkId: string) => {
     return state.value.links.find(link => link.linkId === linkId)
   })
 
@@ -114,9 +114,10 @@ export const useLinkStore = defineStore('linkStore', () => {
 
     try {
       const {linkId, ...rest} = linkData
+      const id = String(linkId)
       const requestData: LinkUpdateRequest = rest
 
-      const response = await httpClient.put<ApiResult<LinkResponse>>(LINKS_ENDPOINTS.UPDATE(linkData.linkId), requestData)
+      const response = await httpClient.put<ApiResult<LinkResponse>>(LINKS_ENDPOINTS.UPDATE(id), requestData)
       const result: ApiResult<LinkResponse> = response.data
 
       /**
@@ -129,13 +130,13 @@ export const useLinkStore = defineStore('linkStore', () => {
         return true
       } else {
         // ApiError
-        if(backup) restoreLinkToState(backup)
+        if(backup) restoreLinkInState(backup)
         state.value.message = result.message || '更新链接失败'
         console.warn('[Business Error]', result.error)
         return false
       }
     } catch (err) {
-      if(backup) restoreLinkToState(backup)
+      if(backup) restoreLinkInState(backup)
       state.value.error = err instanceof Error ? err.message : '更新链接失败'
       console.error('[Network/Http Error]', err)
       return false
@@ -144,7 +145,7 @@ export const useLinkStore = defineStore('linkStore', () => {
     }
   }
 
-  const deleteLink = async (linkId: string | number): Promise<boolean> => {
+  const deleteLink = async (linkId: string): Promise<boolean> => {
 
     const backup = links.value.find(l => l.linkId === linkId)
     removeLinkFromState(linkId)
@@ -177,7 +178,7 @@ export const useLinkStore = defineStore('linkStore', () => {
   }
 
   // 直接从状态中移除链接（用于乐观更新）
-  const removeLinkFromState = (linkId: string | number): void => {
+  const removeLinkFromState = (linkId: string): void => {
     state.value.links = state.value.links.filter(link => link.linkId !== linkId)
   }
 
@@ -187,15 +188,15 @@ export const useLinkStore = defineStore('linkStore', () => {
   }
 
   // 直接将链接添加到状态中（用于乐观更新）
-  const addLinkToState = (linkData: LinkBase): number => {
+  const addLinkToState = (linkData: LinkBase): string => {
     const tempId = -Date.now()
     const newLink: Link = { ...linkData, linkId: tempId } as Link
     state.value.links.unshift(newLink)
-    return tempId        // 返回临时 id
+    return String(tempId)        // 返回临时 id
   }
 
   // 从状态中移除链接（用于添加失败时移除）
-  const removeLinkFromStateById = (tempId: number): void => {
+  const removeLinkFromStateById = (tempId: string): void => {
     const idx = state.value.links.findIndex(l => l.linkId === tempId)
     if (idx > -1) state.value.links.splice(idx, 1)
   }
@@ -209,7 +210,8 @@ export const useLinkStore = defineStore('linkStore', () => {
         // 备份原始链接
         const backup = { ...originalLink }
         // 更新链接
-        state.value.links[index] = { ...linkData }
+        // state.value.links[index] = { ...linkData }
+        Object.assign(state.value.links[index], linkData)
         return backup
       }
     }

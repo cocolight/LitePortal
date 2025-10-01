@@ -53,7 +53,7 @@ import { cloneDeep } from 'lodash-es'
         iconType: newLink.iconType || IconType.onlineIcon
       });
     }
-  }, { deep: true });
+  }, { deep: true, immediate: true });
 
 
   const linkStore = useLinkStore()
@@ -83,9 +83,9 @@ import { cloneDeep } from 'lodash-es'
     clearTimeout(fetchTimer);
     const url = newInt || newExt;
 
-    if (url && !onlineIcon) {
-      fetchTimer = setTimeout(() => autoFetchIcon(url), 1000);
-    }
+    if (!url || onlineIcon) return
+    fetchTimer = setTimeout(() => autoFetchIcon(url), 1500);
+
   })
 
   // 自动获取图标
@@ -119,6 +119,8 @@ import { cloneDeep } from 'lodash-es'
   }
 
   async function fetchOnlineIcon(url: string) {
+    if(!url.trim()) return ''
+    if(/[\u4e00-\u9fa9\s<>]/.test(url)) return ''
 
     try {
       // 规范化URL，确保有协议
