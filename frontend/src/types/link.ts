@@ -9,19 +9,19 @@ export enum IconType {
 }
 
 export interface LinkBase {
-  name: string
+  name?: string
   onlineIcon?: string
   textIcon?: string
   uploadIcon?: string
   paidIcon?: string
   iconType?: IconType
-  intUrl: string
-  extUrl: string
+  intUrl?: string
+  extUrl?: string
   desc?: string
 }
 
 export interface Link extends LinkBase{
-  linkId: string | number
+  linkId: string
 }
 
 export const DEFAULT_LINK: Link = {

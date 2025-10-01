@@ -187,9 +187,9 @@ export const useLinkStore = defineStore('linkStore', () => {
     state.value.links.push(link)
   }
 
-  // 直接将链接添加到状态中（用于乐观更新）
+  // 直接将链接添加到状态中（用于乐观添加）
   const addLinkToState = (linkData: LinkBase): string => {
-    const tempId = -Date.now()
+    const tempId = `temp_${Date.now()}`
     const newLink: Link = { ...linkData, linkId: tempId } as Link
     state.value.links.unshift(newLink)
     return String(tempId)        // 返回临时 id
