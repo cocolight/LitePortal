@@ -5,7 +5,7 @@
         <h3>{{ isEdit ? '编辑' : '新增' }}图标</h3>
         <div class="icon-preview-section">
           <IconPreview :isEdit="isEdit" v-model:iconType="localLinkState.iconType" v-model:onlineIcon="localLinkState.onlineIcon"
-            v-model:textIcon="localLinkState.textIcon" v-model:uploadIcon="localLinkState.uploadIcon" @fetch-favicon="handlefetchFavicon" />
+            v-model:textIcon="localLinkState.textIcon" v-model:uploadIcon="localLinkState.uploadIcon" v-model:paidIcon="localLinkState.paidIcon" @fetch-favicon="handlefetchFavicon" />
           <div class="divider"></div>
         </div>
         <FormData v-model:name="localLinkState.name" v-model:desc="localLinkState.desc" v-model:intUrl="localLinkState.intUrl"
@@ -20,7 +20,7 @@
 </template>
 
 <script setup lang="ts">
-import { cloneDeep } from 'lodash-es'
+  import { cloneDeep } from 'lodash-es'
   import { computed, watch, reactive } from 'vue'
   import IconPreview from './IconPreview.vue';
   import FormData from './FormData.vue';
@@ -28,6 +28,7 @@ import { cloneDeep } from 'lodash-es'
   import { IconType } from '@/types'
   import { showNotification } from '@/utils/notification.ts'
   import type { EditModalProps } from '@/types'
+  // import { generateTextSvg } from '@/utils/iconUtils'
 
 
   const emit = defineEmits<{
@@ -71,7 +72,7 @@ import { cloneDeep } from 'lodash-es'
       original.iconType === localLinkState.iconType &&
       original.onlineIcon === localLinkState.onlineIcon &&
       original.textIcon === localLinkState.textIcon &&
-      original.uploadIcon === localLinkState.uploadIcon
+      original.paidIcon === localLinkState.paidIcon
     )
   })
 
@@ -93,8 +94,9 @@ import { cloneDeep } from 'lodash-es'
     if (!url) return
 
     try {
-      const faviconUrl = await fetchFavicon(IconType.onlineIcon, url)
-      localLinkState.onlineIcon = faviconUrl
+      await fetchFavicon(IconType.onlineIcon, url)
+      // const faviconUrl = await fetchFavicon(IconType.onlineIcon, url)
+      // localLinkState.onlineIcon = faviconUrl
 
     } catch (error) {
       console.error('获取网站图标失败:', error)
@@ -106,56 +108,95 @@ import { cloneDeep } from 'lodash-es'
 
     switch (iconType) {
       case IconType.onlineIcon:
-        return await fetchOnlineIcon(url)
+        localLinkState.onlineIcon = await fetchOnlineIcon(url)
+        break
       case IconType.textIcon:
-        return localLinkState.textIcon
+        localLinkState.textIcon = await fetchTextIcon(url)
+        break
       case IconType.paidIcon:
-        return await fetchPaidIcon(url)
-      // case IconType.upload_icon:
-      //   return localLinkState.uploadIcon
+        localLinkState.paidIcon = await fetchPaidIcon(url)
+        break
       default:
         throw new Error('无效的图标类型')
     }
   }
 
   async function fetchOnlineIcon(url: string) {
-    if(!url.trim()) return ''
-    if(/[\u4e00-\u9fa9\s<>]/.test(url)) return ''
+    if (!url.trim()) return ''
+    if (/[\u4e00-\u9fa9\s<>]/.test(url)) return ''
 
     try {
       // 规范化URL，确保有协议
-      let domain = url
+      let finalUrl = url
+
+      // 检查是否已经是完整的URL（包含协议）
       if (!url.startsWith('http://') && !url.startsWith('https://')) {
-        // 检查URL是否包含有效域名或IP
-        if (!/^[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(url) && !/^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$/.test(url)) {
-          showNotification('请输入有效的网址', 'error')
-          return ''
+        // 检查是否是完整的图标路径（包含常见的图标扩展名）
+        const isIconPath = /\.(ico|png|jpg|jpeg|svg|gif|webp)(\?.*)?$/i.test(url)
+
+        if (isIconPath) {
+          // 如果是图标路径但没有协议，需要添加协议
+          // 检查URL是否包含有效域名或IP
+          if (!/^[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/.test(url) && !/^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}/.test(url)) {
+            showNotification('请输入有效的网址', 'error')
+            return ''
+          }
+          finalUrl = 'https://' + url
+        } else {
+          // 不是图标路径，当作域名处理
+          // 检查URL是否包含有效域名或IP
+          if (!/^[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(url) && !/^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$/.test(url)) {
+            showNotification('请输入有效的网址', 'error')
+            return ''
+          }
+          finalUrl = 'https://' + url
         }
-        domain = 'https://' + url
       }
 
-      // 创建URL对象以提取域名
+      // 创建URL对象以验证和标准化URL
+      let urlObj: URL
       try {
-      const urlObj = new URL(domain)
-      domain = urlObj.origin
+        urlObj = new URL(finalUrl)
       } catch (e) {
         showNotification('无效的网址', 'error')
         return ''
       }
 
-      // 尝试多种可能的图标路径
+      // 检查当前URL是否已经是图标文件
+      const isAlreadyIcon = /\.(ico|png|jpg|jpeg|svg|gif|webp)(\?.*)?$/i.test(urlObj.pathname)
+
+      if (isAlreadyIcon) {
+        // 直接尝试用户输入的图标URL
+        try {
+          const img = new Image()
+          img.src = finalUrl
+
+          await new Promise((resolve, reject) => {
+            img.onload = resolve
+            img.onerror = reject
+          })
+
+          return finalUrl
+        } catch (e) {
+          // 如果直接加载失败，继续尝试其他路径
+        }
+      }
+
+      // 如果不是图标文件或直接加载失败，尝试常见的图标路径
       const iconPaths = [
         '/favicon.ico',
         '/apple-touch-icon.png',
         '/apple-touch-icon-precomposed.png',
         '/favicon.svg',
-        '/favicon.png'
+        '/favicon.png',
+        '/favicon-32x32.png',
+        '/favicon-16x16.png'
       ]
 
       // 尝试每个路径
       for (const path of iconPaths) {
         try {
-          const iconUrl = domain + path
+          const iconUrl = urlObj.origin + path
           const img = new Image()
           img.src = iconUrl
 
@@ -165,37 +206,48 @@ import { cloneDeep } from 'lodash-es'
             img.onerror = reject
           })
 
-          showNotification('获取图标成功', 'success')
           return iconUrl
         } catch (e) {
           // 继续尝试下一个路径
         }
       }
 
+      // 所有尝试都失败
+      showNotification('无法获取网站图标', 'error')
+      return ''
+
     } catch (error) {
       showNotification('获取图标失败', 'error')
       console.error('获取网站图标失败:', error)
+      return ''
     }
+  }
+
+  async function fetchTextIcon(text: string) {
+    return text
   }
 
   async function fetchPaidIcon(url: string) {
     // TODO: 实现付费图标获取逻辑
-    showNotification('付费图标功能尚未实现', 'info')
-    return ''
+    showNotification('图标库功能尚未实现', 'info')
+    return 'https://api.iconify.design/mdi:cart.svg'
   }
 
   const handlefetchFavicon = async (iconType: IconType, url: string) => {
     if (url) {
       await fetchFavicon(iconType, url)
-    } else {
-      if (iconType === IconType.onlineIcon) {
-        url = localLinkState.intUrl || localLinkState.extUrl
-        const faviconUrl = await fetchFavicon(iconType, url)
-        localLinkState.onlineIcon = faviconUrl
-      } else {
-        showNotification('请输入图标地址', 'error')
-      }
+      return;
     }
+
+    if (iconType === IconType.onlineIcon) {
+      const srcUrl = localLinkState.intUrl || localLinkState.extUrl
+      if (srcUrl?.trim()) {
+        await fetchFavicon(iconType, url)
+        return;
+      }
+      showNotification('请输入图标地址', 'error')
+    }
+
   }
 
   // 保存
@@ -211,7 +263,10 @@ import { cloneDeep } from 'lodash-es'
       // 根据是编辑还是添加执行不同操作
       const action = isEdit.value
         ? () => linkStore.updateLink(localLinkState)
-        : () => linkStore.addLink(localLinkState);
+        : () => {
+          const {linkId, ...rest} = localLinkState
+          return linkStore.addLink(rest);
+        }
 
       const success = await action();
 
@@ -235,14 +290,6 @@ import { cloneDeep } from 'lodash-es'
 </script>
 
 <style scoped lang="scss">
-  /* ========== 公共变量 ========== */
-  $input-height: 32px;
-  $input-padding-x: 0.625rem;
-  $input-border-radius: 4px;
-  $input-border: 1px solid var(--border);
-  $input-bg: #fff;
-  $input-focus-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-
   .modal-overlay {
     position: fixed;
     inset: 0;
@@ -259,165 +306,26 @@ import { cloneDeep } from 'lodash-es'
     background: var(--card);
     padding: 1.75rem;
     border-radius: var(--radius);
-    width: 480px;
+    width: 90vw;
+    max-width: 480px;
+    min-width: 320px;
     display: flex;
     flex-direction: column;
     gap: 1rem;
     box-shadow: var(--shadow-lg);
     border: 1px solid var(--border);
     animation: slideUp 0.3s ease-out;
+    box-sizing: border-box;
 
     h3 {
       font-size: 1.25rem;
       font-weight: 600;
       margin-bottom: 0.5rem;
     }
-
-    label {
-      display: flex;
-      flex-direction: row;
-      align-items: center;
-      font-size: 0.875rem;
-      font-weight: 500;
-      color: var(--text);
-      gap: 0.5rem;
-
-      strong {
-        min-width: 80px;
-        text-align: justify;
-        text-align-last: justify;
-        margin-right: 0.5rem;
-      }
-
-      /* 普通输入框 -> 统一高度 */
-      input {
-        flex: 1;
-        height: $input-height;
-        padding: 0 $input-padding-x;
-        border-radius: $input-border-radius;
-        border: $input-border;
-        background: $input-bg;
-        color: var(--text);
-        transition: var(--transition);
-        text-align: left;
-
-        &:focus {
-          outline: none;
-          border-color: var(--accent);
-          box-shadow: $input-focus-shadow;
-        }
-      }
-    }
   }
 
-  /* ========== 一体式搜索框（与普通输入框同高） ========== */
-  .input-wrapper {
-    display: flex;
-    flex: 1;
-    align-items: stretch;
-    border: $input-border;
-    border-radius: $input-border-radius;
-    // overflow: hidden;
-    background: $input-bg;
-    height: $input-height;
-
-    input {
-      border: none;
-      border-right: none;
-      outline: none;
-      height: 100%;
-      padding: 0 $input-padding-x;
-      border-radius: 4px 0 0 4px !important;
-      flex: 1;
-      min-width: 240px;
-      font-size: 14px;
-      background: transparent;
-    }
-
-    .search-btn {
-      border: none;
-      border-left: none;
-      background: #f5f7fa;
-      cursor: pointer;
-      padding: 0 10px;
-      display: flex;
-      align-items: center;
-      height: 100%;
-      border-radius: 0 $input-border-radius $input-border-radius 0;
-      margin-left: 0;
-      transition: background 0.2s;
-
-      &:hover {
-        background: #e6e8eb;
-      }
-
-      svg {
-        fill: #606266;
-      }
-    }
-  }
-
-  /* ===== 以下保持原样，仅嵌套优化 ===== */
   .icon-preview-section {
     margin-bottom: 1rem;
-  }
-
-  .icon-preview-container {
-    display: flex;
-    justify-content: space-between;
-    gap: 0.75rem;
-  }
-
-  .preview-item {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 0.5rem;
-  }
-
-  .preview-label {
-    font-size: 0.75rem;
-    color: var(--text-secondary);
-    text-align: center;
-  }
-
-  .preview-icon {
-    width: 60px;
-    height: 60px;
-    border-radius: var(--radius);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: var(--bg);
-    border: 1px solid var(--border);
-    overflow: hidden;
-
-    &.selected {
-      box-shadow: 0 0 0 2px var(--accent);
-    }
-
-    img {
-      width: 36px;
-      height: 36px;
-      object-fit: contain;
-    }
-  }
-
-  .online-icon-wrapper,
-  .text-icon-wrapper {
-    position: relative;
-    cursor: pointer;
-  }
-
-
-  .text-icon {
-    font-size: 1.5rem;
-    font-weight: 700;
-    background: linear-gradient(135deg, var(--gradient-1) 0%, var(--gradient-2) 100%);
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
   }
 
   .modal-btns {

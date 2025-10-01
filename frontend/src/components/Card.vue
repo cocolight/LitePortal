@@ -33,8 +33,8 @@ const displayIcon = computed(() => {
   const iconType = props.link?.iconType || IconType.onlineIcon
   // const iconType = computed(() => props.link?.iconType || IconType.online_icon)
 
-  if (iconType === IconType.uploadIcon) {
-    return props.link?.uploadIcon || 'https://api.iconify.design/mdi:upload.svg'
+  if (iconType === IconType.paidIcon) {
+    return props.link?.paidIcon || 'https://api.iconify.design/mdi:upload.svg'
   } else if (iconType === IconType.textIcon) {
     // 文字图标使用data URL格式显示
     const text = props.link?.textIcon || props.link?.name || 'A'
