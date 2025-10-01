@@ -7,6 +7,7 @@ import type {
   Link,
   ApiResult,
   LinkResponse,
+  LinksResponse,
   LinkAddRequest,
   LinkUpdateRequest,
   LinkDeleteRequest,
@@ -55,8 +56,8 @@ export const useLinkStore = defineStore('linkStore', () => {
     state.value.error = null
 
     try {
-      const response = await httpClient.get<ApiResult<LinkResponse>>(LINKS_ENDPOINTS.LIST)
-      const result: ApiResult<LinkResponse> = response.data
+      const response = await httpClient.get<ApiResult<LinksResponse>>(LINKS_ENDPOINTS.LIST)
+      const result: ApiResult<LinksResponse> = response.data
 
       if (isApiSuccess(result)) {
         state.value.links = result.data?.links ?? []
@@ -89,6 +90,8 @@ export const useLinkStore = defineStore('linkStore', () => {
 
       // 后端返回成功状态码表示成功
       if (isApiSuccess(result)) {
+        const newLinkId = result.data.link.linkId
+        updateTempLinkId(tempId, newLinkId)
         return true
       } else {
         // ApiError
@@ -120,10 +123,6 @@ export const useLinkStore = defineStore('linkStore', () => {
       const response = await httpClient.put<ApiResult<LinkResponse>>(LINKS_ENDPOINTS.UPDATE(id), requestData)
       const result: ApiResult<LinkResponse> = response.data
 
-      /**
-       * ! 返回判断有误，返回200，但是消息提示更新错误
-       * TODO 修改返回判断逻辑
-       */
       // 后端返回成功状态码表示成功
       if (isApiSuccess(result)) {
         // await fetchLinks()
@@ -193,6 +192,15 @@ export const useLinkStore = defineStore('linkStore', () => {
     const newLink: Link = { ...linkData, linkId: tempId } as Link
     state.value.links.unshift(newLink)
     return String(tempId)        // 返回临时 id
+  }
+
+  // 响应成功替换tempId
+  const updateTempLinkId = (tempId: string, actualLinkId: string): void => {
+    const tempLink = state.value.links.find(link => link.linkId === tempId)
+    if (tempLink) {
+      tempLink.linkId = actualLinkId
+      console.log(`成功更新链接ID: ${tempId} -> ${actualLinkId}`)
+    }
   }
 
   // 从状态中移除链接（用于添加失败时移除）

@@ -58,9 +58,15 @@ export interface BatchDeleteRequest {
 }
 
 // 链接配置响应
-export interface LinkResponse {
+export interface LinksResponse {
   links: Link[]
 }
+
+// 链接配置响应
+export interface LinkResponse extends Link{
+  link: Link
+}
+
 
 
 // 分页参数
