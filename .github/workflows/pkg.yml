@@ -1,0 +1,85 @@
+name: Build Native Executables
+
+on:
+  push:
+    branches: [main, master]
+  workflow_dispatch:
+
+jobs:
+  pkg:
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            target: node22-linux-x64
+            ext: ''
+          - os: macos-latest
+            target: node22-macos-x64
+            ext: ''
+          - os: windows-latest
+            target: node22-win-x64
+            ext: .exe
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      # 1. 检出代码
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # 2. 安装 pnpm
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      # 3. 前端构建
+      - name: Frontend install & build
+        working-directory: frontend
+        run: |
+          pnpm install --frozen-lockfile
+          pnpm run build
+
+      # 4. 后端构建
+      - name: Backend install & build
+        working-directory: backend
+        run: |
+          pnpm install --frozen-lockfile
+          pnpm run build:prod
+
+      # 5. 复制前端产物到 backend/web
+      - name: Copy frontend dist
+        run: |
+          mkdir -p backend/web
+          cp -r frontend/dist/* backend/web/
+
+      # 6. 安装后端生产依赖 + 重编原生模块
+      - name: Backend prod dependencies & rebuild
+        working-directory: backend
+        run: |
+          pnpm install --production --shamefully-hoist
+          pnpm rebuild better-sqlite3
+
+      # 7. 写入 pkg 配置（动态）
+      - name: Configure pkg
+        working-directory: backend
+        shell: bash
+        run: |
+          jq '.bin = "main.js" |
+              .pkg = {
+                "targets": ["${{ matrix.target }}"],
+                "outputPath": "../dist",
+                "assets": ["dist/**/*", "web/**/*", "node_modules/better-sqlite3/**/*"]
+              }' package.json > tmp.$$.json && mv tmp.$$.json package.json
+
+      # 8. 打包
+      - name: Package with pkg
+        working-directory: backend
+        shell: bash
+        run: npx pkg . -o ../dist/server${{ matrix.ext }}
+
+      # 9. 上传产物
+      - uses: actions/upload-artifact@v4
+        with:
+          name: server-${{ matrix.target }}
+          path: dist/server${{ matrix.ext }}
