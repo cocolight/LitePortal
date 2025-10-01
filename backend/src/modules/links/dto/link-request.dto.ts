@@ -59,8 +59,5 @@ export class CreateLinkDto {
 }
 
 export class UpdateLinkDto extends PartialType(CreateLinkDto) {
-  @IsNotEmpty()
-  @IsString()
-  @ApiProperty({ description: 'Link id' })
-  linkId!: string;
+
 }
