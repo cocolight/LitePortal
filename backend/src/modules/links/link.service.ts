@@ -45,7 +45,7 @@ export class LinkService {
     return this.linkRepo.manager.transaction(async (em) => {
       const link = em.create(Link, {
         user: { id: userId } as User,
-        linkId: dto.linkId || Date.now().toString(),
+        linkId: Date.now().toString(),
         ...dto,
       });
       return em.save(link);

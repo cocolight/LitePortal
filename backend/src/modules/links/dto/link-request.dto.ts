@@ -3,15 +3,15 @@ import { PartialType, OmitType } from '@nestjs/mapped-types'
 import { IsString, IsOptional, IsNotEmpty, IsEnum } from 'class-validator';
 
 export class CreateLinkDto {
-  @IsOptional()
-  @IsString()
-  @ApiProperty({description: 'Link id, 自动生成'})
-  linkId?: string;
+  // @IsOptional()
+  // @IsString()
+  // @ApiProperty({description: 'Link id, 自动生成'})
+  // linkId?: string;
 
   @IsOptional()
   @IsString()
   @ApiProperty({ required: true, description: 'Link 名称', example: '百度' })
-  name!: string;
+  name?: string;
 
   @IsOptional()
   @IsString()
@@ -58,4 +58,9 @@ export class CreateLinkDto {
   desc?: string;
 }
 
-export class UpdateLinkDto extends PartialType(OmitType(CreateLinkDto, ['linkId'])) {}
+export class UpdateLinkDto extends PartialType(CreateLinkDto) {
+  @IsNotEmpty()
+  @IsString()
+  @ApiProperty({ description: 'Link id' })
+  linkId!: string;
+}
