@@ -1,5 +1,5 @@
 import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
-import { Link } from '../links/link.entity';
+// import { Link } from '../links/link.entity';
 
 @Entity()
 export class User {
@@ -12,6 +12,7 @@ export class User {
   @Column({ type: 'datetime', default: () => 'CURRENT_TIMESTAMP' })
   created_at!: Date;
 
-  @OneToMany(() => Link, link => link.user)
+  // @OneToMany(() => Link, link => link.user)
+  @OneToMany(() => 'Link', link => link.user)
   links!: Link[];
 }

@@ -7,7 +7,7 @@ import {
   UpdateDateColumn,
   DeleteDateColumn
 } from 'typeorm';
-import { User } from '../users/user.entity';
+// import { User } from '../users/user.entity';
 
 @Entity()
 export class Link {
@@ -20,7 +20,8 @@ export class Link {
   linkId!: string;
 
   /** 所属用户 */
-  @ManyToOne(() => User, (user) => user.links, { onDelete: 'CASCADE' })
+  // @ManyToOne(() => User, (user) => user.links, { onDelete: 'CASCADE' })
+  @ManyToOne(() => 'User', user => user.links, { onDelete: 'CASCADE' })
   user!: User;
 
   @Column({ name: 'name' })
