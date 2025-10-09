@@ -2,7 +2,7 @@ name: Build Native Executables
 
 on:
   push:
-    branches: [main, master]
+    branches: [master]
   workflow_dispatch:
 
 jobs:
@@ -86,54 +86,52 @@ jobs:
           # 重建原生模块
           pnpm rebuild better-sqlite3
 
-      # 8. 配置 package.json 用于 pkg
-      - name: Configure package.json for pkg
+      # 8. 后端构建和编译原生模块
+      - name: Backend install & build
         working-directory: backend
         run: |
-          # 创建备份
-          cp package.json package.json.backup
+          pnpm install --frozen-lockfile
+          pnpm run build:prod
+          # 编译 better-sqlite3 原生模块
+          echo "编译 better-sqlite3 原生模块..."
+          pnpm rebuild better-sqlite3
+          # 验证编译结果
+          echo "better-sqlite3 编译结果:"
+          find node_modules/better-sqlite3 -name "*.node" 2>/dev/null | head -5 || echo "未找到 .node 文件"
 
-          # 使用 jq 正确配置 pkg
-          jq '. + {
-            "bin": "dist/main.js",
-            "pkg": {
-              "targets": ["${{ matrix.target }}"],
-              "outputPath": "../dist",
-              "assets": [
-                "dist/**/*",
-                "web/**/*",
-                "node_modules/better-sqlite3/**/*",
-                "node_modules/**/*.node",
-                "package.json"
-              ]
-            }
-          }' package.json > package.json.tmp && mv package.json.tmp package.json
-
-          # 验证配置
-          echo "Updated package.json content:"
-          cat package.json | jq '.bin'
-          cat package.json | jq '.pkg'
-
-      # 9. 使用 @yao-pkg/pkg 打包
-      - name: Package with @yao-pkg/pkg
-        working-directory: backend
+      # 9. 准备后端文件到 dist 目录
+      - name: Prepare backend files
         run: |
-          echo "Current directory: $(pwd)"
-          echo "Files in current directory:"
-          ls -la
-          echo "Files in dist directory:"
-          ls -la dist/ || echo "dist directory does not exist"
+          # 复制后端构建产物
+          cp -r backend/dist/* dist/
+          # 复制配置文件
+          for file in package.json pnpm-lock.yaml .env.production; do
+            if [ -f "backend/$file" ]; then
+              cp "backend/$file" "dist/$file"
+            fi
+          done
+          # 复制编译好的 better-sqlite3 模块
+          echo "复制 better-sqlite3 原生模块..."
+          mkdir -p dist/node_modules/better-sqlite3
+          if [ -d "backend/node_modules/better-sqlite3" ]; then
+            cp -r backend/node_modules/better-sqlite3/* dist/node_modules/better-sqlite3/
+            echo "better-sqlite3 复制完成"
+          else
+            echo "警告: backend/node_modules/better-sqlite3 目录不存在"
+          fi
 
-          # 使用 pkg 打包
-          npx pkg . --target ${{ matrix.target }} --output ../dist/server${{ matrix.ext }}
-
-      # 10. 验证生成的可执行文件
-      - name: Verify executable
+      # 10. 安装生产依赖和准备 pkg
+      - name: Prepare for pkg packaging
+        working-directory: dist
         run: |
-          echo "Generated files in dist:"
-          ls -la dist/
-          file dist/server${{ matrix.ext }} || echo "Cannot check file type"
+          # 安装生产依赖
+          pnpm install --production --shamefully-hoist
+          # 安装 @yao-pkg/pkg
+          pnpm add -D @yao-pkg/pkg
 
+          # 验证 better-sqlite3 是否存在
+          echo "验证 better-sqlite3 模块:"
+          find node_modules/better-sqlite3 -name "*.node" 2>/dev/null | head -5 || echo "未找到 .node 文件"
       # 11. 上传产物
       - name: Upload artifact
         uses: actions/upload-artifact@v4
