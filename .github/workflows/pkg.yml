@@ -53,11 +53,14 @@ jobs:
           pnpm install --frozen-lockfile
           pnpm run build
 
-      # 5. 复制前端产物到 backend/web
-      - name: Copy frontend dist
+      # 5. 创建输出目录结构
+      - name: Create output directories
         run: |
-          mkdir -p backend/web
-          cp -r frontend/dist/* backend/web/
+          mkdir -p dist/executable
+          mkdir -p dist/data
+          mkdir -p dist/web
+          echo "输出目录创建完成:"
+          ls -la dist/
 
       # 6. 后端依赖安装和构建
       - name: Backend setup
@@ -102,12 +105,22 @@ jobs:
       # 9. 准备后端文件到 dist 目录
       - name: Prepare backend files
         run: |
+          # 确保 dist 目录存在
+          mkdir -p dist
           # 复制后端构建产物
-          cp -r backend/dist/* dist/
+          if [ -d "backend/dist" ]; then
+            cp -r backend/dist/* dist/
+            echo "后端构建产物复制完成"
+          else
+            echo "警告: backend/dist 目录不存在"
+          fi
           # 复制配置文件
           for file in package.json pnpm-lock.yaml .env.production; do
             if [ -f "backend/$file" ]; then
               cp "backend/$file" "dist/$file"
+              echo "已复制 $file"
+            else
+              echo "警告: backend/$file 文件不存在"
             fi
           done
           # 复制编译好的 better-sqlite3 模块
