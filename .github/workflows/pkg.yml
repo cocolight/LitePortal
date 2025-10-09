@@ -53,14 +53,19 @@ jobs:
           pnpm install --frozen-lockfile
           pnpm run build
 
-      # 5. 创建输出目录结构
+            # 5. 创建输出目录结构
       - name: Create output directories
         run: |
           mkdir -p dist/executable
           mkdir -p dist/data
           mkdir -p dist/web
           echo "输出目录创建完成:"
-          ls -la dist/
+          # 跨平台方式列出目录内容
+          if [ "$RUNNER_OS" == "Windows" ]; then
+            dir dist/
+          else
+            ls -la dist/
+          fi
 
       # 6. 后端依赖安装和构建
       - name: Backend setup
