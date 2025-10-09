@@ -2,7 +2,7 @@ name: Build Native Executables
 
 on:
   push:
-    branches: [master]
+    branches: [main, master]
   workflow_dispatch:
 
 jobs:
@@ -46,53 +46,48 @@ jobs:
             frontend/pnpm-lock.yaml
             backend/pnpm-lock.yaml
 
-      # 4. 前端构建
-      - name: Frontend install & build
-        working-directory: frontend
+      # 4. 清理旧的构建
+      - name: Clean previous builds
         run: |
-          pnpm install --frozen-lockfile
-          pnpm run build
+          # 清理 dist 目录
+          if [ -d "dist" ]; then rm -rf dist; fi
+          # 执行前后端的 clean:build
+          cd frontend
+          pnpm run clean:build 2>/dev/null || echo "前端 clean:build 不存在，跳过"
+          cd ../backend
+          pnpm run clean:build 2>/dev/null || echo "后端 clean:build 不存在，跳过"
+        shell: bash
 
-            # 5. 创建输出目录结构
+      # 5. 创建输出目录结构
       - name: Create output directories
         run: |
           mkdir -p dist/executable
           mkdir -p dist/data
           mkdir -p dist/web
           echo "输出目录创建完成:"
-          # 跨平台方式列出目录内容
-          if [ "$RUNNER_OS" == "Windows" ]; then
-            dir dist/
-          else
-            ls -la dist/
-          fi
-
-      # 6. 后端依赖安装和构建
-      - name: Backend setup
-        working-directory: backend
-        run: |
-          # 安装所有依赖
-          pnpm install --frozen-lockfile
-          # 构建 TypeScript 项目
-          pnpm run build:prod
-          # 验证 main.js 文件是否存在
           ls -la dist/
-          # 检查文件是否存在
-          if [ ! -f "dist/main.js" ]; then
-            echo "Error: dist/main.js does not exist after build!"
-            exit 1
-          fi
+        shell: bash
 
-      # 7. 安装生产依赖和 pkg
-      - name: Backend prod dependencies
-        working-directory: backend
+      # 6. 前端构建
+      - name: Frontend install & build
+        working-directory: frontend
         run: |
-          # 安装生产依赖
-          pnpm install --production --shamefully-hoist
-          # 安装 @yao-pkg/pkg
-          pnpm add -D @yao-pkg/pkg
-          # 重建原生模块
-          pnpm rebuild better-sqlite3
+          pnpm install --frozen-lockfile
+          pnpm run build
+        shell: bash
+
+      # 7. 复制前端产物到 dist/web
+      - name: Copy frontend to dist/web
+        run: |
+          # 复制前端 dist
+          cp -r frontend/dist/* dist/web/
+          # 复制 favicon 文件
+          for icon in favicon.ico favicon.png favicon.svg; do
+            if [ -f "frontend/public/$icon" ]; then
+              cp "frontend/public/$icon" "dist/web/$icon"
+            fi
+          done
+        shell: bash
 
       # 8. 后端构建和编译原生模块
       - name: Backend install & build
@@ -106,6 +101,7 @@ jobs:
           # 验证编译结果
           echo "better-sqlite3 编译结果:"
           find node_modules/better-sqlite3 -name "*.node" 2>/dev/null | head -5 || echo "未找到 .node 文件"
+        shell: bash
 
       # 9. 准备后端文件到 dist 目录
       - name: Prepare backend files
@@ -137,6 +133,7 @@ jobs:
           else
             echo "警告: backend/node_modules/better-sqlite3 目录不存在"
           fi
+        shell: bash
 
       # 10. 安装生产依赖和准备 pkg
       - name: Prepare for pkg packaging
@@ -150,10 +147,77 @@ jobs:
           # 验证 better-sqlite3 是否存在
           echo "验证 better-sqlite3 模块:"
           find node_modules/better-sqlite3 -name "*.node" 2>/dev/null | head -5 || echo "未找到 .node 文件"
-      # 11. 上传产物
-      - name: Upload artifact
+        shell: bash
+
+      # 11. 配置 package.json 用于 pkg
+      - name: Configure package.json for pkg
+        working-directory: dist
+        run: |
+          # 读取并修改 package.json
+          jq '. + {
+            "bin": "main.js",
+            "pkg": {
+              "targets": ["${{ matrix.target }}"],
+              "outputPath": "executable",
+              "outputName": "server",
+              "assets": [
+                "web/**/*",
+                ".env.production",
+                "node_modules/better-sqlite3/**/*"
+              ]
+            }
+          }' package.json > package.json.tmp && mv package.json.tmp package.json
+
+          echo "配置后的 package.json pkg 部分:"
+          cat package.json | jq '.pkg'
+        shell: bash
+
+      # 12. 使用 @yao-pkg/pkg 打包
+      - name: Package with @yao-pkg/pkg
+        working-directory: dist
+        run: |
+          echo "当前目录内容:"
+          ls -la
+          echo "开始打包..."
+
+          # 执行打包命令
+          npx @yao-pkg/pkg . -o executable/server${{ matrix.ext }}
+
+          echo "打包完成，检查生成的文件:"
+          ls -la executable/
+        shell: bash
+
+      # 13. 清理 pkg 构建临时文件
+      - name: Cleanup after pkg
+        working-directory: dist
+        run: |
+          # 保留 executable 目录，删除其他文件
+          find . -maxdepth 1 -type f -name "*.json" -o -name "*.yaml" -o -name ".env.*" | xargs rm -f
+          rm -rf node_modules web
+          echo "清理后目录结构:"
+          ls -la
+        shell: bash
+
+      # 14. 创建启动脚本（Windows）
+      - name: Create startup script for Windows
+        if: matrix.os == 'windows-latest'
+        run: |
+          cat > dist/start.bat << 'EOF'
+          @echo off
+          chcp 65001 >nul
+          cd /d "%~dp0"
+          cd executable
+          echo 启动 LitePortal 后端服务...
+          server.exe
+          pause
+          EOF
+          echo "Windows 启动脚本创建完成"
+        shell: bash
+
+      # 15. 上传可执行文件产物
+      - name: Upload executable artifact
         uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.artifact_name }}
-          path: dist/server${{ matrix.ext }}
+          path: dist/executable/server${{ matrix.ext }}
           retention-days: 7
