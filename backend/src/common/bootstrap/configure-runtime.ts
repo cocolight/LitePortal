@@ -33,6 +33,9 @@ export function configureRuntime(
   const maxBodySize = configService.get<string>('maxBodySize', '10mb'); // 获取请求体大小限制，默认为 10mb
   const webRoot = configService.get<string>('webRoot')!;
 
+  console.log('__dirname =', __dirname);
+  console.log(`当前web目录`,webRoot)
+
   // 0. 开发日志, 在静态文件之后注册，静态文件会短路请求
   if (logLevel === 'debug') {
     app.use((req: express.Request, _: express.Response, next: express.NextFunction) => {
