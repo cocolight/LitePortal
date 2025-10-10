@@ -1,13 +1,13 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule as NestConfigModule } from '@nestjs/config';
 import { configuration } from './configuration';
-import path from 'path'
+import { resolve } from 'path'
 
 // 默认为生产环境
 if (!process.env.NODE_ENV) process.env.NODE_ENV = 'production';
 
 const envFile = `.env.${process.env.NODE_ENV}`
-const envFilePath = path.resolve(__dirname, '../', envFile)
+const envFilePath = resolve(__dirname, '../', '../', envFile)
 
 // const fullPath = path.join(__dirname, '..', envFile);
 // console.log('[Config] 尝试加载:', fullPath);

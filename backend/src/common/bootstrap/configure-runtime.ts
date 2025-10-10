@@ -31,8 +31,11 @@ export function configureRuntime(
   const nodeEnv = configService.get<string>('nodeEnv', 'development'); // 获取当前运行环境，默认为 development
   const logLevel = configService.get<string>('logLevel', 'info'); // 获取日志级别，默认为 info
   const maxBodySize = configService.get<string>('maxBodySize', '10mb'); // 获取请求体大小限制，默认为 10mb
-  const webRoot = configService.get<string>('webRoot')!;
+  const rootDir = configService.get<string>('rootDir')!; // 获取项目根目录
+  const webRoot = resolve(rootDir, configService.get<string>('webRoot')!);
 
+
+  console.log('项目目录', rootDir)
   console.log('__dirname =', __dirname);
   console.log(`当前web目录`,webRoot)
 
