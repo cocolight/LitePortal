@@ -6,4 +6,5 @@ export const configuration = () => ({
   logLevel: process.env.LOG_LEVEL,
   initTestData: process.env.INIT_TEST_DATA === 'true' || false,
   isPkg: (process as any).pkg !== undefined,
+  webRoot: process.env.WEB_ROOT || 'public',
 });

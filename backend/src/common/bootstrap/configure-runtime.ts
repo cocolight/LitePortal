@@ -9,7 +9,7 @@
  */
 
 // 内置模块
-import { join } from 'path';
+import { join, resolve } from 'path';
 // 三方包
 import { ConfigService } from '@nestjs/config';
 import { NestExpressApplication } from '@nestjs/platform-express';
@@ -31,6 +31,15 @@ export function configureRuntime(
   const nodeEnv = configService.get<string>('nodeEnv', 'development'); // 获取当前运行环境，默认为 development
   const logLevel = configService.get<string>('logLevel', 'info'); // 获取日志级别，默认为 info
   const maxBodySize = configService.get<string>('maxBodySize', '10mb'); // 获取请求体大小限制，默认为 10mb
+  const webRoot = resolve(configService.get<string>('webRoot')!);
+
+  // 0. 开发日志, 在静态文件之后注册，静态文件会短路请求
+  if (logLevel === 'debug') {
+    app.use((req: express.Request, _: express.Response, next: express.NextFunction) => {
+      console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
+      next();
+    });
+  }
 
   // 1. CORS
   app.enableCors();
@@ -40,7 +49,6 @@ export function configureRuntime(
 
   // 3. 静态文件（仅生产）
   if (nodeEnv === 'production') {
-    const webRoot = join(__dirname, 'web'); // 根据实际构建目录调整
     app.useStaticAssets(webRoot);
 
     app.use('*', (_req: express.Request, res: express.Response) => {
@@ -48,11 +56,5 @@ export function configureRuntime(
     })
   }
 
-  // 4. 开发日志
-  if (logLevel === 'debug') {
-    app.use((req: express.Request, _: express.Response, next: express.NextFunction) => {
-      console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
-      next();
-    });
-  }
+
 }
