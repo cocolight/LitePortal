@@ -5,11 +5,15 @@ import { resolve } from 'path'
 
 // 默认为生产环境
 if (!process.env.NODE_ENV) process.env.NODE_ENV = 'production';
+const nodeEnv = process.env.NODE_ENV
 
 const envFile = `.env.${process.env.NODE_ENV}`
-const envFilePath = resolve(__dirname, '../', envFile)
+let envFilePath = resolve(__dirname, '../', envFile)
+if (nodeEnv === 'development') {
+  envFilePath = resolve(__dirname, '../', '../', envFile)
+}
 
-console.log('[Config] envFilePath=', envFilePath);
+// console.log('[Config] envFilePath=', envFilePath);
 // console.log('[Config] 尝试加载:', fullPath);
 // console.log('[Config] 文件存在:', require('fs').existsSync(fullPath));
 // console.log('[Config] process.env.NODE_ENV=', process.env.NODE_ENV);
