@@ -73,7 +73,7 @@ jobs:
         working-directory: frontend
         run: |
           pnpm install --frozen-lockfile
-          pnpm run build
+          pnpm run build:prod
           echo "=== 前端构建目录结构 ==="
           echo "前端构建目录 ($(pwd)/dist):"
         shell: bash
