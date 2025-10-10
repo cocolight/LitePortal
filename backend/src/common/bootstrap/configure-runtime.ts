@@ -40,7 +40,12 @@ export function configureRuntime(
 
   // 3. 静态文件（仅生产）
   if (nodeEnv === 'production') {
-    app.useStaticAssets(join(__dirname, '..', 'web')); // 根据实际构建目录调整
+    const webRoot = join(__dirname, 'web'); // 根据实际构建目录调整
+    app.useStaticAssets(webRoot);
+
+    app.use('*', (_req: express.Request, res: express.Response) => {
+      res.sendFile(join(webRoot, 'index.html'));
+    })
   }
 
   // 4. 开发日志
