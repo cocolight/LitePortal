@@ -31,7 +31,10 @@ export function configureRuntime(
   const nodeEnv = configService.get<string>('nodeEnv', 'development'); // 获取当前运行环境，默认为 development
   const logLevel = configService.get<string>('logLevel', 'info'); // 获取日志级别，默认为 info
   const maxBodySize = configService.get<string>('maxBodySize', '10mb'); // 获取请求体大小限制，默认为 10mb
-  const webRoot = resolve(configService.get<string>('webRoot')!);
+  // const webRoot = configService.get<string>('webRoot')!;
+  const webRoot = configService.get<string>('webRoot')
+  ? resolve(configService.get<string>('webRoot')!)   // 物理磁盘（留给用户自定义）
+  : join(__dirname, 'web');                         // ✅ 优先用虚拟文件系统
 
   // 0. 开发日志, 在静态文件之后注册，静态文件会短路请求
   if (logLevel === 'debug') {
