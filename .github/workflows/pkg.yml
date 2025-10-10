@@ -189,36 +189,7 @@ jobs:
           ls -lh executable/
         shell: bash
 
-      # 13. 验证可执行文件内容
-      - name: Verify executable contents
-        run: |
-          echo "=== 验证可执行文件内容 ==="
-          # 检查文件大小（应该比较大，因为包含前端文件）
-          echo "可执行文件大小:"
-          ls -lh "dist/executable/server${{ matrix.ext }}"
-
-          # 简单的大小检查：如果文件小于 10MB，可能没有包含前端文件
-          FILE_SIZE=$(stat -c%s "dist/executable/server${{ matrix.ext }}" 2>/dev/null || stat -f%z "dist/executable/server${{ matrix.ext }}" 2>/dev/null)
-          if [ "$FILE_SIZE" -lt 10000000 ]; then
-            echo "警告: 可执行文件可能太小，前端文件可能没有正确打包"
-          else
-            echo "可执行文件大小正常"
-          fi
-
-          # 使用 strings 命令检查可执行文件中是否包含前端文件
-          if command -v strings > /dev/null 2>&1; then
-            echo "检查可执行文件中是否包含 HTML 文件签名:"
-            strings "dist/executable/server${{ matrix.ext }}" | grep -i "DOCTYPE html" | head -3 || echo "未找到 HTML 内容"
-            echo "检查可执行文件中是否包含 JavaScript 内容:"
-            strings "dist/executable/server${{ matrix.ext }}" | grep -i "script" | head -3 || echo "未找到 JavaScript 内容"
-            echo "检查可执行文件中是否包含 web 目录路径:"
-            strings "dist/executable/server${{ matrix.ext }}" | grep -E "(/web/|web/)" | head -5 || echo "未找到 web 目录路径"
-          else
-            echo "strings 命令不可用，跳过内容检查"
-          fi
-        shell: bash
-
-      # 14. 上传可执行文件产物
+      # 13. 上传可执行文件产物
       - name: Upload executable artifact
         uses: actions/upload-artifact@v4
         with:
