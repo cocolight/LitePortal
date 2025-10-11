@@ -43,11 +43,11 @@ export class InitDataService {
       },
       {
         linkId: '2',
-        name: '百度',
-        onlineIcon: 'https://www.baidu.com/favicon.ico',
-        intUrl: 'https://www.baidu.com',
-        extUrl: 'https://www.baidu.com',
-        desc: '百度搜索',
+        name: 'LitePortal',
+        onlineIcon: 'https://github.com/favicon.ico',
+        intUrl: 'https://github.com/cocolight/LitePortal',
+        extUrl: 'https://github.com/cocolight/LitePortal',
+        desc: 'LitePortal github地址',
       },
     ];
 
