@@ -11,8 +11,6 @@ export class InitDataService {
   constructor(
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
-    @InjectRepository(Link)
-    private readonly linkRepository: Repository<Link>,
     @InjectRepository(Init)
     private readonly initRepository: Repository<Init>,
     private readonly configService: ConfigService,
@@ -61,7 +59,7 @@ export class InitDataService {
 
       }
 
-      console.log('测试数据初始化完成');
+      console.log('数据初始化完成');
 
     })
 
@@ -89,7 +87,7 @@ export class InitDataService {
       withDeleted: true,
     })
     if (initRecord) {
-      console.log('测试数据已初始化，无需重复初始化');
+      console.log('数据已初始化，无需重复初始化');
       return;
     }
 
