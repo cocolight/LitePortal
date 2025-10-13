@@ -9,7 +9,7 @@
  */
 
 // 内置模块
-import { join, resolve } from 'path';
+import { resolve } from 'path';
 // 三方包
 import { ConfigService } from '@nestjs/config';
 import { NestExpressApplication } from '@nestjs/platform-express';

@@ -8,7 +8,9 @@ if (!process.env.NODE_ENV) process.env.NODE_ENV = 'production';
 const nodeEnv = process.env.NODE_ENV
 
 const envFile = `.env.${process.env.NODE_ENV}`
+
 let envFilePath = resolve(__dirname, '../', envFile)
+// 生产环境直接使用默认的.env文件
 if (nodeEnv === 'development') {
   envFilePath = resolve(__dirname, '../', '../', envFile)
 }
@@ -23,7 +25,7 @@ if (nodeEnv === 'development') {
     NestConfigModule.forRoot({
       load: [configuration],
       isGlobal: true,
-      envFilePath: [envFilePath, envFile, '.env'], // 关键一行
+      envFilePath: [envFilePath, envFile, '.env'],
     }),
   ],
   exports: [NestConfigModule],

@@ -1,4 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, OneToMany, CreateDateColumn } from 'typeorm';
 import type { Link } from '../links/link.entity';
 
 @Entity()
@@ -9,8 +9,8 @@ export class User {
   @Column({ unique: true })
   username!: string;
 
-  @Column({ type: 'datetime', default: () => 'CURRENT_TIMESTAMP' })
-  created_at!: Date;
+  @CreateDateColumn({ name: 'created_at' })
+  createdAt!: Date;
 
   // @OneToMany(() => Link, link => link.user)
   @OneToMany<Link>('Link', link => link.user)
