@@ -174,7 +174,13 @@ jobs:
           cat package.json | jq '.pkg'
         shell: bash
 
-      # 12. 使用 @yao-pkg/pkg 打包
+      # 12. 设置环境变量
+      - name: Use production env
+        working-directory: dist
+        run: |
+          mv .env.production .env      # 让 dotenv 默认加载
+
+      # 13. 使用 @yao-pkg/pkg 打包
       - name: Package with @yao-pkg/pkg
         working-directory: dist
         run: |
@@ -189,7 +195,7 @@ jobs:
           ls -lh executable/
         shell: bash
 
-      # 13. 上传可执行文件产物
+      # 14. 上传可执行文件产物
       - name: Upload executable artifact
         uses: actions/upload-artifact@v4
         with:
