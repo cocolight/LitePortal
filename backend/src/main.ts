@@ -17,6 +17,7 @@ import { NestExpressApplication } from '@nestjs/platform-express';
 // 本地模块
 import { AppModule } from './app.module';
 import { InitDataService } from './init/init-data.service';
+import { runMigrations } from './run-migrations';
 import {
   configureRuntime,
   configureSwagger,
@@ -31,6 +32,7 @@ import {
 async function bootstrap() {
   // 创建 NestExpressApplication 实例
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
+
   // 获取 ConfigService 实例，用于访问配置项
   const configService = app.get(ConfigService);
 
@@ -49,6 +51,16 @@ async function bootstrap() {
 
   // ④ 初始化数据
   const initService = app.get(InitDataService);
-  if (configService.get('initTestData')) await initService.initTestData();
+  const nodeEnv = configService.get<string>('nodeEnv')
+  if (nodeEnv === 'development') {
+    if (configService.get('initData')) await initService.initTestData();
+  } else if (nodeEnv === 'production') {
+    await runMigrations(); // 迁移数据
+    if (configService.get('initData')) await initService.initProdData();
+  }
+
+
+
 }
+
 bootstrap();

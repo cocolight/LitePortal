@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Link } from '../modules/links/link.entity';
 import { User } from '../modules/users/user.entity';
+import { Init } from './init.entity'
 import { ConfigService } from '@nestjs/config';
 
 @Injectable()
@@ -12,25 +13,12 @@ export class InitDataService {
     private readonly userRepository: Repository<User>,
     @InjectRepository(Link)
     private readonly linkRepository: Repository<Link>,
+    @InjectRepository(Init)
+    private readonly initRepository: Repository<Init>,
     private readonly configService: ConfigService,
-  ) {}
+  ) { }
 
-  async initTestData() {
-    // 检查是否应该初始化测试数据
-    if (!this.configService.get('initTestData')) {
-      console.log('当前环境配置为不初始化测试数据');
-      return;
-    }
-
-    console.log('当前环境允许初始化测试数据...');
-
-    // 查找或创建默认用户
-    let user = await this.userRepository.findOne({ where: { username: 'guest' } });
-    if (!user) {
-      user = this.userRepository.create({ username: 'guest' });
-      await this.userRepository.save(user);
-    }
-
+  async __initData() {
     // 添加一些示例链接
     const sampleLinks = [
       {
@@ -51,21 +39,67 @@ export class InitDataService {
       },
     ];
 
-    for (const linkData of sampleLinks) {
-      const existingLink = await this.linkRepository.findOne({
-        where: { user: { id: user.id }, linkId: linkData.linkId }
-      });
-
-      if (!existingLink) {
-        const link = this.linkRepository.create({
-          ...linkData,
-          user,
-        });
-        await this.linkRepository.save(link);
-        console.log(`添加链接: ${linkData.name}`);
+    await this.userRepository.manager.transaction(async (manager) => {
+      // 在事务里重新拿 Respository
+      const userRepo = manager.getRepository(User);
+      const linkRepo = manager.getRepository(Link);
+      // 下方的所有操作都是用manager的Repository
+      let user = await userRepo.findOne({ where: { username: 'guest' } });
+      if (!user) {
+        user = userRepo.create({ username: 'guest' });
+        await userRepo.save(user);
       }
+
+      for (const linkData of sampleLinks) {
+        const exists = await linkRepo.findOne({
+          where: { user: { id: user.id }, linkId: linkData.linkId },
+          withDeleted: true,
+        });
+
+        if (exists) continue
+        await linkRepo.save(linkRepo.create({ ...linkData, user }))
+
+      }
+
+      console.log('测试数据初始化完成');
+
+    })
+
+
+
+  }
+
+  async initTestData() {
+
+    // 检查是否应该初始化测试数据
+    if (!this.configService.get('initTestData')) {
+      console.log('当前环境配置为不初始化测试数据');
+      return;
     }
 
-    console.log('测试数据初始化完成');
+    console.log('当前环境允许初始化测试数据...');
+
+    await this.__initData();
+
+  }
+
+  async initProdData() {
+    const initRecord = await this.initRepository.findOne({
+      where: { key: 'dataInitialized' },
+      withDeleted: true,
+    })
+    if (initRecord) {
+      console.log('测试数据已初始化，无需重复初始化');
+      return;
+    }
+
+    await this.__initData();
+
+    // 标记初始化完成
+    await this.initRepository.save({
+      key: 'dataInitialized',
+      value: true,
+    });
+
   }
 }
