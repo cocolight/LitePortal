@@ -52,20 +52,20 @@ function prepareDir() {
 function buildFrontend() {
   const dir = path.join(projectRoot, config.frontendDir);
   pnpmSilent(dir, 'install');
-  pnpmSilent(dir, 'run build');
+  pnpmSilent(dir, 'run build:prod');
 }
 
 function copyFrontendDist() {
   const src = path.join(projectRoot, config.frontendDir, 'dist');
   if (fs.existsSync(src)) fs.cpSync(src, webDir, { recursive: true });
 
-  // favicon 同时给 web 和 backend
-  ['favicon.ico', 'favicon.png', 'favicon.svg'].forEach(f => {
-    const from = path.join(projectRoot, config.frontendDir, 'public', f);
-    if (fs.existsSync(from)) {
-      fs.copyFileSync(from, path.join(webDir, f));
-    }
-  });
+  // favicon
+  // ['favicon.ico', 'favicon.png', 'favicon.svg'].forEach(f => {
+  //   const from = path.join(projectRoot, config.frontendDir, 'public', f);
+  //   if (fs.existsSync(from)) {
+  //     fs.copyFileSync(from, path.join(webDir, f));
+  //   }
+  // });
 }
 
 function buildBackend() {
@@ -79,6 +79,12 @@ function prepareBackend() {
     const src = path.join(projectRoot, config.backendDir, f);
     if (fs.existsSync(src)) fs.copyFileSync(src, path.join(backendOutputDir, f));
   });
+}
+
+function renameEnv(){
+  const old = path.resolve(backendOutputDir, '.env.production');
+  const newp = path.resolve(backendOutputDir, '.env');
+  fs.renameSync(old, newp);
 }
 
 function copyBackendDist() {
@@ -191,6 +197,7 @@ function main() {
     ['准备后端文件', prepareBackend],
     ['构建后端', buildBackend],
     ['复制后端文件', copyBackendDist],
+    ['生成.env', renameEnv],
     ['安装后端依赖+打包', usePkg],
     ['创建启动脚本', createStartScript]
   ];
