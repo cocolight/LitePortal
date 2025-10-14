@@ -1,7 +1,8 @@
 name: Docker Build & Push
 on:
   push:
-    branches: [main, master]
+    tags:
+      - 'v*'          # 仅当以 v 开头的 tag 推送时才触发
 jobs:
   docker:
     runs-on: ubuntu-latest

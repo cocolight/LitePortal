@@ -1,0 +1,56 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'          # 仅当以 v 开头的 tag 推送时才触发
+
+jobs:
+  release:
+    name: Create Release & Upload Assets
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # 1. 下载所有 artifacts（与 build.yml 里定义的 name 一致）
+      - name: Download Linux artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: server-linux
+          path: artifacts/
+      - name: Download macOS artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: server-macos
+          path: artifacts/
+      - name: Download Windows artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: server-windows
+          path: artifacts/
+
+      # 2. 统一重命名（可选，方便用户下载）
+      - name: Rename assets
+        run: |
+          mv artifacts/server-linux/server server-linux
+          mv artifacts/server-macos/server server-macos
+          mv artifacts/server-windows/server.exe server-windows.exe
+          ls -lh
+
+      # 3. 创建 Release 并上传二进制
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            server-linux
+            server-macos
+            server-windows.exe
+          name: LitePortal ${{ github.ref_name }}
+          body: |
+            自动构建的本地可执行文件，直接下载即可运行。
+            - 版本：${{ github.ref_name }}
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
