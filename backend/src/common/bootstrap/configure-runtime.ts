@@ -35,9 +35,9 @@ export function configureRuntime(
   const webRoot = resolve(rootDir, configService.get<string>('webRoot')!);
 
 
-  console.log('项目目录', rootDir)
-  console.log('nodeEnv', nodeEnv)
-  console.log('logLevel', logLevel)
+  // console.log('项目目录', rootDir)
+  // console.log('nodeEnv', nodeEnv)
+  // console.log('logLevel', logLevel)
 
 
   // 0. 开发日志, 在静态文件之后注册，静态文件会短路请求
