@@ -16,6 +16,20 @@ if (nodeEnv === 'development') {
   envFilePath = resolve(__dirname, '..', '..', envFile)
 }
 
+/* 2. 判断并给出明确提示 */
+import { readFileSync } from 'fs';
+if (!require('fs').existsSync(envFilePath)) {
+  console.warn(`[Config] ❌ 未找到 ${envFilePath}，将完全依赖环境变量`);
+} else {
+  console.log(`[Config] ✅ 正在加载 ${envFilePath}`);
+  // 可选：把前 5 行打出来（不含敏感 key）
+  const head = readFileSync(envFilePath, 'utf8')
+    .split('\n')
+    .slice(0, 5)
+    .join('\n');
+  console.log('[Config] 文件头 5 行：\n' + head);
+}
+
 console.log(`envFilePath: ${envFilePath}`)
 console.log(`NODE_ENV: ${nodeEnv}`)
 

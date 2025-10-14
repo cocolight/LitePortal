@@ -136,7 +136,7 @@ jobs:
       - name: Use production env
         working-directory: dist
         run: |
-          mv .env.production .env      # 让 dotenv 默认加载
+          cp .env.production .env      # 让 dotenv 默认加载
 
       # 11. 安装生产依赖和准备 pkg
       - name: Prepare for pkg packaging
