@@ -6,6 +6,7 @@ import { User } from './modules/users/user.entity';
 import { Link } from './modules/links/link.entity';
 
 const migDir = resolve(__dirname, './migrations');
+console.log(`migdir`, migDir)
 
 const migrations = fs
   .readdirSync(migDir)
