@@ -10,14 +10,14 @@ jobs:
     strategy:
       matrix:
         include:
-          # - os: ubuntu-latest
-          #   target: node22-linux-x64
-          #   ext: ''
-          #   artifact_name: server-linux
-          # - os: macos-latest
-          #   target: node22-macos-x64
-          #   ext: ''
-          #   artifact_name: server-macos
+          - os: ubuntu-latest
+            target: node22-linux-x64
+            ext: ''
+            artifact_name: server-linux
+          - os: macos-latest
+            target: node22-macos-x64
+            ext: ''
+            artifact_name: server-macos
           - os: windows-latest
             target: node22-win-x64
             ext: .exe
@@ -195,7 +195,7 @@ jobs:
 
           echo "开始打包..."
           # 使用更详细的打包命令
-          npx @yao-pkg/pkg . --target ${{ matrix.target }} --output executable/server${{ matrix.ext }}
+          npx @yao-pkg/pkg . --compress GZip --no-dict * --target ${{ matrix.target }} --output executable/server${{ matrix.ext }}
 
           echo "打包完成，检查生成的文件:"
           ls -lh executable/
