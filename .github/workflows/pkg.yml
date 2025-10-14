@@ -174,7 +174,7 @@ jobs:
               "outputName": "server",
               "assets": [
                 "web/**/*",
-                ""migrations/**/*",
+                "migrations/**/*",
                 ".env.production",
                 ".env",
                 "node_modules/better-sqlite3/**/*"
