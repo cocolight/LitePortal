@@ -55,7 +55,7 @@ async function bootstrap() {
   if (nodeEnv === 'development') {
     if (configService.get('initData')) await initService.initTestData();
   } else if (nodeEnv === 'production') {
-    await runMigrations(); // 迁移数据
+    await runMigrations(configService); // 迁移数据
     if (configService.get('initData')) await initService.initProdData();
   }
 
