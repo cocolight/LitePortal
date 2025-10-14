@@ -24,14 +24,14 @@ LitePortal是一个简洁高效的网页导航工具，支持内网和外网链�
 - 跨平台打包（Linux、macOS、Windows）
 - 生成独立的可执行文件
 
-## 三、使用
+## 三、构建使用
 
 + 二进制文件下载地址：[Github Packages](https://github.com/cocolight?tab=packages&repo_name=LitePortal)
 + 构建部署：参阅 [**构建部署文档**](./docs/构建部署文档.md) 
 
 ## 四、许可协议
 
-
+基于 [GPL-3.0 license](./LICENSE)
 
 ## 五，更新记录
 
