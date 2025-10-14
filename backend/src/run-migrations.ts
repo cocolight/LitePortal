@@ -10,6 +10,8 @@ import { Link } from './modules/links/link.entity';
 
 export async function runMigrations(configService: ConfigService) {
 
+  console.log('full env   :', configService);
+
   const rootDir = configService.get<string>('rootDir')!;
   const migDir = resolve(rootDir, './migrations');
 

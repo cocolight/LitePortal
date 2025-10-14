@@ -155,6 +155,7 @@ jobs:
           echo "重要文件检查:"
           echo "main.js 是否存在: $(test -f "main.js" && echo "是" || echo "否")"
           echo "web 目录是否存在: $(test -d "web" && echo "是" || echo "否")"
+          echo "migrations 目录是否存在: $(test -d "migrations" && echo "是" || echo "否")"
           echo ".env.production 是否存在: $(test -f ".env.production" && echo "是" || echo "否")"
           echo ".env 是否存在: $(test -f ".env" && echo "是" || echo "否")"
         shell: bash
