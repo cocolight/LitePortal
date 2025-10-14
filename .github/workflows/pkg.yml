@@ -10,14 +10,14 @@ jobs:
     strategy:
       matrix:
         include:
-          - os: ubuntu-latest
-            target: node22-linux-x64
-            ext: ''
-            artifact_name: server-linux
-          - os: macos-latest
-            target: node22-macos-x64
-            ext: ''
-            artifact_name: server-macos
+          # - os: ubuntu-latest
+          #   target: node22-linux-x64
+          #   ext: ''
+          #   artifact_name: server-linux
+          # - os: macos-latest
+          #   target: node22-macos-x64
+          #   ext: ''
+          #   artifact_name: server-macos
           - os: windows-latest
             target: node22-win-x64
             ext: .exe
@@ -132,7 +132,13 @@ jobs:
 
         shell: bash
 
-      # 10. 安装生产依赖和准备 pkg
+      # 10. 设置环境变量
+      - name: Use production env
+        working-directory: dist
+        run: |
+          mv .env.production .env      # 让 dotenv 默认加载
+
+      # 11. 安装生产依赖和准备 pkg
       - name: Prepare for pkg packaging
         working-directory: dist
         run: |
@@ -149,13 +155,10 @@ jobs:
           echo "重要文件检查:"
           echo "main.js 是否存在: $(test -f "main.js" && echo "是" || echo "否")"
           echo "web 目录是否存在: $(test -d "web" && echo "是" || echo "否")"
+          echo ".env.production 是否存在: $(test -f ".env.production" && echo "是" || echo "否")"
+          echo ".env 是否存在: $(test -f ".env" && echo "是" || echo "否")"
         shell: bash
 
-      # 11. 设置环境变量
-      - name: Use production env
-        working-directory: dist
-        run: |
-          mv .env.production .env      # 让 dotenv 默认加载
 
       # 12. 配置 package.json 用于 pkg
       - name: Configure package.json for pkg
