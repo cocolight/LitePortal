@@ -17,7 +17,7 @@ export async function runMigrations(configService: ConfigService) {
     .readdirSync(migDir)
     .filter(f => f.endsWith('.js'))
     .map(f => {
-      const mod = require(join(migDir, f));
+      const mod = require(`./migrations/${f}`);
       return Object.values(mod)[0];   // 第一个导出就是类
     })
     .filter(Boolean) as (string | Function)[];

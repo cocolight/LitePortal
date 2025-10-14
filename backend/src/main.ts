@@ -49,8 +49,6 @@ async function bootstrap() {
   await app.listen(port);
   printBootstrapLog(app);
 
-  console.log('process .env:',process.env)
-
   // ④ 初始化数据
   const initService = app.get(InitDataService);
   const nodeEnv = configService.get<string>('nodeEnv')

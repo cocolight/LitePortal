@@ -24,9 +24,9 @@ export function printBootstrapLog(app: NestExpressApplication): void {
   // 从应用实例中获取配置服务
   const configService = app.get(ConfigService);
   // 获取端口号配置，如果未设置则默认为3000
-  const port = configService.get<number>('port') ?? 3000;
+  const port = configService.get<number>('port') ;
   // 获取节点环境配置，如果未设置则默认为development
-  const nodeEnv = configService.get<string>('nodeEnv') ?? 'development';
+  const nodeEnv = configService.get<string>('nodeEnv') ;
   // 获取数据库路径配置
   const dbPath = configService.get<string>('dbPath');
 
