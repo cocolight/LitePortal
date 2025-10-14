@@ -23,9 +23,10 @@ export async function runMigrations(configService: ConfigService) {
     .filter(Boolean) as (string | Function)[];
 
 
+  const dbPath = configService.get('dbPath')
   const ds = new DataSource({
     type: 'better-sqlite3',
-    database: process.env.DATABASE_PATH ?? './data/database.sqlite',
+    database: dbPath,
     synchronize: false,
     entities: [Init, User, Link],
     migrations,
