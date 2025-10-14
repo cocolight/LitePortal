@@ -17,10 +17,6 @@ const config = {
   webDir:      'web'
 };
 const projectRoot       = process.cwd();
-const backendOutputDir  = path.join(projectRoot, config.outputDir);
-const webDir            = path.join(backendOutputDir, config.webDir);
-const dataDir           = path.join(backendOutputDir, 'data');
-const executableDir     = path.join(backendOutputDir, 'executable');
 
 // ========== 工具：静默pnpm，出错才打印 ==========
 function pnpmSilent(cwd, script) {
