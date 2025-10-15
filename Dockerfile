@@ -8,10 +8,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 WORKDIR /build
 
-# 1. 复制依赖描述文件（利用层缓存）
-COPY package.json pnpm-lock.yaml ./
-COPY frontend/package.json  frontend/
-COPY backend/package.json   backend/
+# 分别复制前后端的描述文件
+COPY frontend/package.json frontend/pnpm-lock.yaml ./frontend/
+COPY backend/package.json  backend/pnpm-lock.yaml  ./backend/
 
 # 2. 全局装 pnpm → 装依赖 → 编译前端 → 编译后端
 RUN corepack enable pnpm && \
