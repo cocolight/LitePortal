@@ -51,14 +51,10 @@ WORKDIR /app
 COPY --from=builder /app /app
 
 # 7. 默认环境变量（可被 docker-compose 或 -e 覆盖）
-ENV NODE_ENV=production \
-    PORT=8080 \
-    DB_PATH=./data/liteportal.sqlite \
+ENV PORT=8080 \
     MAX_BODY_SIZE=10mb \
     LOG_LEVEL=info \
-    INIT_DATA=true \
-    IS_PKG=false \
-    WEB_ROOT=web
+    INIT_DATA=true
 
 # 8. 持久化目录 & 端口
 VOLUME ["/app/data"]
