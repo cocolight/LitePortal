@@ -12,11 +12,17 @@ WORKDIR /build
 COPY frontend/package.json frontend/pnpm-lock.yaml ./frontend/
 COPY backend/package.json  backend/pnpm-lock.yaml  ./backend/
 
-# 2. 安装指定版本的pnpm → 装依赖 → 编译前端 → 编译后端
+# 2. 安装指定版本的pnpm → 装依赖
 RUN npm install -g pnpm@8.15.5
 RUN pnpm -C frontend install --frozen-lockfile
 RUN pnpm -C backend  install --frozen-lockfile
+
+# 3. 复制前端源文件 → 编译前端
+COPY frontend ./frontend
 RUN pnpm -C frontend build:prod
+
+# 4. 复制后端源文件 → 编译后端
+COPY backend ./backend
 RUN pnpm -C backend  build:prod
 RUN pnpm -C backend  rebuild better-sqlite3
 
