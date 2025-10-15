@@ -39,12 +39,5 @@ services:
    docker compose up -d
    ```
 
-### 🔍 常用命令
+3. 访问http://ip:8080
 
-```bash
-docker compose logs -f      # 实时日志
-docker compose exec liteportal sh   # 进容器调试
-docker compose down         # 停容器并删网络
-```
-
-把 `yourname` 换成自己的 GitHub 用户名/组织即可直接推送 GHCR 使用。
