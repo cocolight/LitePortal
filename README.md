@@ -6,7 +6,7 @@
 
 ![GitHub stars](https://img.shields.io/github/stars/cocolight/LitePortal)   ![GitHub forks](https://img.shields.io/github/forks/cocolight/LitePortal)   ![GitHub issues](https://img.shields.io/github/issues/cocolight/LitePortal)   ![GitHub license](https://img.shields.io/github/license/cocolight/LitePortal)
 
-## 📊 项目简介
+## 📊 一、项目简介
 
 LitePortal是一个简洁高效的网页导航工具，支持内网和外网链接无缝自动切换。可以部署在自己的家庭局域网上，支持私有部署。
 
@@ -18,17 +18,17 @@ LitePortal是一个简洁高效的网页导航工具，支持内网和外网链�
 
 ![image-20250823084848140](./docs/image-20250823084848140.png)
 
-## ✨功能特点
+## ✨二、功能特点
 
 - 📊简洁直观的导航界面
 - 🪄内外网链接智能切换
 - 🛡️数据可控，本地SQLite 数据库存储配置
 
-## 🚀快速开始
+## 🚀三、快速开始
 
-#### 🕹️本地直接运行
+#### 🕹️3.1、本地直接运行
 
-可以下载二进制文件直接运行，二进制文件下载地址：[Github Packages](https://github.com/cocolight?tab=packages&repo_name=LitePortal)
+可以下载二进制文件直接运行，二进制文件下载地址：[Github Release](https://github.com/cocolight/LitePortal/releases)
 
 + 想要**开机自启**，无感启动？请使用 **vbs** 脚本(`.vbs`)或者 **power shell 脚本**(`.ps1`)
 
@@ -53,13 +53,13 @@ LitePortal是一个简洁高效的网页导航工具，支持内网和外网链�
 
       
 
-#### 📀docker 部署
+#### 📀3.2、docker 部署
 
 待补充
 
 参阅：[docker 部署文档](./docs/Docker部署.md)
 
-#### 🖥️源码运行（生产模式）
+#### 🖥️3.3、源码运行（生产模式）
 
 - **环境要求：** Node.js >= 22.0.0
 
@@ -94,13 +94,13 @@ LitePortal是一个简洁高效的网页导航工具，支持内网和外网链�
 
 
 
-## 📦构建部署
+## 📦四、构建部署
 
 如果想自行生成二进制文件使用，请参阅：《 [**构建部署文档**](./docs/构建部署文档.md) 》
 
 
 
-## 📄许可协议
+## 📄五、许可协议
 
 本项目基于 [GPL-3.0 license](./LICENSE) 许可。
 
@@ -124,7 +124,7 @@ LitePortal是一个简洁高效的网页导航工具，支持内网和外网链�
 
 
 
-## 🤝 贡献指南
+## 🤝 六、贡献指南
 
 我们欢迎所有形式的贡献！请遵循以下步骤：
 
@@ -136,7 +136,7 @@ LitePortal是一个简洁高效的网页导航工具，支持内网和外网链�
 
 
 
-## 📜更新记录
+## 📜七、更新记录
 
 参阅： **[更新计划](./docs/开发计划.md)** 
 
@@ -144,7 +144,7 @@ LitePortal是一个简洁高效的网页导航工具，支持内网和外网链�
 
 
 
-## 🔗开源项目使用：
+## 🔗八、开源项目使用：
 
 + [Vue.js - 渐进式 JavaScript 框架 | Vue.js](https://cn.vuejs.org/)
 + [vuejs/router: 🚦 The official router for Vue.js](https://github.com/vuejs/router)
