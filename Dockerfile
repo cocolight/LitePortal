@@ -12,8 +12,8 @@ WORKDIR /build
 COPY frontend/package.json frontend/pnpm-lock.yaml ./frontend/
 COPY backend/package.json  backend/pnpm-lock.yaml  ./backend/
 
-# 2. 全局装 pnpm → 装依赖 → 编译前端 → 编译后端
-RUN corepack enable pnpm
+# 2. 安装指定版本的pnpm → 装依赖 → 编译前端 → 编译后端
+RUN npm install -g pnpm@8.15.5
 RUN pnpm -C frontend install --frozen-lockfile
 RUN pnpm -C backend  install --frozen-lockfile
 RUN pnpm -C frontend build:prod
@@ -32,7 +32,7 @@ RUN cp    /app/.env.production    /app/.env
 
 # 4. 生产依赖二次安装（仅 runtime）
 WORKDIR /app
-RUN corepack enable pnpm
+RUN npm install -g pnpm@8.15.5
 RUN pnpm install --production --shamefully-hoist
 RUN pnpm rebuild better-sqlite3
 RUN rm -rf /root/.local /root/.npm /root/.pnpm-store
