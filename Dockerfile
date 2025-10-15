@@ -30,7 +30,7 @@ RUN pnpm -C backend  rebuild better-sqlite3
 RUN mkdir -p /app
 RUN cp -r backend/dist/*        /app
 RUN cp -r frontend/dist         /app/web
-RUN cp -r backend/migrations    /app
+RUN cp -r backend/dist/migrations    /app
 RUN cp    backend/package.json  /app
 RUN cp    backend/pnpm-lock.yaml /app
 RUN cp    backend/.env.production /app/.env.production
