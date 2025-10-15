@@ -1,8 +1,12 @@
-# LitePortal
+# LitePortal Nas导航门户
 
 🛖项目地址：[LitePortal  Nas 导航门户](https://github.com/cocolight/LitePortal)
 
-## 一、项目简介
+
+
+![GitHub stars](https://img.shields.io/github/stars/cocolight/LitePortal)   ![GitHub forks](https://img.shields.io/github/forks/cocolight/LitePortal)   ![GitHub issues](https://img.shields.io/github/issues/cocolight/LitePortal)   ![GitHub license](https://img.shields.io/github/license/cocolight/LitePortal)
+
+## 📊 项目简介
 
 LitePortal是一个简洁高效的网页导航工具，支持内网和外网链接无缝自动切换。可以部署在自己的家庭局域网上，支持私有部署。
 
@@ -14,32 +18,133 @@ LitePortal是一个简洁高效的网页导航工具，支持内网和外网链�
 
 ![image-20250823084848140](./docs/image-20250823084848140.png)
 
-## 二、功能特点
+## ✨功能特点
 
-- 简洁直观的导航界面
-- 内外网链接智能切换
-- SQLite 数据库存储配置
-- 响应式设计与暗黑模式
-- 支持Docker部署
-- 跨平台打包（Linux、macOS、Windows）
-- 生成独立的可执行文件
+- 📊简洁直观的导航界面
+- 🪄内外网链接智能切换
+- 🛡️数据可控，本地SQLite 数据库存储配置
 
-## 三、构建使用
+## 🚀快速开始
 
-+ 二进制文件下载地址：[Github Packages](https://github.com/cocolight?tab=packages&repo_name=LitePortal)
-+ 构建部署：参阅 [**构建部署文档**](./docs/构建部署文档.md) 
+#### 🕹️本地直接运行
 
-## 四、许可协议
+可以下载二进制文件直接运行，二进制文件下载地址：[Github Packages](https://github.com/cocolight?tab=packages&repo_name=LitePortal)
 
-基于 [GPL-3.0 license](./LICENSE)
++ 想要**开机自启**，无感启动？请使用 **vbs** 脚本(`.vbs`)或者 **power shell 脚本**(`.ps1`)
 
-## 五，更新记录
+1. 新建文件 `run.vbs`，内容如下：
+
+   ```vbscript
+   Set ws = CreateObject("WScript.Shell")
+   ws.Run "server.exe", 0, False
+   ```
+
+   把 `run.vbs` 放到和 `server.exe` 同一目录，双击即可。
+
+2. 设置开机自启（可选）
+
+      把 `run.vbs` 的快捷方式放到`C:\ProgramData\Microsoft\Windows\Start Menu\Programs\StartUp` 里。
+
+3. power shell 脚本（另一种方案）
+
+      ```powershell
+      Start-Process -FilePath 'server.exe' -WindowStyle Hidden
+      ```
+
+      
+
+#### 📀docker 部署
+
+待补充
+
+参阅：[docker 部署文档](./docs/Docker部署.md)
+
+#### 🖥️源码运行（生产模式）
+
+- **环境要求：** Node.js >= 22.0.0
+
+  
+
+1. 克隆项目
+
+   ```bash
+   git clone https://github.com/cocolight/LitePortal.git
+   ```
+
+2. 构建后端项目
+
+   ```bash
+   node build.js
+   ```
+
+   构建完成后，会在项目根目录生成`./dist`文件夹。
+
+3. 安装生产依赖
+
+   ```bash
+   cd ./dist
+   pnpm install --production --shamefully-hoist
+   ```
+
+4. 运行
+
+   ```bash
+   node main.js
+   ```
+
+
+
+## 📦构建部署
+
+如果想自行生成二进制文件使用，请参阅：《 [**构建部署文档**](./docs/构建部署文档.md) 》
+
+
+
+## 📄许可协议
+
+本项目基于 [GPL-3.0 license](./LICENSE) 许可。
+
+#### 🚫 禁止商业使用
++ 对外销售、分发、云镜像收费却拒绝开源  
+
+#### ✅ 允许的使用
++ 个人/公司**内部服务器**运行  
+
++ 教育、科研、开源项目贡献  
+
++ 自用修改，不对外发版本
+
+  
+
+⚠️ 一旦把软件（含修改版）给到公司外部，必须整体开源；任何专利诉讼将立即终止你的使用权。
+
+  
+
+**商业许可咨询**：如需商业使用，请通过 GitHub Issues 联系我们。
+
+
+
+## 🤝 贡献指南
+
+我们欢迎所有形式的贡献！请遵循以下步骤：
+
+1. Fork 本仓库
+2. 创建你的特性分支 (`git checkout -b feature/AmazingFeature`)
+3. 提交你的更改 (`git commit -m 'Add some AmazingFeature'`)
+4. 推送到分支 (`git push origin feature/AmazingFeature`)
+5. 打开一个 Pull Request
+
+
+
+## 📜更新记录
 
 参阅： **[更新计划](./docs/开发计划.md)** 
 
 
 
-## 五、开源项目使用：
+
+
+## 🔗开源项目使用：
 
 + [Vue.js - 渐进式 JavaScript 框架 | Vue.js](https://cn.vuejs.org/)
 + [vuejs/router: 🚦 The official router for Vue.js](https://github.com/vuejs/router)
