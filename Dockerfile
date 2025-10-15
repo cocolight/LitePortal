@@ -2,9 +2,9 @@
 FROM node:22-slim AS builder
 
 # 安装编译 better-sqlite3 所需工具（slim 版够用）
-RUN apt-get update && apt-get install -y --no-install-recommends \
-      python3 make g++ \
- && rm -rf /var/lib/apt/lists/*
+RUN apt-get update
+RUN apt-get install -y --no-install-recommends python3 make g++
+RUN rm -rf /var/lib/apt/lists/*
 
 WORKDIR /build
 
@@ -13,28 +13,29 @@ COPY frontend/package.json frontend/pnpm-lock.yaml ./frontend/
 COPY backend/package.json  backend/pnpm-lock.yaml  ./backend/
 
 # 2. 全局装 pnpm → 装依赖 → 编译前端 → 编译后端
-RUN corepack enable pnpm && \
-    pnpm -C frontend install --frozen-lockfile && \
-    pnpm -C backend  install --frozen-lockfile && \
-    pnpm -C frontend build:prod && \
-    pnpm -C backend  build:prod && \
-    pnpm -C backend  rebuild better-sqlite3
+RUN corepack enable pnpm
+RUN pnpm -C frontend install --frozen-lockfile
+RUN pnpm -C backend  install --frozen-lockfile
+RUN pnpm -C frontend build:prod
+RUN pnpm -C backend  build:prod
+RUN pnpm -C backend  rebuild better-sqlite3
 
-# 3. 收集运行时文件
-RUN mkdir -p /app && \
-    cp -r backend/dist/*        /app && \
-    cp -r frontend/dist         /app/web && \
-    cp -r backend/migrations    /app && \
-    cp    backend/package.json  /app && \
-    cp    backend/pnpm-lock.yaml /app && \
-    cp    backend/.env.production /app/.env.production
+# 3. 收集运行时文件（一行一个 RUN，调试版）
+RUN mkdir -p /app
+RUN cp -r backend/dist/*        /app
+RUN cp -r frontend/dist         /app/web
+RUN cp -r backend/migrations    /app
+RUN cp    backend/package.json  /app
+RUN cp    backend/pnpm-lock.yaml /app
+RUN cp    backend/.env.production /app/.env.production
+RUN cp    /app/.env.production    /app/.env
 
 # 4. 生产依赖二次安装（仅 runtime）
 WORKDIR /app
-RUN corepack enable pnpm && \
-    pnpm install --production --shamefully-hoist && \
-    pnpm rebuild better-sqlite3 && \
-    rm -rf /root/.local /root/.npm /root/.pnpm-store
+RUN corepack enable pnpm
+RUN pnpm install --production --shamefully-hoist
+RUN pnpm rebuild better-sqlite3
+RUN rm -rf /root/.local /root/.npm /root/.pnpm-store
 
 # 5. 运行阶段（最小镜像）
 FROM node:22-slim
