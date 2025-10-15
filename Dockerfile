@@ -1,37 +1,61 @@
-# 阶段 1：编译前端
-FROM node:22-alpine AS frontend-builder
-WORKDIR /build
-COPY frontend/package.json frontend/pnpm-lock.yaml ./
-RUN corepack enable && pnpm install --frozen-lockfile
-COPY frontend ./
-RUN pnpm run build
+# 0. 多阶段构建：编译 → 运行
+FROM node:22-slim AS builder
 
-# 阶段 2：编译后端
-FROM node:22-alpine AS backend-builder
-WORKDIR /build
-COPY backend/package.json backend/pnpm-lock.yaml ./
-RUN corepack enable && pnpm install --frozen-lockfile
-COPY backend ./
-RUN pnpm run build:prod
+# 安装编译 better-sqlite3 所需工具（slim 版够用）
+RUN apt-get update && apt-get install -y --no-install-recommends \
+      python3 make g++ \
+ && rm -rf /var/lib/apt/lists/*
 
-# 阶段 3：运行镜像
-FROM node:22-alpine AS runner
-ENV NODE_ENV=production
+WORKDIR /build
+
+# 1. 复制依赖描述文件（利用层缓存）
+COPY package.json pnpm-lock.yaml ./
+COPY frontend/package.json  frontend/
+COPY backend/package.json   backend/
+
+# 2. 全局装 pnpm → 装依赖 → 编译前端 → 编译后端
+RUN corepack enable pnpm && \
+    pnpm install --frozen-lockfile && \
+    pnpm rebuild better-sqlite3 && \
+    pnpm -C frontend build:prod && \
+    pnpm -C backend  build:prod
+
+# 3. 收集运行时文件
+RUN mkdir -p /app && \
+    cp -r backend/dist/*        /app && \
+    cp -r frontend/dist         /app/web && \
+    cp -r backend/migrations    /app && \
+    cp    backend/package.json  /app && \
+    cp    backend/pnpm-lock.yaml /app && \
+    cp    backend/.env.production /app/.env.production
+
+# 4. 生产依赖二次安装（仅 runtime）
+WORKDIR /app
+RUN corepack enable pnpm && \
+    pnpm install --production --shamefully-hoist && \
+    pnpm rebuild better-sqlite3 && \
+    rm -rf /root/.local /root/.npm /root/.pnpm-store
+
+# 5. 运行阶段（最小镜像）
+FROM node:22-slim
 WORKDIR /app
 
-# 安装 pnpm + 原生依赖编译工具
-RUN apk add --no-cache python3 make g++ curl
+# 6. 复制编译产物
+COPY --from=builder /app /app
 
-# 复制后端产物 & 锁文件
-COPY --from=backend-builder /build/dist ./dist
-COPY --from=backend-builder /build/package.json /build/pnpm-lock.yaml ./
-COPY --from=backend-builder /build/node_modules ./node_modules
+# 7. 默认环境变量（可被 docker-compose 或 -e 覆盖）
+ENV NODE_ENV=production \
+    PORT=8080 \
+    DB_PATH=./data/liteportal.sqlite \
+    MAX_BODY_SIZE=10mb \
+    LOG_LEVEL=info \
+    INIT_DATA=true \
+    IS_PKG=false \
+    WEB_ROOT=web
 
-# 复制前端静态文件
-COPY --from=frontend-builder /build/dist ./web
+# 8. 持久化目录 & 端口
+VOLUME ["/app/data"]
+EXPOSE 8080
 
-# 暴露端口
-EXPOSE 3000
-
-# 启动脚本
-CMD ["node", "dist/main.js"]
+# 9. 启动
+CMD ["node","main.js"]
