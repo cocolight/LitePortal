@@ -14,10 +14,11 @@ COPY backend/package.json  backend/pnpm-lock.yaml  ./backend/
 
 # 2. 全局装 pnpm → 装依赖 → 编译前端 → 编译后端
 RUN corepack enable pnpm && \
-    pnpm install --frozen-lockfile && \
-    pnpm rebuild better-sqlite3 && \
+    pnpm -C frontend install --frozen-lockfile && \
+    pnpm -C backend  install --frozen-lockfile && \
     pnpm -C frontend build:prod && \
-    pnpm -C backend  build:prod
+    pnpm -C backend  build:prod && \
+    pnpm -C backend  rebuild better-sqlite3
 
 # 3. 收集运行时文件
 RUN mkdir -p /app && \
