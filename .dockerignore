@@ -1,12 +1,13 @@
 # 依赖和构建产物
 node_modules/
 dist/
-frontend/dist/
-backen/dist/
-backen/executable/
+frontend/
+backen/
+
 
 # 版本控制
 .git/
+.github/
 .gitignore
 
 # 开发工具和环境
@@ -40,3 +41,10 @@ tmp/
 temp/
 *.tmp
 *.temp
+
+# 其他
+build.bat
+build.js
+clean.bat
+clean.build.js
+README.md
