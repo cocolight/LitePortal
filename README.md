@@ -55,7 +55,6 @@ LitePortal是一个简洁高效的网页导航工具，支持内网和外网链�
 
 #### 📀3.2、docker 部署
 
-待补充
 
 参阅：[docker 部署文档](./docs/Docker部署.md)
 
