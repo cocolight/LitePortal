@@ -11,9 +11,9 @@
 | G1 | 引入 AI 协作文档体系（AGENTS / CONTRIBUTING / ROADMAP / docs/\* / ADR） | docs/ai-collab-docs | done | - | 仓库根目录存在 `AGENTS.md`、`CONTRIBUTING.md`、`ROADMAP.md`、`CHANGELOG.md`；`docs/` 下有 `architecture.md`、`configuration.md`、`definition-of-done.md`、`adr/`；`AGENTS.md` §1 引用的每个文件都真实存在（无死链） |
 | G2 | CI 门禁落地 | ci/build-workflow | done | G1 | ✅ 已满足：`.github/workflows/build.yml` 存在且 job 名为 `test`（跑 `go vet` + `gofmt -l` + `go test ./...`）；本地 `cd backend && go test ./...` 通过；PR #2 首次 push 后 GitHub Actions 出现 `test` 检查项且 pass（46s）。G3 / G4 已解锁 |
 | G3 | GitHub 分支保护 + required status checks | - | planned | G2 | 保护分支无法直接 push；PR 未通过 `test` 检查时 merge 按钮被禁用 |
-| G4 | 前端接入 lint / 格式化 / 测试并纳入 CI | chore/frontend-quality | planned | G2 | `frontend/package.json` 至少有 `lint`、`format:check`、`test` 三个脚本且各自非空跑通过；`build.yml` 增补前端三步（不得弱化已有后端步骤） |
+| G4 | 前端接入 lint / 格式化 / 测试并纳入 CI | chore/frontend-quality | done | G2 | ✅ 已满足：`frontend/package.json` 含 `lint`(`eslint . --quiet`)、`format:check`(`prettier --check .`)、`test`(`vitest run`)、`typecheck`(`tsc --noEmit`)、`code:check` 五个脚本且各自真实跑通过；`build.yml` 已补齐前端四步（install/lint/format/test/typecheck），未弱化后端任何一步。真实测试 18 例（`linkUtils.spec.ts` 13 + `useLinks.spec.ts` 5），**无 `--passWithNoTests` 式假绿**。存量技术债（any 9 / 空接口 4 / console 3）以 warning 可见不阻塞，待专项清理 |
 | G5 | 移除后端 `--passWithNoTests` 假绿 | chore/no-pass-with-no-tests | done | G4 | NestJS jest `--passWithNoTests` 已随 Go 重构消除；后端以 `go test ./...` 真实执行（现有 `internal/handler/handler_test.go`） |
-| G6 | 清理 `IS_PKG` 死配置 | chore/remove-is-pkg | planned | G1 | `.env.development` / `.env.production` 中无 `IS_PKG`；Go 代码（`config.go`）不读取该变量；三平台打包产物启动无回归 |
+| G6 | 清理 `IS_PKG` 死配置 | chore/remove-is-pkg | done | G1 | ✅ 已满足：`.env.development` / `.env.production` 中已无 `IS_PKG`；Go 代码从不读取该变量（全仓 grep 确认零引用）；三平台交叉编译（linux/darwin/windows × amd64, CGO_ENABLED=0）产物体积与清理前**逐字节零差异**，windows 产物实跑 `GET /links` 返回种子数据无回归。决策记录见 `docs/adr/0003-remove-is-pkg.md` |
 
 ## 二、功能 backlog
 

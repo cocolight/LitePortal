@@ -64,7 +64,8 @@ LitePortal 的配置分三层，**优先级由高到低**：
 | `LOG_LEVEL` | `debug` 会开启请求日志中间件 | `.env.*` |
 | `INIT_DATA` | 是否写入初始化数据；**代码兜底为 `false`**，`.env.*` 设为 `true` | `.env.*` = `true` |
 | `WEB_ROOT` | 生产静态资源目录 | `.env.production` = `web` |
-| `IS_PKG` | **遗留死配置**——Go 代码（`config.go`）并不读取；`.env.*` 中仍保留，待清理（见 `ROADMAP.md` G6） | `.env.*` |
+
+> 历史遗留的 `IS_PKG` 死配置已于 G6 清理（Go 从未读取该变量，详见 `docs/adr/0003-remove-is-pkg.md`）。
 
 > ⚠️ 变量的实际读取与兜底一律在 `backend/internal/config/config.go`；新增变量请同时更新 `.env.development` 与 `.env.production` 与本文档。
 
