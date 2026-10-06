@@ -2,3 +2,8 @@ node_modules
 dist
 *.log
 data/*
+
+# 本地环境覆盖层（不入库；详见 docs/configuration.md §2 / ADR-0002）
+.env
+.env.local
+.env.*.local
