@@ -54,7 +54,8 @@ export function useHome() {
 
   // 删除链接
   const handleDeleteLink = (link: Pick<Link, 'linkId' | 'name'>) => {
-    deletingLinkName.value = link.name
+    // name 在 LinkBase 中可选，补空串以匹配 deletingLinkName 的 string 类型
+    deletingLinkName.value = link.name ?? ''
     deletingLinkId.value = link.linkId
     confirmDialogVisible.value = true
   }
