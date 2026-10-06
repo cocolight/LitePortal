@@ -1,0 +1,62 @@
+name: build
+
+# LitePortal 的 CI 门禁。
+#
+# 必做三步，缺任一步，门禁即形同虚设：
+#   1) 安装依赖
+#   2) lint / 格式检查
+#   3) 测试（不得改成 `|| true`，不得把失败降级为 warning）
+#
+# 命令必须与 AGENTS.md §2「常用命令」完全一致。
+# job 名必须为 `test`（GitHub 分支保护 required status checks 依赖它）。
+
+on:
+  push:
+    # 默认分支 main（2026-10-05 由 master 改名），develop 是集成分支
+    branches: [main, develop]
+  pull_request:
+
+permissions:
+  contents: read
+
+# runner 镜像显式钉版本，不跟随 ubuntu-latest：隐式跟随会在 GitHub 切换镜像时
+# 让 CI 行为突变（例如系统依赖包名变化）。升级镜像前请先在分支上验证。
+jobs:
+  test:
+    name: test
+    runs-on: ubuntu-24.04
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.22'
+
+      # ② lint / 格式检查（Go）
+      - name: Go vet
+        working-directory: backend
+        run: go vet ./...
+
+      - name: gofmt check
+        working-directory: backend
+        run: test -z "$(gofmt -l .)"
+
+      # ③ 测试（Go 后端已补齐真实测试，不再存在 --passWithNoTests 假绿）
+      - name: Go test
+        working-directory: backend
+        run: go test ./...
+
+      # TODO(frontend): 前端 package.json 目前没有 lint / 格式化 / 测试脚本。
+      # 接入后在此补齐（同样三步，且不得弱化上面后端的任何一步）：
+      #   - name: Install dependencies (frontend)
+      #     working-directory: frontend
+      #     run: pnpm install --frozen-lockfile
+      #   - name: Lint & format & test (frontend)
+      #     working-directory: frontend
+      #     run: |
+      #       pnpm run lint
+      #       pnpm run format:check
+      #       pnpm run test
