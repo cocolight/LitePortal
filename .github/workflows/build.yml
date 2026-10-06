@@ -49,14 +49,41 @@ jobs:
         working-directory: backend
         run: go test ./...
 
-      # TODO(frontend): 前端 package.json 目前没有 lint / 格式化 / 测试脚本。
-      # 接入后在此补齐（同样三步，且不得弱化上面后端的任何一步）：
-      #   - name: Install dependencies (frontend)
-      #     working-directory: frontend
-      #     run: pnpm install --frozen-lockfile
-      #   - name: Lint & format & test (frontend)
-      #     working-directory: frontend
-      #     run: |
-      #       pnpm run lint
-      #       pnpm run format:check
-      #       pnpm run test
+      # ── 前端门禁（G4）────────────────────────────────────────
+      # 同样三步，且不得弱化上面后端的任何一步。
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: pnpm
+          cache-dependency-path: frontend/pnpm-lock.yaml
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: '8.15.5' # 与 docs/configuration.md §1 声明的版本一致
+
+      - name: Install dependencies (frontend)
+        working-directory: frontend
+        run: pnpm install --frozen-lockfile
+
+      # lint 只拦 error（--quiet）；存量技术债以 warning 形式可见但不阻塞，
+      # 详见 eslint.config.js 中「存量技术债」段与 ROADMAP G4
+      - name: Lint (frontend)
+        working-directory: frontend
+        run: pnpm run lint
+
+      - name: Format check (frontend)
+        working-directory: frontend
+        run: pnpm run format:check
+
+      # vitest 无 --passWithNoTests 之类的开关：无测试时 vitest 会以
+      # "No test files found" 非零退出，故不存在 jest 式的假绿
+      - name: Test (frontend)
+        working-directory: frontend
+        run: pnpm run test
+
+      # 类型检查并入 CI：tsc 是本项目前端最严格的门禁之一
+      - name: Typecheck (frontend)
+        working-directory: frontend
+        run: pnpm run typecheck

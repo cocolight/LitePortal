@@ -1,0 +1,9 @@
+# 前端格式化检查范围。
+# 只管手写源码与配置；构建产物、锁文件、自动生成声明一律排除。
+dist/
+coverage/
+node_modules/
+pnpm-lock.yaml
+# dev server / 构建时自动生成的声明，勿纳入格式与 lint 门禁
+auto-imports.d.ts
+components.d.ts
