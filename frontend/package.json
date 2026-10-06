@@ -8,7 +8,16 @@
     "build:prod": "vite build --mode production",
     "build:dev": "vite build --mode development",
     "preview": "vite preview",
-    "clean:build": "rimraf dist"
+    "clean:build": "rimraf dist",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint . --quiet",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "code:check": "pnpm run lint && pnpm run format:check && pnpm run typecheck && pnpm run test"
   },
   "dependencies": {
     "axios": "^1.6.2",
@@ -18,19 +27,32 @@
     "vue-router": "^4.5.1"
   },
   "devDependencies": {
+    "@eslint/js": "^9.39.5",
     "@types/lodash-es": "^4.17.12",
     "@types/node": "^24.3.1",
     "@vitejs/plugin-vue": "^6.0.1",
     "@vitejs/plugin-vue-jsx": "^5.1.1",
+    "@vitest/coverage-v8": "^3.2.7",
+    "@vue/eslint-config-prettier": "^10.1.8",
+    "@vue/eslint-config-typescript": "^14.6.0",
+    "@vue/test-utils": "^2.4.6",
+    "eslint": "^9.39.5",
+    "eslint-plugin-vue": "^9.33.0",
+    "globals": "^15.15.0",
+    "jsdom": "^25.0.1",
+    "prettier": "^3.9.9",
     "rimraf": "^6.0.1",
     "rollup-plugin-visualizer": "^6.0.3",
     "sass": "^1.92.1",
     "terser": "^5.44.0",
     "typescript": "^5.3.3",
+    "typescript-eslint": "^8.46.4",
     "unplugin-auto-import": "^20.1.0",
     "unplugin-vue-components": "^29.0.0",
     "vite": "^7.1.5",
     "vite-plugin-compression": "^0.5.1",
-    "vite-plugin-vue-devtools": "^8.0.2"
+    "vite-plugin-vue-devtools": "^8.0.2",
+    "vitest": "^3.2.7",
+    "vue-eslint-parser": "^9.4.3"
   }
 }

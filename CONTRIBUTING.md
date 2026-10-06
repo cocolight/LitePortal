@@ -44,12 +44,20 @@ cd backend && go vet ./... && test -z "$(gofmt -l .)" && go test ./...
 单跑某一步：
 
 ```bash
+# 后端（Go）
 cd backend && go vet ./...            # 静态检查 / Lint
 cd backend && gofmt -l .              # 格式化检查（输出应为空）
 cd backend && go test ./...           # 测试
+
+# 前端
+cd frontend && pnpm run lint          # ESLint（只拦 error，存量技术债为 warning）
+cd frontend && pnpm run format:check  # Prettier 格式检查
+cd frontend && pnpm run typecheck     # tsc --noEmit 类型检查
+cd frontend && pnpm run test          # Vitest
+cd frontend && pnpm run code:check    # 上述四步一次跑完（等价于 CI 前端门禁）
 ```
 
-> ⚠️ 后端已用 Go 真实测试（`go test ./...`）取代 NestJS 时代的 `--passWithNoTests` 假绿；前端目前没有 lint / 格式化 / 测试脚本，在 [ROADMAP.md](ROADMAP.md) 中跟踪。
+> ⚠️ 后端已用 Go 真实测试取代 NestJS 时代的 `--passWithNoTests` 假绿；前端自 G4 起同样有真实门禁（eslint / prettier / tsc / vitest），**也不存在「无测试即通过」的假绿**——vitest 在无测试文件时以非零码退出。
 
 ## 红线与完成定义
 

@@ -21,7 +21,7 @@ LitePortal — 轻量级 NAS 导航门户：**Go 后端**（gin + gorm + modernc
 ## 2. 常用命令（可直接复制执行）
 
 > 后端已重写为 **Go**（gin + gorm + modernc.org/sqlite，纯 Go 无 CGO），不再依赖 Node/pnpm。
-> 全量构建命令在**根目录**（`build.sh` 在此，bash 脚本）；后端子命令在 `backend/`。前端仍是 Node 22 + pnpm（未改动）。
+> 全量构建命令在**根目录**（`build.sh` 在此，bash 脚本）；后端子命令在 `backend/`。前端仍是 Node 22 + pnpm，但自 G4 起已有完整质量门禁（eslint / prettier / tsc / vitest）。
 
 | 目的 | 命令 |
 |------|------|
@@ -32,16 +32,20 @@ LitePortal — 轻量级 NAS 导航门户：**Go 后端**（gin + gorm + modernc
 | 后端测试 | `cd backend && go test ./...`（集成测试 `TestLinksFlow` 覆盖 4 端点 + 404 + 未知字段 400 + 软删） |
 | 后端静态检查 | `cd backend && go vet ./...` |
 | 后端格式化检查 | `cd backend && gofmt -l .`（输出应为空） |
+| 前端 lint | `cd frontend && pnpm run lint`（只拦 error；存量技术债以 warning 可见，见 `eslint.config.js`） |
+| 前端格式化检查 | `cd frontend && pnpm run format:check` |
+| 前端测试 | `cd frontend && pnpm run test`（vitest，18 个用例；**无 `--passWithNoTests` 式假绿**） |
+| 前端类型检查 | `cd frontend && pnpm run typecheck`（`tsc --noEmit`） |
 
 **其他常用**
 
 | 目的 | 命令 |
 |------|------|
-| 一次跑完全量检查（等价于 CI 门禁） | `cd backend && go vet ./... && test -z "$(gofmt -l .)" && go test ./...` |
+| 一次跑完全量检查（等价于 CI 门禁） | 后端：`cd backend && go vet ./... && test -z "$(gofmt -l .)" && go test ./...`<br>前端：`cd frontend && pnpm run code:check`（= lint + format:check + typecheck + test） |
 | 构建前端产物 | `cd frontend && pnpm run build:prod` |
 | 清理构建产物 | 根目录 `bash build.sh` 自带先清 `dist/`；前端另：`cd frontend && pnpm run clean:build` |
 
-⚠️ **测试纪律（红线 #1 细化）**：Go 后端已补齐真实集成测试（`internal/handler/handler_test.go`），`go test ./...` 是**真绿**，不得冒称「测试已通过」而不实际运行。数据库表结构由 `migrations/schema.sql` 在启动时建表，**没有** `mig:gen` 类命令。前端目前**仍没有** lint / 格式化 / 测试脚本，处于待接入状态（见 `ROADMAP.md`）；对前端改动不得假称「前端测试通过」。
+⚠️ **测试纪律（红线 #1 细化）**：Go 后端已补齐真实集成测试（`internal/handler/handler_test.go`），`go test ./...` 是**真绿**，不得冒称「测试已通过」而不实际运行。数据库表结构由 `migrations/schema.sql` 在启动时建表，**没有** `mig:gen` 类命令。前端自 G4 起也有真实门禁（`pnpm run code:check` = eslint + prettier + tsc + vitest），同样不得假称「前端测试通过」。
 
 ## 3. 工作流
 
