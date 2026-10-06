@@ -3,19 +3,10 @@
     <h1>关于 LitePortal</h1>
     <div class="about-content">
       <p>LitePortal 是一个轻量级的门户网站，旨在提供简洁高效的导航体验。</p>
-      <h2>主要功能</h2>
-      <ul>
-        <li>快速访问常用网站</li>
-        <li>自定义链接分类</li>
-        <li>支持多种图标类型</li>
-        <li>响应式设计，适配各种设备</li>
-      </ul>
-      <h2>技术栈</h2>
-      <p>前端：Vue 3 + TypeScript</p>
-      <p>后端：Node.js + Nest.js</p>
+
       <h2>联系我</h2>
       <ul>
-        <li><strong>个人博客:</strong> <a href="https://alili.website" target="_blank">个人学习经验分享</a></li>
+        <li><strong>个人博客:</strong> <a href="https://cocolight.github.io/" target="_blank">个人学习经验分享</a></li>
         <li><strong>Github:</strong> <a href="https://github.com/cocolight/LitePortal" target="_blank">LitePortal</a></li>
         <li><strong>微信公众号:</strong>
           <div class="qr-box">
