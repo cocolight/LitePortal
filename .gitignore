@@ -61,3 +61,40 @@ lerna-debug.log*
 !.vscode/launch.json
 !.vscode/extensions.json
 
+# ============================================================
+# 环境变量与密钥（红线：绝不入库）
+# ------------------------------------------------------------
+# 背景分层见 docs/configuration.md §2：
+#   ① 进程已有环境变量（shell export / Docker ENV）   —— 优先级最高
+#   ② .env            —— 本机 / 部署机私有覆盖层，禁止入库
+#   ③ .env.<NODE_ENV> —— 非敏感默认值，有意入库
+#
+# 注意：backend/.env.development 与 backend/.env.production 是「非敏感默认值」，
+# 被 Dockerfile、build.sh、.github/workflows/pkg.yml 三条链路依赖，
+# 因此**不**在这里忽略；它们只能存放非敏感配置。
+# ============================================================
+
+# 本地 / 部署覆盖层
+.env
+.env.local
+.env.*.local
+
+# 密钥、证书与凭据
+*.key
+*.pem
+*.p12
+*.pfx
+*.jks
+*.keystore
+credentials.json
+secrets/
+
+# SQLite 运行时产物（开发时为 backend/data/*，已由 backend/.gitignore 覆盖）
+*.sqlite
+*.sqlite-journal
+*.sqlite-wal
+*.sqlite-shm
+
+# AI 协作工具的本地工作区（项目记忆 / 计划等，属本地数据，禁止入库）
+.workbuddy/
+

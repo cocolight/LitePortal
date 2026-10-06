@@ -12,200 +12,55 @@ jobs:
       matrix:
         include:
           - os: ubuntu-latest
-            target: node22-linux-x64
+            goos: linux
+            goarch: amd64
             ext: ''
             artifact_name: server-linux
           - os: macos-latest
-            target: node22-macos-x64
+            goos: darwin
+            goarch: amd64
             ext: ''
             artifact_name: server-macos
           - os: windows-latest
-            target: node22-win-x64
+            goos: windows
+            goarch: amd64
             ext: .exe
             artifact_name: server-windows
 
     runs-on: ${{ matrix.os }}
 
     steps:
-      # 1. 检出代码
       - name: Checkout
         uses: actions/checkout@v4
 
-      # 2. 安装 pnpm
-      - name: Install pnpm
-        uses: pnpm/action-setup@v4
+      - name: Setup Go
+        uses: actions/setup-go@v5
         with:
-          version: 9
+          go-version: '1.22'
 
-      # 3. 安装 Node.js
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '22'
-          cache: 'pnpm'
-          cache-dependency-path: |
-            frontend/pnpm-lock.yaml
-            backend/pnpm-lock.yaml
-
-      # 4. 清理旧的构建
-      - name: Clean previous builds
-        run: |
-          # 清理 dist 目录
-          if [ -d "dist" ]; then rm -rf dist; fi
-          # 执行前后端的 clean:build
-          cd frontend
-          pnpm run clean:build 2>/dev/null || echo "前端 clean:build 不存在，跳过"
-          cd ../backend
-          pnpm run clean:build 2>/dev/null || echo "后端 clean:build 不存在，跳过"
-        shell: bash
-
-      # 5. 创建输出目录结构
-      - name: Create output directories
-        run: |
-          mkdir -p dist/executable
-          mkdir -p dist/data
-          mkdir -p dist/web
-          echo "输出目录创建完成:"
-          ls -la dist/
-        shell: bash
-
-      # 6. 前端构建
+      # 前端构建（仍用 Node/pnpm）
       - name: Frontend install & build
         working-directory: frontend
         run: |
+          npm install -g pnpm@8.15.5
           pnpm install --frozen-lockfile
           pnpm run build:prod
-          echo "=== 前端构建目录结构 ==="
-          echo "前端构建目录 ($(pwd)/dist):"
-        shell: bash
 
-      # 7. 复制前端产物到 dist/web
-      - name: Copy frontend to dist/web
-        run: |
-          # 复制前端 dist
-          cp -r frontend/dist/* dist/web/
-        shell: bash
-
-      # 8. 后端构建和编译原生模块
-      - name: Backend install & build
+      # 后端跨平台编译（纯 Go，无 CGO；单文件二进制天然取代 @yao-pkg/pkg）
+      - name: Build backend (go cross compile)
         working-directory: backend
+        env:
+          CGO_ENABLED: '0'
         run: |
-          pnpm install --frozen-lockfile
-          pnpm run build:prod
-          # 编译 better-sqlite3 原生模块
-          echo "编译 better-sqlite3 原生模块..."
-          pnpm rebuild better-sqlite3
-          # 验证编译结果
-          echo "better-sqlite3 编译结果:"
-          find node_modules/better-sqlite3 -name "*.node" 2>/dev/null | head -5 || echo "未找到 .node 文件"
-          echo "=== 后端构建目录结构 ==="
-          echo "后端构建目录 ($(pwd)/dist):"
-        shell: bash
+          mkdir -p ../dist/web ../dist/migrations
+          cp -r ../frontend/dist/* ../dist/web/
+          cp migrations/schema.sql ../dist/migrations/schema.sql
+          cp .env.production ../dist/.env
+          GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} go build -o ../dist/server${{ matrix.ext }} .
 
-      # 9. 准备后端文件到 dist 目录
-      - name: Prepare backend files
-        run: |
-          # 复制后端构建产物
-          if [ -d "backend/dist" ]; then
-            cp -r backend/dist/* dist/
-            echo "后端构建产物复制完成"
-          else
-            echo "警告: backend/dist 目录不存在"
-          fi
-          # 复制配置文件
-          for file in package.json pnpm-lock.yaml .env.production; do
-            if [ -f "backend/$file" ]; then
-              cp "backend/$file" "dist/$file"
-              echo "已复制 $file"
-            else
-              echo "警告: backend/$file 文件不存在"
-            fi
-          done
-          # 复制编译好的 better-sqlite3 模块
-          echo "复制 better-sqlite3 原生模块..."
-          mkdir -p dist/node_modules/better-sqlite3
-          if [ -d "backend/node_modules/better-sqlite3" ]; then
-            cp -r backend/node_modules/better-sqlite3/* dist/node_modules/better-sqlite3/
-            echo "better-sqlite3 复制完成"
-          else
-            echo "警告: backend/node_modules/better-sqlite3 目录不存在"
-          fi
-
-        shell: bash
-
-      # 10. 设置环境变量
-      - name: Use production env
-        working-directory: dist
-        run: |
-          cp .env.production .env      # 让 dotenv 默认加载
-
-      # 11. 安装生产依赖和准备 pkg
-      - name: Prepare for pkg packaging
-        working-directory: dist
-        run: |
-          # 安装生产依赖
-          pnpm install --production --shamefully-hoist
-          # 安装 @yao-pkg/pkg
-          pnpm add -D @yao-pkg/pkg
-
-          # 验证 better-sqlite3 是否存在
-          echo "验证 better-sqlite3 模块:"
-          find node_modules/better-sqlite3 -name "*.node" 2>/dev/null | head -5 || echo "未找到 .node 文件"
-
-          echo ""
-          echo "重要文件检查:"
-          echo "main.js 是否存在: $(test -f "main.js" && echo "是" || echo "否")"
-          echo "web 目录是否存在: $(test -d "web" && echo "是" || echo "否")"
-          echo "migrations 目录是否存在: $(test -d "migrations" && echo "是" || echo "否")"
-          echo ".env.production 是否存在: $(test -f ".env.production" && echo "是" || echo "否")"
-          echo ".env 是否存在: $(test -f ".env" && echo "是" || echo "否")"
-        shell: bash
-
-
-      # 12. 配置 package.json 用于 pkg
-      - name: Configure package.json for pkg
-        working-directory: dist
-        run: |
-          # 创建更完整的 pkg 配置
-          jq '. + {
-            "bin": "main.js",
-            "pkg": {
-              "targets": ["${{ matrix.target }}"],
-              "outputPath": "executable",
-              "outputName": "server",
-              "assets": [
-                "web/**/*",
-                "migrations/**/*",
-                ".env.production",
-                ".env",
-                "node_modules/better-sqlite3/**/*"
-              ]
-            }
-          }' package.json > package.json.tmp && mv package.json.tmp package.json
-
-          echo "配置后的 package.json pkg 部分:"
-          cat package.json | jq '.pkg'
-        shell: bash
-
-      # 13. 使用 @yao-pkg/pkg 打包
-      - name: Package with @yao-pkg/pkg
-        working-directory: dist
-        run: |
-          echo "当前目录内容:"
-          ls -la
-
-          echo "开始打包..."
-          # 使用更详细的打包命令
-          npx @yao-pkg/pkg . --target ${{ matrix.target }} --output executable/server${{ matrix.ext }}
-
-          echo "打包完成，检查生成的文件:"
-          ls -lh executable/
-        shell: bash
-
-      # 14. 上传可执行文件产物
       - name: Upload executable artifact
         uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.artifact_name }}
-          path: dist/executable/server${{ matrix.ext }}
+          path: dist/server${{ matrix.ext }}
           retention-days: 7

@@ -60,9 +60,7 @@ LitePortal是一个简洁高效的网页导航工具，支持内网和外网链�
 
 #### 🖥️3.3、源码运行（生产模式）
 
-- **环境要求：** Node.js >= 22.0.0
-
-  
+- **环境要求：** Go >= 1.22（后端编译）+ Node.js >= 22（前端构建）
 
 1. 克隆项目
 
@@ -70,26 +68,22 @@ LitePortal是一个简洁高效的网页导航工具，支持内网和外网链�
    git clone https://github.com/cocolight/LitePortal.git
    ```
 
-2. 构建后端项目
+2. 一键构建（前端 pnpm + 后端 go build → `dist/`）
 
    ```bash
-   node build.js
+   bash build.sh
    ```
 
-   构建完成后，会在项目根目录生成`./dist`文件夹。
+   构建完成后，项目根目录生成 `./dist`，内含 `server`（Go 单文件二进制）、`web/`（前端产物）、`migrations/schema.sql`、`config` 用的 `.env`。
 
-3. 安装生产依赖
+3. 运行
 
    ```bash
-   cd ./dist
-   pnpm install --production --shamefully-hoist
+   cd dist
+   ./server        # Windows: server.exe
    ```
 
-4. 运行
-
-   ```bash
-   node main.js
-   ```
+   浏览器访问 `http://<host>:8080`。
 
 
 
@@ -125,13 +119,15 @@ LitePortal是一个简洁高效的网页导航工具，支持内网和外网链�
 
 ## 🤝 六、贡献指南
 
-我们欢迎所有形式的贡献！请遵循以下步骤：
+完整规范见：[**CONTRIBUTING.md**](./CONTRIBUTING.md)
 
 1. Fork 本仓库
-2. 创建你的特性分支 (`git checkout -b feature/AmazingFeature`)
-3. 提交你的更改 (`git commit -m 'Add some AmazingFeature'`)
-4. 推送到分支 (`git push origin feature/AmazingFeature`)
-5. 打开一个 Pull Request
+2. 创建特性分支 (`git checkout -b feature/AmazingFeature`)
+3. 提交遵循 Conventional Commits：`git commit -m 'feat: 添加某某功能'`（标题 ≤ 72 字符）
+4. 本地通过全量检查（后端）：`cd backend && go vet ./... && test -z "$(gofmt -l .)" && go test ./...`
+5. 推送到分支并打开 Pull Request，PR 中说明**验证方式**（跑了哪条命令、在哪个平台验证）
+
+> 使用 AI 编码助手参与开发时，请先阅读 [**AGENTS.md**](./AGENTS.md)。
 
 
 
@@ -145,21 +141,18 @@ LitePortal是一个简洁高效的网页导航工具，支持内网和外网链�
 
 ## 🔗八、开源项目使用：
 
-+ [Vue.js - 渐进式 JavaScript 框架 | Vue.js](https://cn.vuejs.org/)
-+ [vuejs/router: 🚦 The official router for Vue.js](https://github.com/vuejs/router)
-+ [vuejs/pinia: 🍍 Intuitive, type safe, light and flexible Store for Vue using the composition api with DevTools support](https://github.com/vuejs/pinia)
-+ [lodash/lodash: A modern JavaScript utility library delivering modularity, performance, & extras.](https://github.com/lodash/lodash)
+**后端（Go）**
+
++ [gin-gonic/gin: HTTP web framework](https://github.com/gin-gonic/gin)
++ [go-gorm/gorm: The fantastic ORM library for Golang](https://github.com/go-gorm/gorm)
++ [glebarez/sqlite: Pure-Go SQLite driver（基于 modernc.org/sqlite，无 CGO）](https://github.com/glebarez/sqlite)
+
+**前端（Vue 3 + Vite）**
+
++ [Vue.js - 渐进式 JavaScript 框架](https://cn.vuejs.org/)
++ [vuejs/router: The official router for Vue.js](https://github.com/vuejs/router)
++ [vuejs/pinia: Store for Vue using the composition API](https://github.com/vuejs/pinia)
++ [lodash/lodash](https://github.com/lodash/lodash)
 + [Axios](https://axios-http.com/)
 + [Node.js — Run JavaScript Everywhere](https://nodejs.org/zh-cn)
-+ [NestJS - A progressive Node.js framework](https://nestjs.com/)
-+ [WiseLibs/better-sqlite3: The fastest and simplest library for SQLite3 in Node.js.](https://github.com/WiseLibs/better-sqlite3)
-+ [typeorm/typeorm: ORM for TypeScript and JavaScript. Supports MySQL, PostgreSQL, MariaDB, SQLite, MS SQL Server, Oracle, SAP Hana, WebSQL databases. Works in NodeJS, Browser, Ionic, Cordova and Electron platforms.](https://github.com/typeorm/typeorm)
-+ [typestack/class-transformer: Decorator-based transformation, serialization, and deserialization between objects and classes.](https://github.com/typestack/class-transformer)
-+ [typestack/class-validator: Decorator-based property validation for classes.](https://github.com/typestack/class-validator)
-+ [microsoft/reflect-metadata: Prototype for a Metadata Reflection API for ECMAScript](https://github.com/microsoft/reflect-metadata)
-+ [ReactiveX/rxjs: A reactive programming library for JavaScript](https://github.com/reactivex/rxjs)
-+ [scottie1984/swagger-ui-express: Adds middleware to your express app to serve the Swagger UI bound to your Swagger document. This acts as living documentation for your API hosted from within your app.](https://github.com/scottie1984/swagger-ui-express)
-+ [expressjs/cors: Node.js CORS middleware](https://github.com/expressjs/cors)
-
-+ [Yet Another Org - Pkg](https://github.com/yao-pkg)
 

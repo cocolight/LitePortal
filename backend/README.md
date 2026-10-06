@@ -1,169 +1,99 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="200" alt="Nest Logo" /></a>
-</p>
+# LitePortal 后端（Go）
 
-<p align="center">
-  <a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-  <a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-  <a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow"></a>
-</p>
-
-## Description
-
-LitePortal 是一个轻量级的门户网站项目，后端基于 NestJS 框架构建，使用 SQLite 数据库存储数据。该后端提供 RESTful API 接口，用于管理用户链接。
-
-## 功能特性
-
-- 用户友好的链接管理系统
-- SQLite 数据库存储
-- RESTful API 接口
-- 支持开发和生产环境
-- 支持测试数据初始化
-
-## 安装依赖
-
-```bash
-pnpm install
-```
-
-## 运行应用
-
-```bash
-# 开发环境
-pnpm start:dev
-
-# 生产环境
-pnpm build
-pnpm start:prod
-```
-
-## API 接口
-
-### 获取链接配置
-
-```
-GET /api/config
-```
-
-请求头：
-```
-X-User: 用户名（可选，默认为 guest）
-```
-
-响应：
-```json
-{
-  "links": [
-    {
-      "id": "1",
-      "name": "Google",
-      "onlineIcon": "https://www.google.com/favicon.ico",
-      "textIcon": "",
-      "uploadIcon": "",
-      "iconType": "online_icon",
-      "int": "https://www.google.com",
-      "ext": "https://www.google.com",
-      "desc": "Google 搜索引擎"
-    }
-  ]
-}
-```
-
-### 更新链接配置
-
-```
-POST /api/config
-```
-
-请求头：
-```
-X-User: 用户名（可选，默认为 guest）
-Content-Type: application/json
-```
-
-请求体：
-```json
-{
-  "id": "1",
-  "name": "Google",
-  "onlineIcon": "https://www.google.com/favicon.ico",
-  "textIcon": "",
-  "uploadIcon": "",
-  "iconType": "online_icon",
-  "int": "https://www.google.com",
-  "ext": "https://www.google.com",
-  "desc": "Google 搜索引擎"
-}
-```
-
-### 删除链接
-
-```
-POST /api/config
-```
-
-请求头：
-```
-X-User: 用户名（可选，默认为 guest）
-Content-Type: application/json
-```
-
-请求体：
-```json
-{
-  "action": "delete",
-  "id": "1"
-}
-```
-
-## 配置
-
-项目使用环境变量进行配置，开发环境使用 `.env.development`，生产环境使用 `.env.production`。
-
-### 环境变量说明
-
-- `PORT`: 服务端口，默认 8080
-- `NODE_ENV`: 运行环境，开发环境为 'development'，生产环境为 'production'
-- `DB_PATH`: SQLite 数据库文件路径
-- `MAX_BODY_SIZE`: 最大请求体大小，默认 '10kb'
-- `LOG_LEVEL`: 日志级别，'debug' 或 'info'
-- `INIT_TEST_DATA`: 是否初始化测试数据，默认 false
-- `IS_PKG`: 是否在 pkg 打包环境中运行，默认 false
-
-## 数据库
-
-项目使用 SQLite 数据库存储数据，数据库文件位于 `data` 目录下。在开发环境中，数据库会自动同步实体定义。
+> 轻量级 NAS 导航门户的后端。技术栈：**Go 1.22 + gin（HTTP 路由）+ gorm + modernc.org/sqlite（纯 Go SQLite 驱动，CGO_ENABLED=0，无原生编译）**。前端为独立 Vue 3 项目（`frontend/`），本服务在 production 下同时托管其构建产物（`web/`）并提供 `/links` API。
 
 ## 目录结构
 
-```
-src/
-├── config/                 # 配置模块
-│   ├── configuration.ts   # 配置定义
-│   └── config.module.ts   # 配置模块
-├── database/              # 数据库模块
-│   ├── database.module.ts # 数据库模块
-│   └── init-data.service.ts # 数据初始化服务
-├── links/                  # 链接模块
-│   ├── dto/               # 数据传输对象
-│   │   └── link.dto.ts
-│   ├── link.controller.ts # 链接控制器
-│   ├── link.entity.ts     # 链接实体
-│   ├── link.module.ts     # 链接模块
-│   └── link.service.ts    # 链接服务
-├── users/                 # 用户模块
-│   ├── user.entity.ts     # 用户实体
-│   ├── user.module.ts     # 用户模块
-│   └── user.service.ts    # 用户服务
-├── app.module.ts          # 应用主模块
-└── main.ts               # 应用入口
+```text
+backend/
+├── main.go                      # 入口：LoadEnv → gorm.Open → runSchema(schema.sql) → Seed → gin 路由装配 → listen
+├── go.mod / go.sum              # Go 模块与依赖（gin / gorm / glebarez-sqlite）
+├── internal/
+│   ├── config/config.go         # 自写 .env 解析器（不引外部依赖）+ Config 结构 + 默认值
+│   ├── model/model.go           # gorm 模型（User / Link / Init）+ LinkResponse 白名单 + AllowedLinkFields
+│   ├── repository/repository.go # 数据访问：GetOrCreateUser / GetLinks / CreateLink / UpdateLink / SoftDelete / Seed（幂等）
+│   ├── service/service.go       # 业务封装
+│   ├── middleware/middleware.go # UserGuard：读 X-User（默认 guest）→ GetOrCreateUser → 注入 userId
+│   └── handler/handler.go       # 路由处理 + 统一响应信封（ApiResponse / ApiError）
+│       └── handler_test.go      # 集成测试（go test）
+├── migrations/schema.sql        # 三表 DDL（users / links / init），启动时按此建表（IF NOT EXISTS）
+├── .env.development             # 非敏感默认值（development），入库
+├── .env.production              # 非敏感默认值（production），入库
+├── .gitignore                   # 忽略 data/* / *.log / dist
+└── data/                        # 运行时 SQLite（gitignore，首次启动自动创建）
 ```
 
-## 支持
+## 常用命令
 
-Nest 是一个 MIT 许可的开源项目。它可以通过赞助者和支持者的支持而发展壮大。如果您想加入他们，请[阅读更多](https://docs.nestjs.com/support)。
+```bash
+# 开发（从 backend/ 运行，自动读 .env.development）
+go run .
+
+# 构建单文件二进制（CGO_ENABLED=0 纯静态）
+go build -o server .
+
+# 跑测试
+go test ./...
+
+# 静态检查
+go vet ./...
+gofmt -l .
+
+# 本地一键构建（前端 + 后端 → dist/）：go build 后端 + 复制 frontend/dist→dist/web + schema.sql + .env
+bash build.sh
+# 运行产物：cd dist && ./server
+```
+
+## API
+
+所有链接接口挂在根路径（**无 `/api` 前缀**）。请求头 `X-User`（可选，缺省 `guest`）标识用户；`x-user` 由前端透传，不强制鉴权。
+
+```text
+GET    /links            # 该用户全部链接（createdAt 降序，软删排除）
+POST   /links            # 新建；成功 201，data.link.linkId 为服务端生成（Unix 毫秒字符串）
+PUT    /links/:linkId    # 局部更新，仅传要改的字段
+DELETE /links/:linkId    # 软删（gorm DeletedAt，查询自动排除）
+GET    /<非 /links 路径> # SPA history fallback，回退 index.html（生产托管前端）
+GET    /assets/*         # 静态资源
+```
+
+统一响应信封：成功 `{ "success": true, "code": 200, "message": "success", "data": ... }`；列表 `data.links`、单条 `data.link`。失败 `{ "success": false, "code": <http>, "message": "..." }`。请求体须为白名单 9 字段（`name / url / iconType / onlineIcon / textIcon / uploadIcon / intUrl / extUrl / desc`），含未知字段 → 400（等价 NestJS `forbidNonWhitelisted`）。
+
+> 前端使用 `createWebHistory()`（history 模式），故 production 须由本服务做 fallback（已在 `main.go` 的 `spaFallback` 实现）。
+
+## 配置
+
+三层模型（与 NestJS 版一致），优先级由高到低：
+
+| 优先级 | 来源                                             | 是否入库 |
+| --- | ---------------------------------------------- | ---- |
+| ①   | 进程已有环境变量（export / docker -e / Dockerfile ENV）  | —    |
+| ②   | `.env`（进程工作目录，gitignore）                       | ❌ 忽略 |
+| ③   | `.env.development` / `.env.production`（非敏感默认值） | ✅ 入库 |
+
+读取逻辑见 `internal/config/config.go`：`applyEnvFile()` 仅在键未设置时写入（`os.Getenv(key)==""`），故进程环境变量恒最高；文件侧先读 `.env` 再读 `.env.<NODE_ENV>`，使 ② 本地覆盖层高于 ③（与 ADR-0002 一致）。详见 [../docs/configuration.md](../docs/configuration.md) §2。
+
+**本机覆盖**：在 `backend/` 下新建 `.env`（已被忽略），只写要改的键即可；或 `export PORT=3000`。
+
+### 环境变量
+
+| 变量              | 说明                                                         | 代码兜底默认                     | .env.*                    |
+| --------------- | ---------------------------------------------------------- | -------------------------- | ------------------------- |
+| `PORT`          | 服务端口                                                       | `3000`                     | `8080`                    |
+| `NODE_ENV`      | `development` / `production`；缺省 `development`              | `development`              | 显式设                       |
+| `DB_PATH`       | SQLite 路径                                                  | `./data/liteportal.sqlite` | 同                         |
+| `MAX_BODY_SIZE` | 请求体上限（`10kb`/`10mb`）                                       | `10kb`                     | dev `10kb` / prod `10mb`  |
+| `LOG_LEVEL`     | `debug` 开请求日志中间件                                           | `info`                     | dev `debug` / prod `info` |
+| `INIT_DATA`     | 是否写种子（guest + 2 示例链接）                                      | `false`                    | `true`                    |
+| `WEB_ROOT`      | 生产静态资源目录                                                   | `web`                      | prod `web`                |
+| `IS_PKG`        | ⚠️ 遗留死配置，**Go 代码不读取**；`.env.*` 中仍保留，待清理（见 `ROADMAP.md` G6） | —                          | 仍保留                       |
+
+> 新增变量：在 `config.go` 的 `Config` 加字段并给兜底默认，同时更新 `.env.development` / `.env.production` 与 `docs/configuration.md`。
+
+## 数据库
+
+modernc.org/sqlite（纯 Go，CGO_ENABLED=0）。建表依据为 `migrations/schema.sql`（启动时执行，带 `IF NOT EXISTS`）。表名单数（`gorm` 配 `NamingStrategy{SingularTable:true}`）以匹配 `schema.sql` 的 `users`/`links`/`init`。
 
 ## 许可证
 
-Nest 是 [MIT 许可](LICENSE)的。
+MIT。

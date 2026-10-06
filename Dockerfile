@@ -1,64 +1,40 @@
-# 0. 多阶段构建：编译 → 运行
-FROM node:22-slim AS builder
-
-# 安装编译 better-sqlite3 所需工具（slim 版够用）
-RUN apt-get update
-RUN apt-get install -y --no-install-recommends python3 make g++
-RUN rm -rf /var/lib/apt/lists/*
-
+# 多阶段构建：前端(pnpm) + 后端(Go) → 最小运行镜像
+FROM golang:1.22 AS builder
 WORKDIR /build
 
-# 分别复制前后端的描述文件
+# 1. 前端依赖与构建
 COPY frontend/package.json frontend/pnpm-lock.yaml ./frontend/
-COPY backend/package.json  backend/pnpm-lock.yaml  ./backend/
-
-# 2. 安装指定版本的pnpm → 装依赖
 RUN npm install -g pnpm@8.15.5
 RUN pnpm -C frontend install --frozen-lockfile
-RUN pnpm -C backend  install --frozen-lockfile
-
-# 3. 复制前端源文件 → 编译前端
 COPY frontend ./frontend
 RUN pnpm -C frontend build:prod
 
-# 4. 复制后端源文件 → 编译后端
+# 2. 后端 Go 编译（modernc.org/sqlite 纯 Go，无 CGO，无需 better-sqlite3 编译）
+COPY backend/go.mod backend/go.sum ./backend/
+RUN cd backend && go mod download
 COPY backend ./backend
-RUN pnpm -C backend  build:prod
-RUN pnpm -C backend  rebuild better-sqlite3
+RUN cd backend && CGO_ENABLED=0 go build -o /build/server .
 
-# 3. 收集运行时文件（一行一个 RUN，调试版）
-RUN mkdir -p /app
-RUN cp -r backend/dist/*        /app
-RUN cp -r frontend/dist         /app/web
-RUN cp -r backend/dist/migrations    /app
-RUN cp    backend/package.json  /app
-RUN cp    backend/pnpm-lock.yaml /app
-RUN cp    backend/.env.production /app/.env.production
-RUN cp    /app/.env.production    /app/.env
-
-# 4. 生产依赖二次安装（仅 runtime）
+# 3. 运行阶段（最小镜像）
+FROM alpine:3.20
 WORKDIR /app
-RUN npm install -g pnpm@8.15.5
-RUN pnpm install --production --shamefully-hoist
-RUN pnpm rebuild better-sqlite3
-RUN rm -rf /root/.local /root/.npm /root/.pnpm-store
+RUN apk add --no-cache ca-certificates
 
-# 5. 运行阶段（最小镜像）
-FROM node:22-slim
-WORKDIR /app
+COPY --from=builder /build/server /app/server
+COPY --from=builder /build/frontend/dist /app/web
+COPY backend/migrations/schema.sql /app/migrations/schema.sql
+COPY backend/.env.production /app/.env
 
-# 6. 复制编译产物
-COPY --from=builder /app /app
-
-# 7. 默认环境变量（可被 docker-compose 或 -e 覆盖）
+# 4. 默认环境变量（可被 -e / docker-compose 覆盖）
 ENV PORT=8080 \
     MAX_BODY_SIZE=10mb \
     LOG_LEVEL=info \
-    INIT_DATA=true
+    INIT_DATA=true \
+    WEB_ROOT=web
 
-# 8. 持久化目录 & 端口
+# 5. 持久化目录 & 端口
 VOLUME ["/app/data"]
 EXPOSE 8080
 
-# 9. 启动
-CMD ["node","main.js"]
+# 6. 启动
+CMD ["/app/server"]
