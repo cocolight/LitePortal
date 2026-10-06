@@ -9,8 +9,7 @@ import { storeToRefs } from 'pinia'
 export function useHome() {
   // 链接数据
   const store = useLinkStore()
-  const { links, loading, error, message} = storeToRefs(store)
-
+  const { links, loading, error, message } = storeToRefs(store)
 
   // 右键菜单状态
   const contextMenuVisible = ref(false)
@@ -26,17 +25,15 @@ export function useHome() {
   const deletingLinkName = ref('')
   const deletingLinkId = ref()
 
-
   // 获取链接数据
-  const handleRefreshLinks =async()=>{
+  const handleRefreshLinks = async () => {
     await store.fetchLinks()
-    if(store.error){
+    if (store.error) {
       showNotification('刷新失败: ' + store.message, 'error')
       store.clearError()
-    }else{
+    } else {
       showNotification('刷新成功', 'success')
     }
-
   }
   // 显示右键菜单
   const showContextMenu = (event: MouseEvent, link: Link) => {
@@ -63,7 +60,7 @@ export function useHome() {
   // 确认删除链接
   const confirmDeleteLink = async () => {
     // 先从前端状态中移除要删除的链接，提供即时反馈
-    const linkToDelete = links.value.find(link => link.linkId === deletingLinkId.value)
+    const linkToDelete = links.value.find((link) => link.linkId === deletingLinkId.value)
     if (linkToDelete) {
       // 使用store方法从状态中移除链接
       store.removeLinkFromState(deletingLinkId.value)
@@ -76,13 +73,11 @@ export function useHome() {
       if (linkToDelete) {
         store.restoreLinkToState(linkToDelete)
       }
-      showNotification('删除失败: '+ store.message, 'error')
+      showNotification('删除失败: ' + store.message, 'error')
       return
     }
     showNotification('删除成功', 'success')
   }
-
-
 
   // 添加新链接
   const handleAddLink = () => {
@@ -126,7 +121,6 @@ export function useHome() {
     confirmDeleteLink,
     handleAddLink,
     handleSaveLink,
-    handleRefreshLinks
+    handleRefreshLinks,
   }
 }
-

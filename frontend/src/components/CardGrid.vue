@@ -9,10 +9,7 @@
         :link="link"
         @contextmenu="showContextMenu"
       />
-      <Card
-        :is-add-card="true"
-        @add="handleAddCard"
-      />
+      <Card :is-add-card="true" @add="handleAddCard" />
     </template>
   </div>
 </template>

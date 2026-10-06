@@ -1,4 +1,4 @@
-import type { LinkStoreState } from "@/types"
+import type { LinkStoreState } from '@/types'
 
 export const initialLinkStoreState = (): LinkStoreState => ({
   links: [],

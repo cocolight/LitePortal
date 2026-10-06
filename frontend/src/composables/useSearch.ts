@@ -7,7 +7,7 @@ export function useSearch() {
     { name: 'Google', url: 'https://www.google.com/search?q=' },
     { name: '百度', url: 'https://www.baidu.com/s?wd=' },
     { name: '必应', url: 'https://cn.bing.com/search?q=' },
-    { name: 'Duck', url: 'https://duckduckgo.com/?q=' }
+    { name: 'Duck', url: 'https://duckduckgo.com/?q=' },
   ])
 
   const currentEngine = ref<SearchEngine>(engines.value[0])
@@ -37,6 +37,6 @@ export function useSearch() {
     searchQuery,
     setCurrentEngine,
     performSearch,
-    handleKeyDown
+    handleKeyDown,
   }
 }

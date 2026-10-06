@@ -25,14 +25,14 @@ export default defineConfig(({ mode }) => {
     AutoImport({
       imports: ['vue', 'vue-router', 'pinia'],
       dts: true, // 生成类型声明文件
-    })
+    }),
   ]
-  
+
   // 开发环境启用 VueDevTools
   if (env.VITE_ENABLE_DEVTOOLS === 'true') {
     plugins.push(VueDevTools())
   }
-  
+
   // 生产环境启用压缩和包分析
   if (mode === 'production') {
     plugins.push(
@@ -50,7 +50,7 @@ export default defineConfig(({ mode }) => {
         gzipSize: true,
         brotliSize: true,
         filename: 'stats.html', // 分析报告文件名
-      })
+      }),
     )
   }
 
@@ -72,16 +72,16 @@ export default defineConfig(({ mode }) => {
     resolve: {
       alias: {
         '@': path.resolve(__dirname, 'src'),
-        'vue': 'vue/dist/vue.esm-bundler.js'
-      }
+        vue: 'vue/dist/vue.esm-bundler.js',
+      },
     },
     server: {
       proxy: {
         '/api': {
           target: env.VITE_API_BASE_URL || 'http://localhost:8080',
-          changeOrigin: true
-        }
-      }
-    }
+          changeOrigin: true,
+        },
+      },
+    },
   }
 })

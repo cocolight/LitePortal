@@ -18,17 +18,17 @@ import type { NotificationType } from '../types'
 const props = defineProps({
   message: {
     type: String,
-    default: ''
+    default: '',
   },
   type: {
     type: String,
     default: 'info',
-    validator: (value: NotificationType) => ['success', 'error', 'info'].includes(value)
+    validator: (value: NotificationType) => ['success', 'error', 'info'].includes(value),
   },
   duration: {
     type: Number,
-    default: 3000
-  }
+    default: 3000,
+  },
 })
 
 const visible = ref(false)
@@ -49,16 +49,20 @@ const hide = () => {
 }
 
 // 监听消息变化，自动显示
-watch(() => props.message, (newVal) => {
-  if (newVal) {
-    show()
-  }
-}, { immediate: true })
+watch(
+  () => props.message,
+  (newVal) => {
+    if (newVal) {
+      show()
+    }
+  },
+  { immediate: true },
+)
 
 // 暴露方法给父组件
 defineExpose({
   show,
-  hide
+  hide,
 })
 </script>
 
@@ -73,7 +77,9 @@ defineExpose({
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   opacity: 0;
   transform: translateY(-20px);
-  transition: opacity 0.3s, transform 0.3s;
+  transition:
+    opacity 0.3s,
+    transform 0.3s;
   max-width: 300px;
 }
 

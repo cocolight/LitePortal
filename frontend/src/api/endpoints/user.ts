@@ -15,5 +15,5 @@ export const USER_ENDPOINTS = {
   UPLOAD_AVATAR: '/api/user/avatar',
 
   // 用户偏好
-  PREFERENCES: '/api/user/preferences'
+  PREFERENCES: '/api/user/preferences',
 } as const

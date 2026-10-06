@@ -24,16 +24,16 @@ import { watch, onUnmounted } from 'vue'
 const props = defineProps({
   visible: {
     type: Boolean,
-    default: false
+    default: false,
   },
   position: {
     type: Object,
-    default: () => ({ x: 0, y: 0 })
+    default: () => ({ x: 0, y: 0 }),
   },
   link: {
     type: Object,
-    default: () => ({})
-  }
+    default: () => ({}),
+  },
 })
 
 const emit = defineEmits(['update:visible', 'edit', 'delete', 'refresh'])
@@ -48,13 +48,16 @@ const handleClickOutside = () => {
 }
 
 // 监听 visible 变化，添加/移除点击事件监听
-watch(() => props.visible, (newVal) => {
-  if (newVal) {
-    document.addEventListener('click', handleClickOutside)
-  } else {
-    document.removeEventListener('click', handleClickOutside)
-  }
-})
+watch(
+  () => props.visible,
+  (newVal) => {
+    if (newVal) {
+      document.addEventListener('click', handleClickOutside)
+    } else {
+      document.removeEventListener('click', handleClickOutside)
+    }
+  },
+)
 
 // 组件卸载时移除事件监听
 onUnmounted(() => {
@@ -113,7 +116,13 @@ const handleDelete = async () => {
 }
 
 @keyframes contextMenuFadeIn {
-  from { opacity: 0; transform: scale(0.95); }
-  to { opacity: 1; transform: scale(1); }
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 </style>

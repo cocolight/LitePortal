@@ -17,5 +17,5 @@ export type {
   LinksResponse,
   LinkResponse,
   LinkDeleteRequest,
-  LinkUpdateRequest
+  LinkUpdateRequest,
 } from '@/types/api'

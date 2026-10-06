@@ -2,22 +2,31 @@
   <div class="icon-preview-container">
     <!-- 在线图标 -->
     <div class="preview-item online-icon-wrapper" @click="selectIconType(IconType.onlineIcon)">
-      <div class="preview-icon online-icon" :class="{ selected: props.iconType === IconType.onlineIcon }">
-        <img :src="iconPreviewUrl" alt="在线图标" onerror="this.src=DEFAULT_ICONS.online" />
+      <div
+        class="preview-icon online-icon"
+        :class="{ selected: props.iconType === IconType.onlineIcon }"
+      >
+        <img :src="iconPreviewUrl" alt="在线图标" onerror="this.src = DEFAULT_ICONS.online" />
       </div>
       <div class="preview-label">在线图标</div>
     </div>
     <!-- 文本图标 -->
     <div class="preview-item text-icon-wrapper" @click="selectIconType(IconType.textIcon)">
-      <div class="preview-icon text-icon" :class="{ selected: props.iconType === IconType.textIcon }">
+      <div
+        class="preview-icon text-icon"
+        :class="{ selected: props.iconType === IconType.textIcon }"
+      >
         {{ textIconPreview }}
       </div>
       <div class="preview-label">文字图标</div>
     </div>
     <!-- 图标库图标 -->
     <div class="preview-item" @click="selectIconType(IconType.paidIcon)">
-      <div class="preview-icon paid-icon" :class="{ selected: props.iconType === IconType.paidIcon }">
-        <img :src=paidIconPreviewUrl alt="定制图标" onerror="this.src=DEFAULT_ICONS.paid" />
+      <div
+        class="preview-icon paid-icon"
+        :class="{ selected: props.iconType === IconType.paidIcon }"
+      >
+        <img :src="paidIconPreviewUrl" alt="定制图标" onerror="this.src = DEFAULT_ICONS.paid" />
       </div>
       <div class="preview-label">定制图标</div>
     </div>
@@ -27,11 +36,12 @@
     <strong>{{ iconLabel }}</strong>
     <!-- 原生搜索框 -->
     <div class="input-wrapper">
-      <input v-model="iconValue" :placeholder="iconPlaceholder">
+      <input v-model="iconValue" :placeholder="iconPlaceholder" />
       <button class="search-btn" type="button" @click="triggerFetch">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
           <path
-            d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 5L20.5 19l-5-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z" />
+            d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 5L20.5 19l-5-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"
+          />
         </svg>
       </button>
     </div>
@@ -39,131 +49,137 @@
 </template>
 
 <script setup lang="ts">
-  import { computed, ref, watch } from 'vue'
-  import type { IcomPreviewProps } from './types'
-  import { IconType } from '@/types'
+import { computed, ref, watch } from 'vue'
+import type { IcomPreviewProps } from './types'
+import { IconType } from '@/types'
 
-  const DEFAULT_ICONS = {
-    online: 'https://api.iconify.design/mdi:web.svg',
-    paid: 'https://api.iconify.design/mdi:cart.svg'
+const DEFAULT_ICONS = {
+  online: 'https://api.iconify.design/mdi:web.svg',
+  paid: 'https://api.iconify.design/mdi:cart.svg',
+}
+
+const props = defineProps<IcomPreviewProps>()
+
+// 图标框值
+const iconValue = ref('')
+
+// 定义事件
+const emit = defineEmits<{
+  // 双向绑定事件
+  'update:iconType': [value: IconType]
+  'update:onlineIcon': [value: string]
+  'update:textIcon': [value: string]
+  'update:paidIcon': [value: string]
+  // 获取图标
+  fetchFavicon: [iconType: IconType, iconValue: string]
+}>()
+
+const iconPreviewUrl = computed(() => {
+  return props.onlineIcon || DEFAULT_ICONS.online
+})
+
+const textIconPreview = computed(() => {
+  const text = props.textIcon || 'A'
+  return text.charAt(0).toUpperCase()
+})
+
+const paidIconPreviewUrl = computed(() => {
+  return props.paidIcon || DEFAULT_ICONS.paid
+})
+
+// 图标输入框名称
+const iconLabel = computed(() => {
+  switch (props.iconType) {
+    case IconType.onlineIcon:
+      return '图标URL'
+    case IconType.textIcon:
+      return '图标文字'
+    case IconType.paidIcon:
+      return '图标ID'
+    default:
+      return '图标URL'
+  }
+})
+// 图标输入框提示词
+const iconPlaceholder = computed(() => {
+  switch (props.iconType) {
+    case IconType.onlineIcon:
+      return '输入图标URL'
+    case IconType.textIcon:
+      return '输入1-2个字符'
+    case IconType.paidIcon:
+      return '输入图标ID'
+    default:
+      return '输入图标URL'
+  }
+})
+
+// 选择图标类型
+const selectIconType = (newType: IconType) => {
+  // 保存当前类型的值, 防止切换时丢失
+  switch (props.iconType) {
+    case IconType.onlineIcon:
+      if (iconValue.value) {
+        emit('update:onlineIcon', iconValue.value)
+      }
+      break
+    case IconType.textIcon:
+      if (iconValue.value) {
+        emit('update:textIcon', iconValue.value)
+      }
+      break
+    case IconType.paidIcon:
+      if (iconValue.value) {
+        emit('update:paidIcon', iconValue.value)
+      }
+      break
   }
 
-  const props = defineProps<IcomPreviewProps>()
+  // 更新当前类型
+  emit('update:iconType', newType)
 
-  // 图标框值
-  const iconValue = ref('')
-
-  // 定义事件
-  const emit = defineEmits<{
-    // 双向绑定事件
-    'update:iconType': [value: IconType]
-    'update:onlineIcon': [value: string]
-    'update:textIcon': [value: string]
-    'update:paidIcon': [value: string]
-    // 获取图标
-    'fetchFavicon': [iconType: IconType, iconValue: string]
-  }>()
-
-  const iconPreviewUrl = computed(() => {
-    return props.onlineIcon || DEFAULT_ICONS.online
-  })
-
-  const textIconPreview = computed(() => {
-    const text = props.textIcon || 'A'
-    return text.charAt(0).toUpperCase()
-  })
-
-  const paidIconPreviewUrl = computed(() => {
-    return props.paidIcon || DEFAULT_ICONS.paid
-  })
-
-  // 图标输入框名称
-  const iconLabel = computed(() => {
-    switch (props.iconType) {
-      case IconType.onlineIcon: return '图标URL'
-      case IconType.textIcon: return '图标文字'
-      case IconType.paidIcon: return '图标ID'
-      default: return '图标URL'
-    }
-  })
-  // 图标输入框提示词
-  const iconPlaceholder = computed(() => {
-    switch (props.iconType) {
-      case IconType.onlineIcon: return '输入图标URL'
-      case IconType.textIcon: return '输入1-2个字符'
-      case IconType.paidIcon: return '输入图标ID'
-      default: return '输入图标URL'
-    }
-  })
-
-  // 选择图标类型
-  const selectIconType = (newType: IconType) => {
-    // 保存当前类型的值, 防止切换时丢失
-    switch (props.iconType) {
-      case IconType.onlineIcon:
-        if (iconValue.value) {
-          emit('update:onlineIcon', iconValue.value )
-        }
-        break;
-      case IconType.textIcon:
-        if (iconValue.value) {
-          emit('update:textIcon', iconValue.value )
-        }
-        break;
-      case IconType.paidIcon:
-        if (iconValue.value) {
-          emit('update:paidIcon', iconValue.value )
-        }
-        break;
-    }
-
-    // 更新当前类型
-    emit('update:iconType', newType)
-
-    // 加载新类型的值
-    switch (newType) {
-      case IconType.onlineIcon:
-        iconValue.value = props.onlineIcon || '';
-        break;
-      case IconType.textIcon:
-        iconValue.value = props.textIcon || '';
-        break;
-      case IconType.paidIcon:
-        iconValue.value = props.paidIcon || '';
-        break;
-    }
-  };
-
-  // 手动获取图标
-  const triggerFetch = () => {
-    emit('fetchFavicon', props.iconType || IconType.onlineIcon, iconValue.value)
+  // 加载新类型的值
+  switch (newType) {
+    case IconType.onlineIcon:
+      iconValue.value = props.onlineIcon || ''
+      break
+    case IconType.textIcon:
+      iconValue.value = props.textIcon || ''
+      break
+    case IconType.paidIcon:
+      iconValue.value = props.paidIcon || ''
+      break
   }
+}
 
-  // 监听图标类型和值的变化
-  watch([() => props.onlineIcon, () => props.textIcon, () => props.uploadIcon, () => props.paidIcon], ([newOnlineIcon, newTextIcon, newUploadIcon, newPaidIcon]) => {
+// 手动获取图标
+const triggerFetch = () => {
+  emit('fetchFavicon', props.iconType || IconType.onlineIcon, iconValue.value)
+}
+
+// 监听图标类型和值的变化
+watch(
+  [() => props.onlineIcon, () => props.textIcon, () => props.uploadIcon, () => props.paidIcon],
+  ([newOnlineIcon, newTextIcon, newUploadIcon, newPaidIcon]) => {
     switch (props.iconType) {
       case IconType.onlineIcon:
-        iconValue.value = newOnlineIcon || '';
-        break;
+        iconValue.value = newOnlineIcon || ''
+        break
       case IconType.textIcon:
-        iconValue.value = newTextIcon || '';
-        break;
+        iconValue.value = newTextIcon || ''
+        break
       case IconType.uploadIcon:
-        iconValue.value = newUploadIcon || '';
-        break;
+        iconValue.value = newUploadIcon || ''
+        break
       case IconType.paidIcon:
-        iconValue.value = newPaidIcon || '';
-        break;
+        iconValue.value = newPaidIcon || ''
+        break
       default:
-        iconValue.value = '';
+        iconValue.value = ''
     }
-  }, { immediate: true })
-
-
-
-
-
-
+  },
+  { immediate: true },
+)
 </script>
 
 <style scoped lang="scss">

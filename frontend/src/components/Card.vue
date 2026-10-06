@@ -1,8 +1,16 @@
 <template>
-  <a class="card" :class="{ 'add-card': isAddCard }" :data-id="link?.linkId" @click="handleClick"
-    @contextmenu.prevent="handleContextMenu">
-    <img :src="displayIcon" :alt="isAddCard ? '添加' : link?.name"
-      onerror="this.src='https://api.iconify.design/mdi:web.svg'" />
+  <a
+    class="card"
+    :class="{ 'add-card': isAddCard }"
+    :data-id="link?.linkId"
+    @click="handleClick"
+    @contextmenu.prevent="handleContextMenu"
+  >
+    <img
+      :src="displayIcon"
+      :alt="isAddCard ? '添加' : link?.name"
+      onerror="this.src = 'https://api.iconify.design/mdi:web.svg'"
+    />
     <div>{{ isAddCard ? '添加' : link?.name }}</div>
   </a>
 </template>
@@ -22,7 +30,6 @@ const emit = defineEmits<{
 }>()
 
 const { openLink } = useLinks()
-
 
 const displayIcon = computed(() => {
   if (props.isAddCard) {
