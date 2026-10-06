@@ -1,23 +1,23 @@
 <template>
-    <label>
-        <strong>标题</strong>
-        <input id="mName" :value="props.name || ''" @input="handleInput($event, 'name')" />
-    </label>
+  <label>
+    <strong>标题</strong>
+    <input id="mName" :value="props.name || ''" @input="handleInput($event, 'name')" />
+  </label>
 
-    <label>
-        <strong>描述</strong>
-        <input id="mDesc" :value="props.desc || ''" @input="handleInput($event, 'desc')" />
-    </label>
+  <label>
+    <strong>描述</strong>
+    <input id="mDesc" :value="props.desc || ''" @input="handleInput($event, 'desc')" />
+  </label>
 
-    <label>
-        <strong>内网地址</strong>
-        <input id="mInt" :value="props.intUrl || ''" @input="handleInput($event, 'intUrl')"/>
-    </label>
+  <label>
+    <strong>内网地址</strong>
+    <input id="mInt" :value="props.intUrl || ''" @input="handleInput($event, 'intUrl')" />
+  </label>
 
-    <label>
-        <strong>公网地址</strong>
-        <input id="mExt" :value="props.extUrl || ''" @input="handleInput($event, 'extUrl')"/>
-    </label>
+  <label>
+    <strong>公网地址</strong>
+    <input id="mExt" :value="props.extUrl || ''" @input="handleInput($event, 'extUrl')" />
+  </label>
 </template>
 
 <script setup lang="ts">
@@ -29,16 +29,14 @@ const props = defineProps<FormDataProps>()
 // 定义emit
 type Field = keyof FormDataProps
 const emit = defineEmits<{
-  <K extends Field>(event:`update:${K}`,value: string): void
+  <K extends Field>(event: `update:${K}`, value: string): void
 }>()
 
 // 响应input事件
 const handleInput = (event: Event, field: keyof FormDataProps) => {
-    const target = event.target as HTMLInputElement
-    emit(`update:${field}`, target.value)
+  const target = event.target as HTMLInputElement
+  emit(`update:${field}`, target.value)
 }
-
-
 </script>
 
 <style scoped lang="scss">

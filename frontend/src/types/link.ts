@@ -20,7 +20,7 @@ export interface LinkBase {
   desc?: string
 }
 
-export interface Link extends LinkBase{
+export interface Link extends LinkBase {
   linkId: string
 }
 
@@ -34,5 +34,5 @@ export const DEFAULT_LINK: Link = {
   iconType: IconType.onlineIcon,
   intUrl: '',
   extUrl: '',
-  desc: ''
+  desc: '',
 }

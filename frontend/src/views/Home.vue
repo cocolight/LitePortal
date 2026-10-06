@@ -2,18 +2,38 @@
   <div class="home-container">
     <SearchBox />
 
-    <CardGrid :links="links" :loading="loading" :error="error" @show-context-menu="showContextMenu"
-      @add-link="handleAddLink" />
+    <CardGrid
+      :links="links"
+      :loading="loading"
+      :error="error"
+      @show-context-menu="showContextMenu"
+      @add-link="handleAddLink"
+    />
 
     <!-- 右键菜单 -->
-    <ContextMenu v-model:visible="contextMenuVisible" :position="contextMenuPosition" :link="selectedLink"
-      @edit="handleEditLink" @delete="handleDeleteLink" @refresh="handleSaveLink" />
+    <ContextMenu
+      v-model:visible="contextMenuVisible"
+      :position="contextMenuPosition"
+      :link="selectedLink"
+      @edit="handleEditLink"
+      @delete="handleDeleteLink"
+      @refresh="handleSaveLink"
+    />
 
     <!-- 编辑模态框 -->
-    <EditModal v-model:visible="editModalVisible" :link="editingLink" @save="handleSaveLink" :key="modalKey"/>
+    <EditModal
+      v-model:visible="editModalVisible"
+      :link="editingLink"
+      @save="handleSaveLink"
+      :key="modalKey"
+    />
 
     <!-- 确认对话框 -->
-    <ConfirmDialog v-model:visible="confirmDialogVisible" :item-name="deletingLinkName" @confirm="confirmDeleteLink" />
+    <ConfirmDialog
+      v-model:visible="confirmDialogVisible"
+      :item-name="deletingLinkName"
+      @confirm="confirmDeleteLink"
+    />
   </div>
 </template>
 
@@ -49,7 +69,9 @@ const {
   // handleRefreshLinks
 } = useHome()
 
-watch(editModalVisible, v => { if (v) modalKey.value++ })
+watch(editModalVisible, (v) => {
+  if (v) modalKey.value++
+})
 </script>
 
 <style scoped>

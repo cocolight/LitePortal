@@ -8,17 +8,17 @@ export interface EditModalProps {
 }
 
 export interface IcomPreviewProps {
-    isEdit?: boolean
-    onlineIcon?: string
-    textIcon?: string
-    uploadIcon?: string
-    paidIcon?: string
-    iconType?: IconType
+  isEdit?: boolean
+  onlineIcon?: string
+  textIcon?: string
+  uploadIcon?: string
+  paidIcon?: string
+  iconType?: IconType
 }
 
 export interface FormDataProps {
-    name?: string
-    desc?: string
-    intUrl?: string
-    extUrl?: string
+  name?: string
+  desc?: string
+  intUrl?: string
+  extUrl?: string
 }

@@ -40,14 +40,14 @@ const NotificationComponent = {
     })
 
     return {
-      visible
+      visible,
     }
   },
   template: `
     <div class="notification" :class="[type, { visible }]" :data-id="id">
       {{ message }}
     </div>
-  `
+  `,
 }
 
 // 通知管理器
@@ -73,7 +73,7 @@ const notificationManager = {
 
   // 移除通知
   removeNotification(id: number) {
-    const index = this.notifications.findIndex(n => n.id === id)
+    const index = this.notifications.findIndex((n) => n.id === id)
     if (index !== -1) {
       const notification = this.notifications[index]
 
@@ -108,7 +108,7 @@ const notificationManager = {
       id,
       onClose: (closeId: number) => {
         this.removeNotification(closeId)
-      }
+      },
     })
 
     // 挂载应用
@@ -121,7 +121,7 @@ const notificationManager = {
       type,
       visible: true,
       app,
-      element
+      element,
     }
 
     this.notifications.push(notification)
@@ -133,10 +133,10 @@ const notificationManager = {
   clearAll() {
     // 复制数组，避免在迭代时修改原数组
     const notifications = [...this.notifications]
-    notifications.forEach(notification => {
+    notifications.forEach((notification) => {
       this.removeNotification(notification.id)
     })
-  }
+  },
 }
 
 // 显示通知

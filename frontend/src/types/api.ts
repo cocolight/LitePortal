@@ -45,7 +45,7 @@ export interface LinkRequestParams {
 export interface LinkAddRequest extends LinkBase {}
 
 // 链接更新请求
-export interface LinkUpdateRequest extends LinkBase{}
+export interface LinkUpdateRequest extends LinkBase {}
 
 // 链接删除请求
 export interface LinkDeleteRequest {
@@ -63,11 +63,9 @@ export interface LinksResponse {
 }
 
 // 链接配置响应
-export interface LinkResponse extends Link{
+export interface LinkResponse extends Link {
   link: Link
 }
-
-
 
 // 分页参数
 // export interface PaginationParams {

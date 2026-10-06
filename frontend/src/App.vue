@@ -78,7 +78,8 @@ nav {
   transition: all 0.2s;
 }
 
-.nav-link:hover, .nav-link.router-link-active {
+.nav-link:hover,
+.nav-link.router-link-active {
   color: #4a6cf7;
   background-color: rgba(74, 108, 247, 0.1);
 }

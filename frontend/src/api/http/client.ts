@@ -11,8 +11,8 @@ class HttpClient {
       baseURL,
       timeout: 10000,
       headers: {
-        'Content-Type': 'application/json'
-      }
+        'Content-Type': 'application/json',
+      },
     })
 
     this.setupInterceptors()
@@ -26,7 +26,7 @@ class HttpClient {
         if (token) config.headers.Authorization = `Bearer ${token}`
         return config
       },
-      (error) => Promise.reject(error)
+      (error) => Promise.reject(error),
     )
 
     // 响应拦截器 - 统一处理错误, 不要把 data 提前拆出来
@@ -38,7 +38,7 @@ class HttpClient {
           // 或者登出
         }
         return Promise.reject(error)
-      }
+      },
     )
   }
 
@@ -62,4 +62,3 @@ class HttpClient {
 
 // 创建全局实例
 export const httpClient = new HttpClient()
-

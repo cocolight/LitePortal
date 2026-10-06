@@ -12,14 +12,9 @@ export const generateTextSvg = (
     textColor?: string
     shape?: 'circle' | 'rect'
     fontSize?: number
-  }
+  },
 ) => {
-  const {
-    bgColor = '#f5f5f5',
-    textColor = '#333',
-    shape = 'rect',
-    fontSize = 60
-  } = options || {}
+  const { bgColor = '#f5f5f5', textColor = '#333', shape = 'rect', fontSize = 60 } = options || {}
 
   const isCJK = /[\u4e00-\u9fa5\u3040-\u30ff\u3130-\u318f\uac00-\ud7af]/.test(char)
   const yPos = isCJK ? '58%' : '62%'
@@ -27,9 +22,10 @@ export const generateTextSvg = (
 
   const svg = `
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
-      ${shape === 'circle'
-        ? `<circle cx="50" cy="50" r="45" fill="${bgColor}"/>`
-        : `<rect width="100%" height="100%" rx="15" fill="${bgColor}"/>`
+      ${
+        shape === 'circle'
+          ? `<circle cx="50" cy="50" r="45" fill="${bgColor}"/>`
+          : `<rect width="100%" height="100%" rx="15" fill="${bgColor}"/>`
       }
       <text
         x="50%"

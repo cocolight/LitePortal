@@ -7,8 +7,8 @@ const routes: Array<RouteRecordRaw> = [
     name: 'Home',
     component: () => import('@/views/Home.vue'),
     meta: {
-      title: '首页'
-    }
+      title: '首页',
+    },
   },
   {
     path: '/about',
@@ -16,23 +16,23 @@ const routes: Array<RouteRecordRaw> = [
     // 懒加载组件
     component: () => import('@/views/About.vue'),
     meta: {
-      title: '关于'
-    }
+      title: '关于',
+    },
   },
   {
     path: '/:pathMatch(.*)*',
     name: 'NotFound',
     component: () => import('@/views/NotFound.vue'),
     meta: {
-      title: '页面未找到'
-    }
-  }
+      title: '页面未找到',
+    },
+  },
 ]
 
 // 创建路由实例
 const router = createRouter({
   history: createWebHistory(),
-  routes: routes
+  routes: routes,
 })
 
 // 全局路由守卫

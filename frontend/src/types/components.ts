@@ -20,7 +20,6 @@ export interface EditModalProps {
   link?: Link
 }
 
-
 // ContextMenu 组件的 Props 接口
 // export interface ContextMenuProps {
 //   x: number
@@ -28,5 +27,3 @@ export interface EditModalProps {
 //   visible: boolean
 //   linkData?: ContextMenuLinkData
 // }
-
-
