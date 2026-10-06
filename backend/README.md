@@ -86,7 +86,6 @@ GET    /assets/*         # 静态资源
 | `LOG_LEVEL`     | `debug` 开请求日志中间件                                           | `info`                     | dev `debug` / prod `info` |
 | `INIT_DATA`     | 是否写种子（guest + 2 示例链接）                                      | `false`                    | `true`                    |
 | `WEB_ROOT`      | 生产静态资源目录                                                   | `web`                      | prod `web`                |
-| `IS_PKG`        | ⚠️ 遗留死配置，**Go 代码不读取**；`.env.*` 中仍保留，待清理（见 `ROADMAP.md` G6） | —                          | 仍保留                       |
 
 > 新增变量：在 `config.go` 的 `Config` 加字段并给兜底默认，同时更新 `.env.development` / `.env.production` 与 `docs/configuration.md`。
 
