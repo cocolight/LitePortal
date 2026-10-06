@@ -14,7 +14,8 @@ export type {
   ApiError,
   LinkRequestParams,
   LinkAddRequest,
-  LinkConfigResponse,
+  LinksResponse,
+  LinkResponse,
   LinkDeleteRequest,
   LinkUpdateRequest
 } from '@/types/api'

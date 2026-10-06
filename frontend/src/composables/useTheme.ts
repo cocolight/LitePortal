@@ -1,10 +1,14 @@
 import { ref, watch, onMounted } from 'vue'
 import type { Theme } from '@/types'
 
-export function useTheme() {
-  const theme = ref<string>(localStorage.getItem('theme') || '')
+/** 合法主题值白名单：localStorage 内容不可信，越界值一律降级为 ''（跟随系统） */
+const isTheme = (v: string | null): v is Theme => v === 'light' || v === 'dark' || v === ''
 
-  const setTheme = (newTheme: string): void => {
+export function useTheme() {
+  const stored = localStorage.getItem('theme')
+  const theme = ref<Theme>(isTheme(stored) ? stored : '')
+
+  const setTheme = (newTheme: Theme): void => {
     theme.value = newTheme
     document.documentElement.setAttribute('data-theme', newTheme)
     localStorage.setItem('theme', newTheme)
@@ -23,7 +27,7 @@ export function useTheme() {
   })
 
   // 监听主题变化
-  watch(theme, (newTheme: string): void => {
+  watch(theme, (newTheme: Theme): void => {
     document.documentElement.setAttribute('data-theme', newTheme)
   })
 
