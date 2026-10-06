@@ -9,7 +9,7 @@
 | # | 项目 | 分支 | 状态 | 依赖 | 验收标准 |
 |---|------|------|------|------|----------|
 | G1 | 引入 AI 协作文档体系（AGENTS / CONTRIBUTING / ROADMAP / docs/\* / ADR） | docs/ai-collab-docs | done | - | 仓库根目录存在 `AGENTS.md`、`CONTRIBUTING.md`、`ROADMAP.md`、`CHANGELOG.md`；`docs/` 下有 `architecture.md`、`configuration.md`、`definition-of-done.md`、`adr/`；`AGENTS.md` §1 引用的每个文件都真实存在（无死链） |
-| G2 | CI 门禁落地 | ci/build-workflow | in-progress | G1 | `.github/workflows/build.yml` 存在且 job 名为 `test`；本地 `cd backend && go test ./...` 通过；首次 push 后 GitHub Actions 有 `test` 检查项 |
+| G2 | CI 门禁落地 | ci/build-workflow | done | G1 | ✅ 已满足：`.github/workflows/build.yml` 存在且 job 名为 `test`（跑 `go vet` + `gofmt -l` + `go test ./...`）；本地 `cd backend && go test ./...` 通过；PR #2 首次 push 后 GitHub Actions 出现 `test` 检查项且 pass（46s）。G3 / G4 已解锁 |
 | G3 | GitHub 分支保护 + required status checks | - | planned | G2 | 保护分支无法直接 push；PR 未通过 `test` 检查时 merge 按钮被禁用 |
 | G4 | 前端接入 lint / 格式化 / 测试并纳入 CI | chore/frontend-quality | planned | G2 | `frontend/package.json` 至少有 `lint`、`format:check`、`test` 三个脚本且各自非空跑通过；`build.yml` 增补前端三步（不得弱化已有后端步骤） |
 | G5 | 移除后端 `--passWithNoTests` 假绿 | chore/no-pass-with-no-tests | done | G4 | NestJS jest `--passWithNoTests` 已随 Go 重构消除；后端以 `go test ./...` 真实执行（现有 `internal/handler/handler_test.go`） |
