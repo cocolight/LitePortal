@@ -1,9 +1,10 @@
 # 依赖和构建产物
 node_modules/
 dist/
-frontend/
-backen/
-
+frontend/node_modules/
+frontend/dist/
+backend/node_modules/
+backend/dist/
 
 # 版本控制
 .git/
@@ -22,8 +23,12 @@ Thumbs.db
 *.log
 logs/
 
-# 环境配置
-.env*
+# 环境配置：只排除仓库外的本机覆盖层。
+# ⚠️ 不可写成 `.env*`：Dockerfile 的 `COPY backend/.env.production /app/.env` 依赖该文件，
+# 而 `.env*` 会把它一并排除，导致构建失败。
+.env
+.env.local
+.env.*.local
 
 # 文档
 docs/
@@ -41,10 +46,3 @@ tmp/
 temp/
 *.tmp
 *.temp
-
-# 其他
-build.bat
-build.js
-clean.bat
-clean.build.js
-README.md
