@@ -193,3 +193,79 @@ func TestLinksFlow(t *testing.T) {
 		t.Fatalf("DELETE missing status = %d (want 404)", w.Code)
 	}
 }
+
+// TestCJKRoundTrip 是 B1 的回归测试：中文（及 emoji）经 POST → SQLite → GET
+// 往返后必须与输入逐字节一致。
+//
+// ★ 这组断言的存在意义：中文乱码一旦出现，通常来自三处之一 ——
+// ① HTTP 响应头漏了 charset；② 驱动/ORM 把非 UTF-8 字节写进库；
+// ③ JSON 序列化把非 ASCII 转义坏了。三者都能被下面的断言直接抓住。
+func TestCJKRoundTrip(t *testing.T) {
+	r := setupTest(t)
+
+	// 覆盖典型场景：常规中文、中文标点（·）、emoji（代理对，4 字节 UTF-8）
+	const (
+		wantName = "中文测试·门户"
+		wantDesc = "描述含中文与emoji😀"
+		wantText = "测试"
+	)
+	payload := `{"name":"` + wantName + `","desc":"` + wantDesc + `","textIcon":"` + wantText +
+		`","intUrl":"https://a.com","extUrl":"https://b.com","iconType":"text_icon"}`
+
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, httptest.NewRequest(http.MethodPost, "/links", bytes.NewBufferString(payload)))
+	if w.Code != http.StatusCreated {
+		t.Fatalf("POST status = %d body=%s", w.Code, w.Body.String())
+	}
+
+	// ① 响应头必须显式声明 UTF-8，否则浏览器可能按 Latin-1 解码
+	if ct := w.Header().Get("Content-Type"); !strings.Contains(strings.ToLower(ct), "charset=utf-8") {
+		t.Fatalf("Content-Type 缺少 charset=utf-8: %q", ct)
+	}
+
+	body := decodeBody(t, w)
+	link := body["data"].(map[string]interface{})["link"].(map[string]interface{})
+	linkID, _ := link["linkId"].(string)
+
+	// ② 创建响应内的中文必须原样返回
+	if link["name"] != wantName {
+		t.Fatalf("创建响应 name 乱码: got %q want %q", link["name"], wantName)
+	}
+	if link["desc"] != wantDesc {
+		t.Fatalf("创建响应 desc 乱码: got %q want %q", link["desc"], wantDesc)
+	}
+	if link["textIcon"] != wantText {
+		t.Fatalf("创建响应 textIcon 乱码: got %q want %q", link["textIcon"], wantText)
+	}
+
+	// ③ 再查一次（走 SQLite 读路径），确认落盘与读出无损
+	w = httptest.NewRecorder()
+	r.ServeHTTP(w, httptest.NewRequest(http.MethodGet, "/links/"+linkID, nil))
+	if w.Code != http.StatusOK {
+		t.Fatalf("GET status = %d body=%s", w.Code, w.Body.String())
+	}
+	body = decodeBody(t, w)
+	link = body["data"].(map[string]interface{})["link"].(map[string]interface{})
+	if link["name"] != wantName || link["desc"] != wantDesc || link["textIcon"] != wantText {
+		t.Fatalf("读回后中文不一致: name=%q desc=%q textIcon=%q",
+			link["name"], link["desc"], link["textIcon"])
+	}
+
+	// ④ 逐字节核对：确认往返后仍是同一段 UTF-8 字节序列（防「看起来像但码点被替换」）
+	gotName, _ := link["name"].(string)
+	if gotName != wantName || !bytes.Equal([]byte(gotName), []byte(wantName)) {
+		t.Fatalf("UTF-8 字节不一致: got %x want %x", []byte(gotName), []byte(wantName))
+	}
+
+	// ⑤ 列表接口同样不能乱码
+	w = httptest.NewRecorder()
+	r.ServeHTTP(w, httptest.NewRequest(http.MethodGet, "/links", nil))
+	body = decodeBody(t, w)
+	links := body["data"].(map[string]interface{})["links"].([]interface{})
+	if len(links) != 1 {
+		t.Fatalf("expected 1 link, got %d", len(links))
+	}
+	if got := links[0].(map[string]interface{})["name"]; got != wantName {
+		t.Fatalf("列表接口 name 乱码: got %q want %q", got, wantName)
+	}
+}
