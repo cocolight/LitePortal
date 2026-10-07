@@ -26,7 +26,9 @@
 
 ### Fixed
 
--
+- 修复发布打包链路：`pkg.yml` 的产物由「单个裸二进制」改为 zip（含 `server`、`web/`、
+  `migrations/schema.sql`、`.env`），并在打 `v*` tag 时自动上传到对应 Release。
+  此前产出的可执行文件缺少前端产物与建表 SQL，下载后无法直接运行。
 
 ### Removed
 

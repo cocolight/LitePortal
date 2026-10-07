@@ -1,5 +1,15 @@
 name: Build Native Executables
 
+# 发布链路：打 `v*` tag 时产出三平台原生可执行文件，并作为附件上传到该 tag 的 Release。
+#
+# 产物结构与本地 `bash build.sh` 完全一致（三条链路同构）：
+#   server(.exe) + web/ + migrations/schema.sql + .env
+# 必须打成 zip —— 只给裸二进制的话，用户解压后没有 web/ 与建表 SQL，跑不起来。
+#
+# 触发器：
+#   - push tag `v*`      ：正式发版（同时上传 Release 附件）
+#   - workflow_dispatch  ：手动试跑，只验证构建与打包，跳过 Release 上传
+
 on:
   push:
     tags:
@@ -58,9 +68,53 @@ jobs:
           cp .env.production ../dist/.env
           GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} go build -o ../dist/server${{ matrix.ext }} .
 
-      - name: Upload executable artifact
+      # 打包为 zip：含 server / web / migrations / .env，解压即可运行。
+      # 各 runner 自带工具不同（Windows 无 zip），故按平台分两步。
+      - name: Package zip (Linux / macOS)
+        if: runner.os != 'Windows'
+        shell: bash
+        run: |
+          cd dist
+          zip -r "../${{ matrix.artifact_name }}.zip" server${{ matrix.ext }} web migrations .env
+          cd ..
+          ls -lh "${{ matrix.artifact_name }}.zip"
+
+      - name: Package zip (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          Compress-Archive -Path dist/server.exe, dist/web, dist/migrations, dist/.env `
+            -DestinationPath "${{ matrix.artifact_name }}.zip" -Force
+          Get-Item "${{ matrix.artifact_name }}.zip" | Format-List Name, Length
+
+      # 临时取用与人工检查（7 天后过期）；长期留存靠下面的 Release 附件
+      - name: Upload zip artifact
         uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.artifact_name }}
-          path: dist/server${{ matrix.ext }}
+          path: ${{ matrix.artifact_name }}.zip
           retention-days: 7
+
+  # 三个平台构建完成后统一发布，避免三个 job 并发创建/更新同一个 Release。
+  release:
+    needs: pkg
+    # 手动试跑时 github.ref 是分支名，此时跳过上传，只做构建验证。
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # 上传 Release 附件所需
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+          merge-multiple: true
+
+      - name: List artifacts
+        run: ls -lh artifacts
+
+      - name: Upload zip files to Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: artifacts/*.zip
+          fail_on_unmatched_files: true
