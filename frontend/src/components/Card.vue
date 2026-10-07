@@ -20,7 +20,7 @@ import { computed, onMounted, nextTick } from 'vue'
 import { useLinks } from '@/composables/useLinks'
 import type { CardProps } from '@/types'
 import { IconType } from '@/types'
-import { generateTextSvg } from '@/utils/iconUtils'
+import { generateTextSvg, pickTextIconChar } from '@/utils/iconUtils'
 
 const props = defineProps<CardProps>()
 
@@ -43,9 +43,8 @@ const displayIcon = computed(() => {
   if (iconType === IconType.paidIcon) {
     return props.link?.paidIcon || 'https://api.iconify.design/mdi:upload.svg'
   } else if (iconType === IconType.textIcon) {
-    // 文字图标使用data URL格式显示
-    const text = props.link?.textIcon || props.link?.name || 'A'
-    return generateTextSvg(text.charAt(0), {})
+    // 文字图标使用 SVG Data URL 格式显示（截取规则与编辑弹窗预览共享）
+    return generateTextSvg(pickTextIconChar(props.link?.textIcon, props.link?.name), {})
   } else if (iconType === IconType.onlineIcon) {
     return props.link?.onlineIcon || 'https://api.iconify.design/mdi:web.svg'
   } else {

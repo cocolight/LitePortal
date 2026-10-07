@@ -52,6 +52,7 @@
 import { computed, ref, watch } from 'vue'
 import type { IcomPreviewProps } from './types'
 import { IconType } from '@/types'
+import { pickTextIconChar } from '@/utils/iconUtils'
 
 const DEFAULT_ICONS = {
   online: 'https://api.iconify.design/mdi:web.svg',
@@ -79,8 +80,8 @@ const iconPreviewUrl = computed(() => {
 })
 
 const textIconPreview = computed(() => {
-  const text = props.textIcon || 'A'
-  return text.charAt(0).toUpperCase()
+  // 与 Card.vue 共享同一截取规则，保证预览与首页显示一致
+  return pickTextIconChar(props.textIcon)
 })
 
 const paidIconPreviewUrl = computed(() => {
