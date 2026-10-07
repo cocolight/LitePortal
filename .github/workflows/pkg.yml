@@ -57,8 +57,13 @@ jobs:
           pnpm run build:prod
 
       # 后端跨平台编译（纯 Go，无 CGO；单文件二进制天然取代 @yao-pkg/pkg）
+      #
+      # ⚠️ 必须显式 `shell: bash`：Windows runner 默认 shell 是 pwsh，而本步骤用的是
+      # `mkdir -p` / `cp -r` / `VAR=value cmd` 这套 POSIX 写法 —— pwsh 下 `mkdir -p a b`
+      # 会直接报 "A positional parameter cannot be found that accepts argument ..." 并中止。
       - name: Build backend (go cross compile)
         working-directory: backend
+        shell: bash
         env:
           CGO_ENABLED: '0'
         run: |
