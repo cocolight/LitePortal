@@ -19,6 +19,7 @@ import (
 	"backend/internal/middleware"
 	"backend/internal/repository"
 	"backend/internal/service"
+	"backend/internal/version"
 )
 
 func main() {
@@ -71,6 +72,9 @@ func main() {
 	// 图标代理：公共资源，不经 UserGuard（浏览器 <img> 不会携带 x-user）
 	r.GET("/icons/proxy", handler.ProxyIcon(iconProxy))
 
+	// 版本信息：公共资源，供运维探活与问题排查使用，不涉及用户数据
+	r.GET("/version", handler.Version())
+
 	// 业务路由（无 /api 前缀，与前端约定一致）；全部经过 UserGuard 注入 userId
 	api := r.Group("")
 	api.Use(middleware.UserGuard(svc))
@@ -95,7 +99,8 @@ func main() {
 	}
 
 	addr := ":" + cfg.Port
-	log.Printf("LitePortal listening on %s", addr)
+	// 启动日志带上版本，便于用户报告问题时直接对照
+	log.Printf("LitePortal %s listening on %s", version.String(), addr)
 	if err := r.Run(addr); err != nil {
 		log.Fatalf("run: %v", err)
 	}
