@@ -15,6 +15,7 @@ import (
 
 	"backend/internal/config"
 	"backend/internal/handler"
+	"backend/internal/iconproxy"
 	"backend/internal/middleware"
 	"backend/internal/repository"
 	"backend/internal/service"
@@ -56,10 +57,19 @@ func main() {
 		}
 	}
 
+	// 在线图标代理 + 磁盘缓存（F8）：缓存目录与数据库同属 data/ 下
+	iconProxy, err := iconproxy.New(iconCacheDir(cfg))
+	if err != nil {
+		log.Fatalf("init icon proxy: %v", err)
+	}
+
 	// 初始化 Gin 引擎，注册日志与恢复中间件，以及 CORS
 	r := gin.New()
 	r.Use(gin.Logger(), gin.Recovery())
 	r.Use(corsMiddleware())
+
+	// 图标代理：公共资源，不经 UserGuard（浏览器 <img> 不会携带 x-user）
+	r.GET("/icons/proxy", handler.ProxyIcon(iconProxy))
 
 	// 业务路由（无 /api 前缀，与前端约定一致）；全部经过 UserGuard 注入 userId
 	api := r.Group("")
@@ -112,6 +122,16 @@ func runSchema(db *gorm.DB) error {
 		}
 	}
 	return nil
+}
+
+// iconCacheDir 返回图标磁盘缓存目录：与 SQLite 数据库同处一个 data/ 层级，
+// 例如 DB_PATH=./data/liteportal.sqlite → ./data/icons。
+func iconCacheDir(cfg *config.Config) string {
+	base := filepath.Dir(cfg.DBPath)
+	if base == "" || base == "." {
+		return "icons"
+	}
+	return filepath.Join(base, "icons")
 }
 
 // resolveSchemaPath 在候选目录中查找 migrations/schema.sql，返回首个命中的路径。
