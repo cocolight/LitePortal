@@ -34,6 +34,11 @@ jobs:
         uses: actions/setup-go@v5
         with:
           go-version: '1.22'
+          # ⚠️ 必须显式指定 go.sum 位置：setup-go 的缓存默认在**仓库根目录**
+          # 查找 go.sum，而本项目 Go 模块位于 backend/ 子目录，导致缓存始终
+          # 恢复失败（"Dependencies file is not found ... go.sum"），
+          # 每次 CI 都重新下载全部依赖。此配置让缓存真正生效。
+          cache-dependency-path: backend/go.sum
 
       # ② lint / 格式检查（Go）
       - name: Go vet
