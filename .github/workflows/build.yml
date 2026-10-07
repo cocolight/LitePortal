@@ -28,10 +28,10 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Setup Go
-        uses: actions/setup-go@v5
+        uses: actions/setup-go@v6
         with:
           go-version: '1.22'
           # ⚠️ 必须显式指定 go.sum 位置：setup-go 的缓存默认在**仓库根目录**
@@ -62,12 +62,12 @@ jobs:
       # （Unable to locate executable file: pnpm），后端之后的门禁一步都跑不到。
       # 故必须「先装 pnpm，再 setup-node（带缓存）」。
       - name: Setup pnpm
-        uses: pnpm/action-setup@v4
+        uses: pnpm/action-setup@v5
         with:
           version: '8.15.5' # 与 docs/configuration.md §1 声明的版本一致
 
       - name: Setup Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: '22'
           cache: pnpm

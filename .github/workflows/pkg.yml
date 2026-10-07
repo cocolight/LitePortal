@@ -41,12 +41,15 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Setup Go
-        uses: actions/setup-go@v5
+        uses: actions/setup-go@v6
         with:
           go-version: '1.22'
+          # ⚠️ 同 build.yml：Go 模块在 backend/ 子目录，必须显式指定 go.sum
+          # 位置，否则缓存恢复失败、每次重新下载全部依赖。
+          cache-dependency-path: backend/go.sum
 
       # 前端构建（仍用 Node/pnpm）
       - name: Frontend install & build
@@ -94,7 +97,7 @@ jobs:
 
       # 临时取用与人工检查（7 天后过期）；长期留存靠下面的 Release 附件
       - name: Upload zip artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: ${{ matrix.artifact_name }}
           path: ${{ matrix.artifact_name }}.zip
@@ -110,7 +113,7 @@ jobs:
       contents: write # 上传 Release 附件所需
     steps:
       - name: Download all artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v7
         with:
           path: artifacts
           merge-multiple: true
