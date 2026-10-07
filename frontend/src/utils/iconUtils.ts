@@ -73,3 +73,24 @@ export function pickTextIconChar(text: string | undefined, fallback?: string): s
   const fb = (fallback || '').trim()
   return fb ? Array.from(fb)[0] : 'A'
 }
+
+/** 后端图标代理的基址：开发环境指向 VITE_API_BASE_URL，生产为同源 '/'。 */
+const API_BASE = import.meta.env.VITE_API_BASE_URL || '/'
+
+/**
+ * 把在线图标地址改写为经后端代理的地址（F8）。
+ *
+ * 图标由后端回源下载并落盘缓存，好处：
+ *  - 同一图标第二次加载走本地缓存，不再回源；
+ *  - 服务端已缓存过的图标，在离线时依然可显示。
+ *
+ * 非 http/https 的地址（如 data: URI、相对路径）原样返回——
+ * data URI 本身就是内联数据，不需要也不应该走代理。
+ */
+export function toProxiedIconUrl(url: string | undefined): string {
+  if (!url) return ''
+  // 只代理 http/https 的远程图标；data:/blob:/相对路径原样返回
+  if (!/^https?:\/\//i.test(url)) return url
+  const base = API_BASE.endsWith('/') ? API_BASE.slice(0, -1) : API_BASE
+  return `${base}/icons/proxy?url=${encodeURIComponent(url)}`
+}

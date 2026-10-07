@@ -11,7 +11,7 @@
  * 里的内容与原始字符逐字相等。
  */
 import { describe, it, expect } from 'vitest'
-import { generateTextSvg, pickTextIconChar } from '@/utils/iconUtils'
+import { generateTextSvg, pickTextIconChar, toProxiedIconUrl } from '@/utils/iconUtils'
 
 /** 解开 data URL 的百分号编码，还原出 SVG 源文本 */
 function decodeDataUrl(dataUrl: string): string {
@@ -169,5 +169,47 @@ describe('pickTextIconChar —— Card 与 IconPreview 共享的截取规则', (
 
   it('忽略首尾空白', () => {
     expect(pickTextIconChar('  中  ')).toBe('中')
+  })
+})
+
+/**
+ * F8 回归测试：在线图标地址的后端代理改写
+ *
+ * 这组测试锁定两件事：
+ *   1. http/https 远程图标必须被改写成 /icons/proxy?url=... （否则不经过缓存）；
+ *   2. 内联数据与相对路径必须原样返回（data URI 不应被二次代理）。
+ */
+describe('toProxiedIconUrl —— 在线图标代理改写（F8）', () => {
+  it('http/https 地址被改写为 /icons/proxy 且原地址被编码', () => {
+    const out = toProxiedIconUrl('https://api.iconify.design/mdi:web.svg')
+    expect(out).toContain('/icons/proxy?url=')
+    expect(out).toContain(encodeURIComponent('https://api.iconify.design/mdi:web.svg'))
+  })
+
+  it('改写后不含未编码的原始 URL（避免 ? & 破坏查询串）', () => {
+    const raw = 'https://a.com/i.png?a=1&b=2'
+    const out = toProxiedIconUrl(raw)
+    expect(out).not.toContain(raw)
+    expect(out).toContain(encodeURIComponent(raw))
+  })
+
+  it('http 与 https 均被代理', () => {
+    expect(toProxiedIconUrl('http://a.com/i.ico')).toContain('/icons/proxy?url=')
+    expect(toProxiedIconUrl('https://a.com/i.ico')).toContain('/icons/proxy?url=')
+  })
+
+  it('★ data URI 原样返回，不被代理', () => {
+    const dataUri = 'data:image/svg+xml;charset=utf-8,%3Csvg%3E%3C%2Fsvg%3E'
+    expect(toProxiedIconUrl(dataUri)).toBe(dataUri)
+  })
+
+  it('★ blob 与相对路径原样返回', () => {
+    expect(toProxiedIconUrl('blob:http://localhost/abc')).toBe('blob:http://localhost/abc')
+    expect(toProxiedIconUrl('/assets/local.svg')).toBe('/assets/local.svg')
+  })
+
+  it('空值返回空字符串（调用方据此回退默认图标）', () => {
+    expect(toProxiedIconUrl('')).toBe('')
+    expect(toProxiedIconUrl(undefined)).toBe('')
   })
 })
