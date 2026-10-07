@@ -46,7 +46,8 @@ $input-padding-x: 0.625rem;
 $input-border-radius: 4px;
 $input-border: 1px solid var(--border);
 $input-bg: #fff;
-$input-focus-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+// 焦点光晕：不透明度须足够高，否则在半像素对齐处会被抗锯齿稀释到肉眼不可见
+$input-focus-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25);
 
 label {
   display: flex;

@@ -394,7 +394,8 @@ button:active {
 .modal input:focus {
   outline: none;
   border-color: var(--accent);
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  /* 与 EditModal/FormData.vue 的 $input-focus-shadow 保持一致：不透明度过低会在半像素对齐处被抗锯齿稀释到肉眼不可见 */
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25);
 }
 
 /* 图标预览区域样式 */
