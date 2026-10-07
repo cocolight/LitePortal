@@ -4,7 +4,7 @@
 
 
 
-![GitHub stars](https://img.shields.io/github/stars/cocolight/LitePortal)   ![GitHub forks](https://img.shields.io/github/forks/cocolight/LitePortal)   ![GitHub issues](https://img.shields.io/github/issues/cocolight/LitePortal)   ![GitHub license](https://img.shields.io/github/license/cocolight/LitePortal)
+![GitHub stars](https://img.shields.io/github/stars/cocolight/LitePortal)   ![GitHub forks](https://img.shields.io/github/forks/cocolight/LitePortal)   ![GitHub issues](https://img.shields.io/github/issues/cocolight/LitePortal)   ![GitHub license](https://img.shields.io/github/license/cocolight/LitePortal)   ![GitHub release](https://img.shields.io/github/v/release/cocolight/LitePortal)
 
 ## 📊 一、项目简介
 
