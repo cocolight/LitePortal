@@ -29,6 +29,9 @@
   --border: #2d3748;
   --accent: #7e3ff2;
   --accent-hover: #632cc9;
+  /* 标题渐变在暗色下必须提亮，否则深蓝紫压在 #0a0e1a 上几乎看不清 */
+  --gradient-1: #7dd3fc;
+  --gradient-2: #c4b5fd;
   --aurora-1: #3b82f6;
   --aurora-2: #8b5cf6;
   --aurora-3: #ec4899;
@@ -204,6 +207,11 @@ button:active {
 
 .card:hover img {
   transform: scale(1.1);
+}
+
+/* 「添加」卡片的 + 图标来自 mdi:plus.svg（黑色描边），暗色底上会消失，需反色 */
+[data-theme='dark'] .add-card img {
+  filter: invert(1);
 }
 
 .card div {

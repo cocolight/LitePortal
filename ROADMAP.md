@@ -23,7 +23,7 @@
 | F2 | 图标分组分页 | feature/icon-group-paging | planned | - | 首页按分组渲染，分页切换不丢数据；刷新后分组与页码状态保持一致 |
 | F3 | 图标排序 | feature/icon-sorting | planned | - | 拖拽或菜单调整顺序后可持久化；重启服务后顺序保持 |
 | F4 | 支持切换壁纸 | feature/wallpaper | planned | - | 设置项可切换壁纸并持久化；刷新页面后生效 |
-| F5 | 主题切换 | feature/theme-switch | planned | - | 亮 / 暗切换即时生效且持久化（`this.$` 颜色对比可通过肉眼验证）；刷新后不回弹 |
+| F5 | 主题切换 | feature/theme-switch | done | - | ✅ 已满足：核心功能（亮/暗即时切换 + `localStorage` 持久化 + 刷新不回弹）经无头 Edge 实测确认——点一次 → `data-theme="dark"`、`--bg:#0a0e1a`、图标 🌙；点两次 → 回到 `""`（跟随系统）；刷新后 `localStorage.theme='dark'` 仍生效。本次修复暗色下两个真实缺陷：① **`.add-card` 的 `+` 图标不可见** —— 图标来自 `mdi:plus.svg`（黑色描边），压在 `#0a0e1a` 上不可见，加 `[data-theme='dark'] .add-card img { filter: invert(1) }`；② **`h1` 渐变标题偏暗** —— `--gradient-1/2`（`#4a6cf7`/`#8b5cf6`）原先未在 `[data-theme='dark']` 覆盖，深蓝紫压深底几乎看不清，补亮色变体 `#7dd3fc`/`#c4b5fd`。实测：暗色下 `h1` 实际渐变为 `rgb(125,211,252) → rgb(196,181,253)`、`add-card img filter=invert(1)`；切回浅色后变量恢复 `#4a6cf7`/`#8b5cf6`、`filter=none`，**未污染浅色**。另注：实测中发现「刷新失败」通知浮层（`#notification-container`，`position:fixed; z-index:10000`）会覆盖右上角 `#themeToggle` 并吞掉点击，属**独立 UI 缺陷**，不在本项范围 |
 | F6 | 文件夹功能 + 一键打开文件夹内网址 | feature/folder | planned | F3 | 可创建文件夹并移入链接；一键打开能一次性新开文件夹内全部网址（浏览器实际打开多个标签页） |
 | F7 | 自定义搜索引擎 | feature/custom-search-engine | planned | - | 可配置搜索模板；切换后搜索框按新模板跳转正确 URL |
 | F8 | 在线图标缓存 | feature/icon-cache | planned | - | 同一图标 URL 第二次加载走缓存（Network 面板显示 from cache / 命中本地缓存）；离线时仍显示已缓存图标 |
