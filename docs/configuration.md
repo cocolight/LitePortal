@@ -67,6 +67,8 @@ LitePortal 的配置分三层，**优先级由高到低**：
 
 > 历史遗留的 `IS_PKG` 死配置已于 G6 清理（Go 从未读取该变量，详见 `docs/adr/0003-remove-is-pkg.md`）。
 
+> **图标磁盘缓存（F8）**：在线图标经 `GET /icons/proxy?url=<原地址>` 代理，首次回源后落盘到 `DB_PATH` 同级的 `icons/` 子目录（如 `./data/icons/<sha256(url)>.<ext>`）。目录由服务端自建，无需配置；清空即可强制全部重新回源。
+
 > ⚠️ 变量的实际读取与兜底一律在 `backend/internal/config/config.go`；新增变量请同时更新 `.env.development` 与 `.env.production` 与本文档。
 
 **本机怎么覆盖**：在 `backend/` 下新建 `.env`（已被忽略），只写要改的那几行即可；或直接用环境变量 `export PORT=3000`。

@@ -52,7 +52,7 @@
 import { computed, ref, watch } from 'vue'
 import type { IcomPreviewProps } from './types'
 import { IconType } from '@/types'
-import { pickTextIconChar } from '@/utils/iconUtils'
+import { pickTextIconChar, toProxiedIconUrl } from '@/utils/iconUtils'
 
 const DEFAULT_ICONS = {
   online: 'https://api.iconify.design/mdi:web.svg',
@@ -76,7 +76,8 @@ const emit = defineEmits<{
 }>()
 
 const iconPreviewUrl = computed(() => {
-  return props.onlineIcon || DEFAULT_ICONS.online
+  // 与首页一致：在线图标经后端代理 + 磁盘缓存（F8）
+  return toProxiedIconUrl(props.onlineIcon) || DEFAULT_ICONS.online
 })
 
 const textIconPreview = computed(() => {
