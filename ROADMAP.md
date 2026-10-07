@@ -43,7 +43,7 @@
 | B1 | 中文文本显示乱码 | fix/cjk-garbled | planned | - | 构造含中文名称 / 描述的链接，前后端往返后显示与输入完全一致；SQLite 文件用 UTF-8 读取正常 |
 | B2 | EditModal 第一个 input 的蓝色光晕不全 | fix/editmodal-focus-ring | planned | - | 聚焦第一个输入框时 outline 四边完整；多浏览器（Chrome / Edge）目视一致 |
 | B3 | 文字图标中文显示错误 | fix/text-icon-cjk | planned | - | 中文文字图标按预期截取并显示（与 F1 / B1 联动验证） |
-| B4 | 点击图标时内网可达性探测误用 favicon：`autoSelect` 把「`intUrl/favicon.ico` 加载失败」当成「内网不可达」，导致无 favicon 的内网服务（lucky/easynode/openwrt）全部跳公网 | fix/intranet-reachability | planned | - | 构造 link：`intUrl`=内网可达但无 favicon 的服务、`extUrl`=公网 → 局域网点击打开**内网**地址（不再跳公网）；`intUrl`=内网不可达（如 192.168.99.99）→ 点击打开公网；有 favicon 的（飞牛）行为不变；图标获取失败**不**影响点击地址 |
+| B4 | 点击图标时内网可达性探测误用 favicon：`autoSelect` 把「`intUrl/favicon.ico` 加载失败」当成「内网不可达」，导致无 favicon 的内网服务（lucky/easynode/openwrt）全部跳公网 | fix/intranet-reachability | done | - | ✅ 已满足：`frontend/src/utils/linkUtils.ts` 的 `autoSelect` 改为 `fetch(candidate, { method:'HEAD', mode:'no-cors', cache:'no-store', signal })` 探测连通性（opaque 响应，只看能否建连，与 favicon 及 HTTP 状态码完全解耦），1500ms 超时用 `AbortController`；裸地址依次试 http / https。`linkUtils.spec.ts` 13 例回归断言探测路径**不含 favicon**、方法为 `HEAD`，覆盖「内网可达但无 favicon → 走内网」「内网不可达 / 超时 → 回退公网」「裸地址先试 http」。已随 PR #4 合入 `main`（`a53766c`），CI `test` job 13/13 步 pass（1m4s） |
 
 ## 四、状态约定
 
