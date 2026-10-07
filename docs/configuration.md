@@ -101,9 +101,9 @@ git config user.email "you@example.com"
 
 | 文件 | 触发 | 作用 |
 |------|------|------|
-| `.github/workflows/build.yml` | push / pull_request | **门禁**：后端安装依赖 + lint + 格式检查 + 测试 |
-| `.github/workflows/pkg.yml` | tag `v*` / 手动 | 三平台单文件可执行程序打包 |
-| `.github/workflows/docker.yml` | （见该文件） | Docker 镜像 |
+| `.github/workflows/build.yml` | push / pull_request | **门禁**：后端 lint + 格式检查 + 测试，前端 lint + 格式化 + 类型检查 + 测试 |
+| `.github/workflows/pkg.yml` | tag `v*` / 手动 | 三平台单文件可执行程序打包（并上传到该 tag 的 Release） |
+| `.github/workflows/docker.yml` | tag `v*` / 手动 | Docker 镜像构建（tag 触发时推送，手动触发只构建） |
 
 首次推送后，在仓库设置里补齐三步：
 
@@ -111,8 +111,8 @@ git config user.email "you@example.com"
 2. **收紧权限**：同页 Workflow permissions 选 *Read repository contents*（与 workflow 里的 `permissions: contents: read` 一致）。
 3. **设置分支保护**：Settings → Branches → Add branch protection rule，分支名填 **`main`**：
 
-   > 本仓库默认分支是 `main`（2026-10-05 已从 `master` 改名），`develop` 是集成分支。
-   > **`develop` 也应加同样的保护规则**；`master` 旧分支若仍存在，保护规则会随分支一起失效，确认后删除。
+   > 本仓库只有 **`main`** 一条主分支（2026-10-05 从 `master` 改名，2026-10-07 废弃 `develop`）。
+   > 保护规则只需覆盖 `main`；`master` / `develop` 旧分支已删除。
 
    - 勾选 *Require a pull request before merging*
    - 勾选 *Require status checks to pass before merging*，搜索并勾选 **`test`**
@@ -125,16 +125,43 @@ git config user.email "you@example.com"
 
 > 后端用 Go modules（`go mod download` / `go test`），无 lockfile 安装环节；前端仍用 pnpm，`frontend/pnpm-lock.yaml` 落后时须本机 `pnpm install` 后一并提交。
 
+### 版本号
+
+**唯一来源是 git tag**（形如 `v0.2.0`），构建时经 `-ldflags` 注入后端二进制的
+`backend/internal/version` 包。三条链路（`build.sh` / `pkg.yml` / `Dockerfile`）取值方式一致，
+均在同一条 commit 上产出可追溯到相同 tag 的版本：
+
+```sh
+# 本地构建：git describe 自动取 tag，可用 VERSION 覆盖
+VERSION=v0.2.0 bash build.sh
+```
+
+运行时查询：
+
+```sh
+curl -s http://127.0.0.1:8080/version
+# {"success":true,...,"data":{"version":"v0.2.0","commit":"cbc5686",
+#  "buildTime":"2026-10-07T04:32:00Z","goVersion":"go1.22.5",
+#  "fullString":"v0.2.0 (cbc5686, 2026-10-07T04:32:00Z)"}}
+```
+
+`GET /version` 是**公共路由**（不经 `UserGuard`）—— 版本号用于运维探活与问题排查，
+不涉及用户数据。未注入 ldflags 时（`go run .` / `go test`）回退为 `dev`。
+
+> ⚠️ 发版时 `frontend/package.json` 的 `version` 应与 tag 保持一致（本项目历史上曾长期停在
+> `0.1.2` 而 tag 已到 `v0.1.13`，已在校正），但它**不是**版本来源 —— 后端版本完全由 tag 决定。
+
 ## 5. 落地配置清单
 
 - [x] 填写 `AGENTS.md` §2「常用命令」表
 - [x] 用真实命令替换 `.github/workflows/build.yml` 的占位步骤（后端）
 - [x] `.gitattributes` 已随仓库提交（库内 LF）
 - [x] 环境变量分层已定义（§2），密钥段已进入 `.gitignore`
-- [ ] GitHub：启用 Actions、收紧 Workflow permissions
-- [ ] GitHub：为 `main` 与 `develop` 开启分支保护 + required status checks（`test`）
-- [ ] 前端补齐 lint / 格式化 / 测试脚本，并纳入 `build.yml`（见 `ROADMAP.md`）
+- [x] GitHub：启用 Actions、收紧 Workflow permissions
+- [x] GitHub：为 `main` 开启分支保护 + required status checks（`test`）——ruleset `24504111`，`enforcement=active`
+- [x] 前端补齐 lint / 格式化 / 类型检查 / 测试脚本，并纳入 `build.yml`（G4）
 - [x] 移除后端 `--passWithNoTests` 假绿（Go 重构以 `go test ./...` 取代 jest，已消除）
+- [x] 版本号经 `-ldflags` 注入，三条构建链路同构，可用 `GET /version` 查询
 
 ## 6. 常见问题
 

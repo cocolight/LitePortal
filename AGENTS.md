@@ -34,7 +34,7 @@ LitePortal — 轻量级 NAS 导航门户：**Go 后端**（gin + gorm + modernc
 | 后端格式化检查 | `cd backend && gofmt -l .`（输出应为空） |
 | 前端 lint | `cd frontend && pnpm run lint`（只拦 error；存量技术债以 warning 可见，见 `eslint.config.js`） |
 | 前端格式化检查 | `cd frontend && pnpm run format:check` |
-| 前端测试 | `cd frontend && pnpm run test`（vitest，18 个用例；**无 `--passWithNoTests` 式假绿**） |
+| 前端测试 | `cd frontend && pnpm run test`（vitest，48 个用例；**无 `--passWithNoTests` 式假绿**） |
 | 前端类型检查 | `cd frontend && pnpm run typecheck`（`tsc --noEmit`） |
 
 **其他常用**
@@ -44,6 +44,8 @@ LitePortal — 轻量级 NAS 导航门户：**Go 后端**（gin + gorm + modernc
 | 一次跑完全量检查（等价于 CI 门禁） | 后端：`cd backend && go vet ./... && test -z "$(gofmt -l .)" && go test ./...`<br>前端：`cd frontend && pnpm run code:check`（= lint + format:check + typecheck + test） |
 | 构建前端产物 | `cd frontend && pnpm run build:prod` |
 | 清理构建产物 | 根目录 `bash build.sh` 自带先清 `dist/`；前端另：`cd frontend && pnpm run clean:build` |
+| 查询运行中实例的版本 | `curl -s http://127.0.0.1:8080/version`（启动日志也会打印） |
+| 指定版本号构建 | `VERSION=v0.2.0 bash build.sh`（不指定时由 `git describe` 取 tag） |
 
 ⚠️ **测试纪律（红线 #1 细化）**：Go 后端已补齐真实集成测试（`internal/handler/handler_test.go`），`go test ./...` 是**真绿**，不得冒称「测试已通过」而不实际运行。数据库表结构由 `migrations/schema.sql` 在启动时建表，**没有** `mig:gen` 类命令。前端自 G4 起也有真实门禁（`pnpm run code:check` = eslint + prettier + tsc + vitest），同样不得假称「前端测试通过」。
 
@@ -118,3 +120,5 @@ LitePortal — 轻量级 NAS 导航门户：**Go 后端**（gin + gorm + modernc
 | `backend/internal/config/config.go` 的 `Config` 键 | `backend/.env.development`、`backend/.env.production`、`Dockerfile` 的 `ENV` | 环境变量缺失导致默认值不可预期 |
 | `docs/adr/` 新增决策 | `AGENTS.md` §8 坐标表、`ROADMAP.md` 受影响行 | 事实源分裂 |
 | 新增 / 改名环境变量 | `backend/.env.development` 与 `backend/.env.production` 都要补 | 环境间行为不一致 |
+| `backend/internal/version` 的注入方式或变量名 | `build.sh` 的 `LDFLAGS`、`.github/workflows/pkg.yml` 的 `Build backend` 步骤、`Dockerfile` 的 `ARG VERSION` + `docker.yml` 的 `Resolve version` 步骤（**三条链路同构**） | 某个产物版本号缺失或显示 `dev` |
+| 发新版本（打 `v*` tag） | `CHANGELOG.md` 把 `[Unreleased]` 条目归入新版本段、`ROADMAP.md` §4 版本发布记录、`frontend/package.json` 的 `version` | 版本记录与 tag 不一致 |

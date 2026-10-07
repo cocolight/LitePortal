@@ -61,6 +61,10 @@ jobs:
 
       # 后端跨平台编译（纯 Go，无 CGO；单文件二进制天然取代 @yao-pkg/pkg）
       #
+      # 版本信息通过 -ldflags 注入 internal/version，与 build.sh / Dockerfile 三条链路同构。
+      # 正式发版时 github.ref 形如 refs/tags/v0.2.0，去掉前缀即版本号；
+      # 手动试跑（workflow_dispatch）时 ref 是分支名，回退为 "dev"。
+      #
       # ⚠️ 必须显式 `shell: bash`：Windows runner 默认 shell 是 pwsh，而本步骤用的是
       # `mkdir -p` / `cp -r` / `VAR=value cmd` 这套 POSIX 写法 —— pwsh 下 `mkdir -p a b`
       # 会直接报 "A positional parameter cannot be found that accepts argument ..." 并中止。
@@ -74,7 +78,16 @@ jobs:
           cp -r ../frontend/dist/* ../dist/web/
           cp migrations/schema.sql ../dist/migrations/schema.sql
           cp .env.production ../dist/.env
-          GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} go build -o ../dist/server${{ matrix.ext }} .
+          # 从 tag 推导版本号；非 tag 触发时回退 dev
+          VERSION="${GITHUB_REF_NAME}"
+          case "$VERSION" in
+            v*) ;;
+            *) VERSION="dev" ;;
+          esac
+          COMMIT="$(git rev-parse --short HEAD)"
+          BUILD_TIME="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          LDFLAGS="-X backend/internal/version.Version=${VERSION} -X backend/internal/version.Commit=${COMMIT} -X backend/internal/version.BuildTime=${BUILD_TIME}"
+          GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} go build -ldflags "$LDFLAGS" -o ../dist/server${{ matrix.ext }} .
 
       # 打包为 zip：含 server / web / migrations / .env，解压即可运行。
       # 各 runner 自带工具不同（Windows 无 zip），故按平台分两步。

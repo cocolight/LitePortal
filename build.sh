@@ -35,6 +35,16 @@ if [ "$GOOS_VAL" = "windows" ] || { [ -z "$GOOS_VAL" ] && [ "$(go env GOOS)" = "
   BIN="$DIST_DIR/server.exe"
 fi
 
+# 版本信息注入（与 pkg.yml / Dockerfile 三条链路同构）：
+#   优先取 git describe 的 tag；无 tag 时回退到短提交哈希；再不行用 dev。
+#   可用 VERSION 环境变量显式覆盖（发版时由 CI 传入 tag 名）。
+VERSION_VAL="${VERSION:-$(git describe --tags --always --dirty 2>/dev/null || echo dev)}"
+COMMIT_VAL="$(git rev-parse --short HEAD 2>/dev/null || echo '')"
+BUILD_TIME_VAL="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+LDFLAGS="-X backend/internal/version.Version=$VERSION_VAL \
+-X backend/internal/version.Commit=$COMMIT_VAL \
+-X backend/internal/version.BuildTime=$BUILD_TIME_VAL"
+
 echo "==> 清理输出目录 $DIST_DIR"
 rm -rf "$DIST_DIR"
 mkdir -p "$WEB_DIR" "$MIGRATIONS_DIR" "$DATA_DIR"
@@ -45,8 +55,9 @@ echo "==> 构建前端 ($FRONTEND_DIR)"
 echo "==> 复制前端产物 -> $WEB_DIR"
 cp -r "$FRONTEND_DIR/dist/." "$WEB_DIR/"
 
-echo "==> 构建后端 (go build, CGO_ENABLED=0)"
-( cd "$BACKEND_DIR" && CGO_ENABLED=0 GOOS="$GOOS_VAL" GOARCH="$GOARCH_VAL" go build -o "../$BIN" . )
+echo "==> 构建后端 (go build, CGO_ENABLED=0, version=$VERSION_VAL)"
+( cd "$BACKEND_DIR" && CGO_ENABLED=0 GOOS="$GOOS_VAL" GOARCH="$GOARCH_VAL" \
+  go build -ldflags "$LDFLAGS" -o "../$BIN" . )
 
 echo "==> 复制 schema.sql -> $MIGRATIONS_DIR"
 cp "$BACKEND_DIR/migrations/schema.sql" "$MIGRATIONS_DIR/schema.sql"

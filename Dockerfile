@@ -21,11 +21,17 @@ RUN pnpm run build:prod
 FROM golang:1.22 AS backend
 WORKDIR /build
 
+# 版本号由 docker.yml 从 tag 推导后经 build-arg 传入（与 build.sh / pkg.yml 同构）；
+# 默认 dev 保证直接 `docker build .` 也能成功。
+ARG VERSION=dev
+
 COPY backend/go.mod backend/go.sum ./
 RUN go mod download
 
 COPY backend ./
-RUN CGO_ENABLED=0 go build -o /build/server .
+RUN CGO_ENABLED=0 go build \
+      -ldflags "-X backend/internal/version.Version=${VERSION}" \
+      -o /build/server .
 
 # ── 3. 运行阶段（最小镜像）─────────────────────────────────────
 FROM alpine:3.20

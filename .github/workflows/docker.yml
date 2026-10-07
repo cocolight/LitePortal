@@ -55,6 +55,20 @@ jobs:
             type=semver,pattern={{version}}
             type=raw,value=latest
 
+      # ---------- 版本号（注入到镜像内二进制的 internal/version）----------
+      # 正式发版时 ref 是 refs/tags/v0.2.0 → 取 v0.2.0；手动试跑时是分支名 → dev。
+      - name: Resolve version
+        id: ver
+        shell: bash
+        run: |
+          VERSION="${GITHUB_REF_NAME}"
+          case "$VERSION" in
+            v*) ;;
+            *) VERSION="dev" ;;
+          esac
+          echo "value=${VERSION}" >> "$GITHUB_OUTPUT"
+          echo "版本号：${VERSION}"
+
       # ---------- 构建 & 推送 ----------
       # push 仅在 tag 触发的正式发版时为 true；workflow_dispatch 只构建不推送
       - name: Build and push
@@ -65,5 +79,7 @@ jobs:
           push: ${{ github.event_name == 'push' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+          build-args: |
+            VERSION=${{ steps.ver.outputs.value }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
