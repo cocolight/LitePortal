@@ -12,8 +12,8 @@ name: build
 
 on:
   push:
-    # 默认分支 main（2026-10-05 由 master 改名），develop 是集成分支
-    branches: [main, develop]
+    # 唯一主分支 main（2026-10-05 由 master 改名；2026-10-07 起废弃 develop）
+    branches: [main]
   pull_request:
 
 permissions:

@@ -49,7 +49,7 @@ LitePortal — 轻量级 NAS 导航门户：**Go 后端**（gin + gorm + modernc
 
 ## 3. 工作流
 
-- 保护分支禁止直接推送：**默认分支 `main`**（2026-10-05 已从 `master` 改名），`develop` 为集成分支。日常改动从 `develop` 切 `feature/<名称>` 分支，一个功能一个分支、一个 PR。
+- 保护分支禁止直接推送：**唯一主分支 `main`**（2026-10-05 已从 `master` 改名；2026-10-07 起废弃 `develop`，不再设集成分支）。日常改动一律从 `main` 切 `feature/<名称>` 分支，一个功能一个分支、一个 PR，合并回 `main`。
 - 提交：Conventional Commits，type 用英文前缀（`feat`/`fix`/`docs`/`test`/`chore`/`refactor`/`ci`）；描述可用中文；标题总长 ≤ 72 字符。
 - 每完成一项，更新 `ROADMAP.md` 对应行状态。
 - **push 前先 `git fetch`**，确认远端没被别人推进；若对应 PR 已 merge，不要再往旧分支推送（commit 会成孤儿，不进主分支）。
