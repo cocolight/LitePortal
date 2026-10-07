@@ -40,9 +40,9 @@
 
 | # | 缺陷 | 分支 | 状态 | 依赖 | 验收标准 |
 |---|------|------|------|------|----------|
-| B1 | 中文文本显示乱码 | fix/cjk-garbled | planned | - | 构造含中文名称 / 描述的链接，前后端往返后显示与输入完全一致；SQLite 文件用 UTF-8 读取正常 |
+| B1 | 中文文本显示乱码 | fix/cjk-garbled | done | - | ✅ 已满足（**Go 重写后该缺陷已不复现**）：曾属 NestJS 时期的历史缺陷，Go 版从未复现过。2026-10-07 全链路实测 —— ① 链路往返：POST / GET 含中文名 / 描述（含 `·` 与 emoji 😀）逐字符相等，`name` 字节 `e4b8ade69687e6b58be8af95c2b7e997a8e688b7` 与输入完全一致；② 响应头 `Content-Type: application/json; charset=utf-8`（静态资源为 `text/html; charset=utf-8`）；③ SQLite 文件头部偏移 56 的 `text_encoding = 1`（UTF-8），`PRAGMA encoding` 返回 `UTF-8`；④ 真实浏览器（无头 Edge）渲染首页，中文名称与搜索框文案正常。新增 `TestCJKRoundTrip`（`backend/internal/handler/handler_test.go`）作为**回归防线**，断言响应头 charset、创建/详情/列表三处中文无损、且往返后 UTF-8 字节序列逐字节一致 |
 | B2 | EditModal 第一个 input 的蓝色光晕不全 | fix/editmodal-focus-ring | planned | - | 聚焦第一个输入框时 outline 四边完整；多浏览器（Chrome / Edge）目视一致 |
-| B3 | 文字图标中文显示错误 | fix/text-icon-cjk | planned | - | 中文文字图标按预期截取并显示（与 F1 / B1 联动验证） |
+| B3 | 文字图标中文显示错误 | fix/text-icon-cjk | done | - | ✅ 已满足：根因是 `frontend/src/utils/iconUtils.ts` 的 `generateTextSvg` 对 SVG 文本**双重百分号编码** —— `<text>` 内先 `encodeURIComponent(char)`（`中` → `%E4%B8%AD`），返回时又 `encodeURIComponent(svg)`（`%` → `%25`）；浏览器解 data URL 只解一层，文本节点留下字面量 `%E4%B8%AD`，渲染为 `%B8` 这类乱码。改为 SVG 源文本内直接写原始字符（仅做 XML 转义 `& < >`），只在构造 data URL 时编码**一次**，并显式声明 `charset=utf-8`。另抽出 `pickTextIconChar` 统一 Card 与 IconPreview 的截取规则（原来一处 `charAt(0)`、一处 `charAt(0).toUpperCase()`，导致 `a` 在首页与预览显示不一致）。新增 `iconUtils.spec.ts` 24 例；**证伪检验**：还原旧实现后 7 例失败（全为 B3 核心断言），修复后 24 例全绿。已用无头 Edge 实测截图确认：修复前卡片显示 `%B8`，修复后正常显示「中」 |
 | B4 | 点击图标时内网可达性探测误用 favicon：`autoSelect` 把「`intUrl/favicon.ico` 加载失败」当成「内网不可达」，导致无 favicon 的内网服务（lucky/easynode/openwrt）全部跳公网 | fix/intranet-reachability | done | - | ✅ 已满足：`frontend/src/utils/linkUtils.ts` 的 `autoSelect` 改为 `fetch(candidate, { method:'HEAD', mode:'no-cors', cache:'no-store', signal })` 探测连通性（opaque 响应，只看能否建连，与 favicon 及 HTTP 状态码完全解耦），1500ms 超时用 `AbortController`；裸地址依次试 http / https。`linkUtils.spec.ts` 13 例回归断言探测路径**不含 favicon**、方法为 `HEAD`，覆盖「内网可达但无 favicon → 走内网」「内网不可达 / 超时 → 回退公网」「裸地址先试 http」。已随 PR #4 合入 `main`（`a53766c`），CI `test` job 13/13 步 pass（1m4s） |
 
 ## 四、状态约定
