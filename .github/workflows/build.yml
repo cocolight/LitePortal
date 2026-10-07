@@ -51,17 +51,22 @@ jobs:
 
       # ── 前端门禁（G4）────────────────────────────────────────
       # 同样三步，且不得弱化上面后端的任何一步。
+      #
+      # ⚠️ 步骤顺序不可调换：setup-node 的 `cache: pnpm` 会调用 `pnpm --version`
+      # 去解析 pnpm store 路径，若 pnpm 尚未安装，该步骤会直接失败并中止 job
+      # （Unable to locate executable file: pnpm），后端之后的门禁一步都跑不到。
+      # 故必须「先装 pnpm，再 setup-node（带缓存）」。
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: '8.15.5' # 与 docs/configuration.md §1 声明的版本一致
+
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: '22'
           cache: pnpm
           cache-dependency-path: frontend/pnpm-lock.yaml
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: '8.15.5' # 与 docs/configuration.md §1 声明的版本一致
 
       - name: Install dependencies (frontend)
         working-directory: frontend
